@@ -7,6 +7,12 @@ import { envOnlyMacros } from 'vite-env-only'
 
 const MODE = process.env.NODE_ENV
 
+declare module '@remix-run/server-runtime' {
+	interface Future {
+		unstable_singleFetch: true // 👈 enable _types_ for single-fetch
+	}
+}
+
 export default defineConfig({
 	build: {
 		cssMinify: MODE === 'production',
@@ -16,11 +22,7 @@ export default defineConfig({
 		},
 
 		assetsInlineLimit: (source: string) => {
-			if (
-				source.endsWith('sprite.svg') ||
-				source.endsWith('favicon.svg') ||
-				source.endsWith('apple-touch-icon.png')
-			) {
+			if (source.endsWith('sprite.svg')) {
 				return false
 			}
 		},
@@ -39,6 +41,9 @@ export default defineConfig({
 		process.env.NODE_ENV === 'test'
 			? null
 			: remix({
+					future: {
+						unstable_singleFetch: true,
+					},
 					ignoredRouteFiles: ['**/*'],
 					serverModuleFormat: 'esm',
 					routes: async (defineRoutes) => {

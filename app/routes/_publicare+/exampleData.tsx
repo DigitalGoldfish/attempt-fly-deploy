@@ -1,6 +1,41 @@
 import { subDays } from 'date-fns'
 
-export const exampleData = [
+export type TableEntry = {
+	sender: string
+	source: 'Email' | 'Fax' | 'Webform'
+	title: string
+	message: string
+	received: Date
+	number: number
+	of: number
+	bereich: string
+	bearbeiter: string
+	status: string
+	kunde: string
+	document: {
+		type: string
+		src: string
+	}
+}
+
+export const exampleData: TableEntry[] = [
+	{
+		sender: '',
+		source: 'Webform',
+		number: 1,
+		of: 1,
+		title: '',
+		message: '',
+		bereich: 'Sonstige',
+		bearbeiter: 'CM',
+		status: 'Erledigt',
+		kunde: '234567',
+		received: subDays(new Date(), 4),
+		document: {
+			type: 'pdf',
+			src: '/demodata/ergOmundigen_Aerztliche-Verordnung.pdf',
+		},
+	},
 	{
 		sender: 'max.mustermann@example.com',
 		source: 'Email',
@@ -38,7 +73,7 @@ export const exampleData = [
 	{
 		sender: 'max.mustermann@example.com',
 		source: 'Email',
-		title: 'Verortnungsschein Nachlieferung',
+		title: 'Verordnungsschein Nachlieferung',
 		message: '',
 		number: 1,
 		of: 1,

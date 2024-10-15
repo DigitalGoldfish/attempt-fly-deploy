@@ -10,7 +10,7 @@
   "scripts": {
     "build": "run-s build:*",
     "build:icons": "tsx ./other/build-icons.ts",
-    "build:remix": "remix-ssg vite:build",
+    "build:remix": "remix vite:build",
     "build:server": "tsx ./other/build-server.ts",
     "predev": "npm run build:icons --silent",
     "dev": "node ./server/dev-server.js",
@@ -28,7 +28,14 @@
     "test:e2e:run": "cross-env CI=true playwright test",
     "test:e2e:install": "npx playwright install --with-deps chromium",
     "typecheck": "tsc",
-    "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run"
+    "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run",
+    "docker:login": "docker login registry.gitlab.com",
+    "docker:prod": "npm run docker:prod:build && npm run docker:prod:push",
+    "docker:test": "npm run docker:test:build && npm run docker:test:push",
+    "docker:prod:build": "docker build -t registry.gitlab.com/mangoart/publicare:prod -f other/build-container/Dockerfile .",
+    "docker:test:build": "docker build -t registry.gitlab.com/mangoart/publicare:test -f other/build-container/Dockerfile .",
+    "docker:prod:push": "docker push registry.gitlab.com/mangoart/publicare",
+    "docker:test:push": "docker push registry.gitlab.com/mangoart/publicare:test"
   },
   "prettier": "@epic-web/config/prettier",
   "eslintIgnore": [
@@ -52,6 +59,7 @@
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
     "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-select": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
     "@radix-ui/react-tooltip": "^1.1.2",
@@ -61,6 +69,7 @@
     "@remix-run/react": "2.10.3",
     "@sentry/profiling-node": "^8.18.0",
     "@sentry/remix": "^8.18.0",
+    "@tanstack/react-table": "^8.20.5",
     "address": "^2.0.3",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.1.2",
@@ -85,6 +94,7 @@
     "isbot": "^5.1.13",
     "litefs-js": "^1.1.2",
     "lru-cache": "^11.0.0",
+    "lucide-react": "^0.453.0",
     "morgan": "^1.10.0",
     "prisma": "^5.17.0",
     "qrcode": "^1.5.3",
@@ -147,7 +157,6 @@
     "prettier-plugin-sql": "^0.18.1",
     "prettier-plugin-tailwindcss": "^0.6.5",
     "remix-flat-routes": "^0.6.5",
-    "remix-ssg": "^0.0.8",
     "serve": "^14.2.3",
     "tsx": "^4.16.2",
     "typescript": "^5.5.3",
@@ -165,7 +174,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "volta": {
-    "node": "20.18.0",
-    "npm": "10.9.0"
+    "node": "20.17.0",
+    "yarn": "4.3.0",
+    "npm": "10.8.3"
   }
 }
