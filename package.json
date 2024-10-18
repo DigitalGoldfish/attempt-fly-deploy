@@ -29,6 +29,8 @@
     "test:e2e:install": "npx playwright install --with-deps chromium",
     "typecheck": "tsc",
     "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run",
+    "db:migration:create": "npx prisma migrate dev --create-only",
+    "db:migration:apply": "npx prisma migrate dev",
     "docker:login": "docker login registry.gitlab.com",
     "docker:prod": "npm run docker:prod:build && npm run docker:prod:push",
     "docker:test": "npm run docker:test:build && npm run docker:test:push",

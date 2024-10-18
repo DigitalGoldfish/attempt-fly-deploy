@@ -167,3 +167,90 @@ model Connection {
 
   @@unique([providerName, providerId])
 }
+
+model MailAttachment {
+  id          String @id @default(cuid())
+  contentType String
+  blob        Bytes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mail   Mail   @relation(fields: [mailId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  mailId String
+
+  // non-unique foreign key
+  @@index([mailId])
+}
+
+model Mail {
+  id        String @id @default(cuid())
+  sender    String
+  recipient String
+
+  subject     String
+  message     String
+  attachments MailAttachment[]
+
+  type       String
+  receivedAt DateTime @default(now())
+
+  forwardedTo String?
+  forwardedAt DateTime?
+  Incoming    Incoming[]
+}
+
+model FormSubmission {
+  id       String    @id @default(cuid())
+  document Document?
+
+  message    String?
+  incoming   Incoming[]
+  receivedAt DateTime   @default(now())
+}
+
+model Document {
+  id          String @id @default(cuid())
+  type        String // Unknown, Vorschreibung, KV, KV-Bestätigung
+  contentType String
+  blob        Bytes
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  referencedIn Incoming[] @relation("additionalDocuments")
+  incoming     Incoming?  @relation("default")
+
+  formSubmission   FormSubmission @relation(fields: [formSubmissionId], references: [id])
+  formSubmissionId String         @unique
+}
+
+model Incoming {
+  id             String          @id @default(cuid())
+  source         String
+  mail           Mail?           @relation(fields: [mailId], references: [id])
+  formSubmission FormSubmission? @relation(fields: [mailId], references: [id])
+  document       Document?       @relation("default", fields: [documentId], references: [id])
+  documentId     String?         @unique
+
+  // faxdienst
+  type        String  @default("Unknown")
+  bereich     String?
+  mitarbeiter String?
+  kundennr    String?
+  neuanlage   Boolean @default(false)
+  kvnotwendig Boolean @default(false)
+
+  // kundendienst
+  documents Document[] @relation("additionalDocuments")
+  orderNr   String?
+
+  status  String
+  comment String?
+
+  printed   Boolean   @default(false)
+  printedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  mailId    String?
+}

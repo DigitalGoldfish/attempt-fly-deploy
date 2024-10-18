@@ -10,6 +10,24 @@ export function FaxdienstBlock({ data }: { data: TableEntry }) {
 	const [assignedTo, setAssignedTo] = useState('')
 	const [customer, setCustomer] = useState('Neuanlage')
 
+	const assignableTo = [
+		'AR',
+		'AWO',
+		'BL',
+		'CH',
+		'CM',
+		'EK',
+		'JU',
+		'MAS',
+		'NR',
+		'SIST',
+		'SKA',
+		'SP',
+		'STS',
+		'SUFU',
+		'SUL',
+	]
+
 	return (
 		<div>
 			<h3 className={'mb-2 text-h5'}>Faxdienst</h3>
