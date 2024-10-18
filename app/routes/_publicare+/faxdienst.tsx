@@ -8,6 +8,10 @@ import { exampleData } from './exampleData.tsx'
 import { Outlet } from '@remix-run/react'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Printer } from 'lucide-react'
+import { PreviewBlock } from '#app/components/blocks/preview.tsx'
+import { MessageBlock } from '#app/components/blocks/message.tsx'
+import { OptionButton } from '#app/components/ui/optionbutton.tsx'
+import { FaxdienstBlock } from '#app/components/blocks/faxdienst.tsx'
 
 export default function NeueBestellungPage() {
 	const assignableTo = [
@@ -32,34 +36,9 @@ export default function NeueBestellungPage() {
 	const [bereich, setBereich] = useState('')
 	const [isDeleted, setIsDeleted] = useState(false)
 	const [deletionReason, setDeletionReason] = useState('')
-	const [priority, setPriority] = useState('')
-	const [type, setType] = useState('Bestellung')
-	const [assignedTo, setAssignedTo] = useState('')
-	const [customer, setCustomer] = useState('Neuanlage')
+
 	const currentItem =
 		currentIndex <= exampleData.length ? exampleData[currentIndex] : null
-
-	function OptionButton(props: {
-		value: string
-		currentValue: string
-		setFn: (newValue: string) => void
-	}) {
-		const { value, currentValue, setFn } = props
-		return (
-			<Button
-				className={clsx(
-					value === currentValue
-						? 'bg-teal-600 text-white hover:bg-teal-200'
-						: 'border border-gray-700 bg-white text-black hover:bg-teal-200',
-				)}
-				onClick={() => {
-					setFn(value)
-				}}
-			>
-				{value}
-			</Button>
-		)
-	}
 
 	return (
 		<div>
@@ -72,51 +51,11 @@ export default function NeueBestellungPage() {
 					)}
 					{currentItem && (
 						<div className="flex flex-grow gap-8 px-8">
-							<div className="aspect-[2/3] max-h-[80vh] max-w-[50%] flex-grow bg-gray-400">
-								{currentItem.document?.type === 'pdf' && (
-									<iframe
-										className="h-full w-full"
-										src={currentItem.document.src}
-									></iframe>
-								)}
-								{currentItem.document?.type === 'image' && (
-									<img className="w-full" src={currentItem.document.src} />
-								)}
-								{!currentItem.document && <span>Kein Dokument angehängt</span>}
+							<div className="max-h-[80vh] max-w-[50%] flex-grow bg-gray-400">
+								<PreviewBlock data={currentItem} />
 							</div>
 							<div className="flex-grow">
-								<div className={'grid grid-cols-3'}>
-									<div className="col-span-2">
-										<h3 className={'mb-2 text-h5'}>Nachricht</h3>
-										Quelle: <Badge>{currentItem.source}</Badge>
-										<br />
-										Sender: {currentItem.sender || ''}
-										<br />
-										Titel: {currentItem.title || ''}
-										<br />
-										Dokument: {currentItem.number} / {currentItem.of}&nbsp;
-										&nbsp;
-										<a href={'#'} className="text-teal-600 underline">
-											Originalnachricht
-										</a>
-										<br />
-										Erhalten am: {currentItem.received.toLocaleDateString()}
-										<TextareaField
-											labelProps={{
-												children: 'Nachricht',
-											}}
-											textareaProps={{
-												value: currentItem.message,
-												rows: 10,
-											}}
-										/>
-									</div>
-									<div className="flex flex-col gap-4">
-										<Button>An buchhaltung@publicare.at weiterleiten</Button>
-										<Button>An office@publicare.at weiterleiten</Button>
-										<Button>Weiterleiten</Button>
-									</div>
-								</div>
+								<MessageBlock data={currentItem} />
 								{isDeleted && (
 									<div>
 										<h3 className={'mb-2 text-h5'}>Faxdienst</h3>
@@ -164,108 +103,7 @@ export default function NeueBestellungPage() {
 										</div>
 									</div>
 								)}
-								{!isDeleted && (
-									<div>
-										<h3 className={'mb-2 text-h5'}>Faxdienst</h3>
-										<div className={'my-8 grid grid-cols-5'}>
-											<span>Art der Nachricht:</span>
-											<div className="col-span-4 flex gap-4">
-												<OptionButton
-													value="Bestellung"
-													currentValue={type}
-													setFn={setType}
-												/>
-												<OptionButton
-													value="Bestätigung KV"
-													currentValue={type}
-													setFn={setType}
-												/>
-												<OptionButton
-													value="Sonstige"
-													currentValue={type}
-													setFn={setType}
-												/>
-											</div>
-										</div>
-										{type === 'Bestätigung KV' && (
-											<div className={'grid grid-cols-5'}>
-												<span>Bestellung:</span>
-												<div>Suchmaske um die Bestellung zu finden</div>
-											</div>
-										)}
-										{type !== 'Bestätigung KV' && (
-											<>
-												<div className={'grid grid-cols-5'}>
-													<span>Bereich:</span>
-													<div className="col-span-4 flex gap-4">
-														<OptionButton
-															value="StoMa"
-															currentValue={bereich}
-															setFn={setBereich}
-														/>
-														<OptionButton
-															value="Wundversorgung"
-															currentValue={bereich}
-															setFn={setBereich}
-														/>
-														<OptionButton
-															value="Sonstige"
-															currentValue={bereich}
-															setFn={setBereich}
-														/>
-													</div>
-												</div>
-											</>
-										)}
-										<div className={'my-8 grid grid-cols-5'}>
-											<span>Attribute:</span>
-											<div className="col-span-4 flex gap-4">
-												<OptionButton
-													value="Ohne Verordnung"
-													currentValue={type}
-													setFn={setType}
-												/>
-												<OptionButton
-													value="Benötigt KV"
-													currentValue={type}
-													setFn={setType}
-												/>
-											</div>
-										</div>
-										{bereich === 'StoMa' && (
-											<div className={'my-8 grid grid-cols-5'}>
-												<span>Kundendienst-MA:</span>
-												<div className="col-span-4 flex flex-wrap gap-4">
-													{assignableTo.map((short) => (
-														<OptionButton
-															key={short}
-															value={short}
-															currentValue={assignedTo}
-															setFn={setAssignedTo}
-														/>
-													))}
-												</div>
-											</div>
-										)}
-										<div className={'my-8 grid grid-cols-5'}>
-											<span>Kunde:</span>
-											<div className="col-span-4 flex flex-wrap items-baseline gap-4">
-												<OptionButton
-													value="Neuanlage"
-													currentValue={customer}
-													setFn={setCustomer}
-												/>
-												<OptionButton
-													value="Bestandskunde"
-													currentValue={customer}
-													setFn={setCustomer}
-												/>
-												<span>KndNr.: </span>
-												<Field inputProps={{}} labelProps={{ children: '' }} />
-											</div>
-										</div>
-									</div>
-								)}
+								{!isDeleted && <FaxdienstBlock data={currentItem} />}
 								<div className="flex gap-4">
 									{!isDeleted && (
 										<Button
@@ -288,10 +126,10 @@ export default function NeueBestellungPage() {
 											setCurrentIndex((oldIndex) => oldIndex + 1)
 											setIsDeleted(false)
 											setBereich('')
-											setCustomer('')
-											setType('Bestellung')
+											// setCustomer('')
+											// setType('Bestellung')
 											setDeletionReason('')
-											setAssignedTo('')
+											// setAssignedTo('')
 										}}
 									>
 										Speichern & Nächste
