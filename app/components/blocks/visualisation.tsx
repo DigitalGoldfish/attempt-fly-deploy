@@ -240,7 +240,7 @@ const edges: Edge[] = [
 		target: 'stoma_done',
 		sourceHandle: 'right',
 		data: {
-			label: '100',
+			label: '',
 			variant: 'curve',
 		},
 		type: 'custom',
@@ -253,7 +253,7 @@ const edges: Edge[] = [
 		target: 'wund_done',
 		sourceHandle: 'right',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -263,7 +263,7 @@ const edges: Edge[] = [
 		target: 'wund_kv',
 		sourceHandle: 'right',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -274,7 +274,7 @@ const edges: Edge[] = [
 		target: 'wund_kvbest',
 		targetHandle: 'left',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -284,7 +284,7 @@ const edges: Edge[] = [
 		target: 'wund_done',
 		sourceHandle: 'right',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -294,7 +294,7 @@ const edges: Edge[] = [
 		target: 'wund_done',
 		sourceHandle: 'right',
 		data: {
-			label: '100',
+			label: '',
 			variant: 'curve',
 		},
 		type: 'custom',
@@ -305,7 +305,7 @@ const edges: Edge[] = [
 		target: 'wund_done',
 		sourceHandle: 'right',
 		data: {
-			label: '100',
+			label: '',
 			variant: 'curve',
 		},
 		type: 'custom',
@@ -316,7 +316,7 @@ const edges: Edge[] = [
 		sourceHandle: 'right',
 		target: 'wund_nachfrage',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -342,7 +342,7 @@ const edges: Edge[] = [
 		sourceHandle: 'right',
 		target: 'stoma_done',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -352,7 +352,7 @@ const edges: Edge[] = [
 		sourceHandle: 'right',
 		target: 'stoma_kv',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -362,7 +362,7 @@ const edges: Edge[] = [
 		sourceHandle: 'right',
 		target: 'stoma_kvbest',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -372,7 +372,7 @@ const edges: Edge[] = [
 		sourceHandle: 'right',
 		target: 'stoma_done',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -382,7 +382,7 @@ const edges: Edge[] = [
 		sourceHandle: 'right',
 		target: 'stoma_nachfrage',
 		data: {
-			label: '100',
+			label: '',
 		},
 		type: 'custom',
 	},
@@ -411,6 +411,7 @@ export function Visualisation() {
 			</h2>
 			<ReactFlow
 				fitView={true}
+				fitViewOptions={{ padding: 0.1 }}
 				nodes={nodes}
 				edges={edges.map((edge) => ({ ...edge, animated: false }))}
 				edgeTypes={{ custom: CustomEdge }}

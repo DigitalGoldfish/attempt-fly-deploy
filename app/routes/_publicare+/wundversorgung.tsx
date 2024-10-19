@@ -6,17 +6,19 @@ import { Counter } from '#app/components/layout/counter.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import Bestelldetails from '#app/routes/_publicare+/detail.tsx'
 
-export const meta: MetaFunction = () => [{ title: 'Publicare Kundendienst' }]
+export const meta: MetaFunction = () => [
+	{ title: 'Publicare - Bestellungen Wundversorgung' },
+]
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 	return null
 }
 
-export default function Kundendienst() {
+export default function Stoma() {
 	return (
 		<DefaultLayout
-			pageTitle="Kundendienst"
+			pageTitle="Bestellungen Wundversorgung"
 			aside={
 				<div className={'flex gap-8'}>
 					<Counter label={'Inbox'} count={1000} />

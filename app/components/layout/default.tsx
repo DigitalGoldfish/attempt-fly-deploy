@@ -2,6 +2,8 @@ import { Link, Outlet } from '@remix-run/react'
 import logo from '#app/assets/logo-publicare.png'
 import React from 'react'
 import { UserDropdown } from '#app/root.tsx'
+import { Button } from '#app/components/ui/button.tsx'
+import { List } from 'lucide-react'
 
 export function DefaultLayout({
 	children,
@@ -29,10 +31,22 @@ export function DefaultLayout({
 			</header>
 			<div className="flex-grow">{<Outlet />}</div>
 			<div className="flex flex-col">
-				<div className="bg-pcteal-default h-12">
+				<div className="bg-pcteal-default flex h-12 justify-between">
 					{pageTitle && (
-						<div className="container flex h-full items-center text-h3 font-normal text-white">
-							{pageTitle}
+						<div className="container flex h-full items-center justify-between">
+							<div className="text-h3 font-normal text-white">{pageTitle}</div>
+							<div>
+								<Button
+									variant="link"
+									className="flex gap-4 text-white"
+									asChild
+								>
+									<Link to="/liste" className="flex gap-4 text-body-sm">
+										<List />
+										Listeansicht
+									</Link>
+								</Button>
+							</div>
 						</div>
 					)}
 				</div>

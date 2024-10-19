@@ -45,8 +45,18 @@ export function StomaNode({
 			className={cn(nodeVariants({ variant: data.variant, size: data.size }))}
 			style={{ overflow: 'hidden', position: 'relative' }}
 		>
-			<Handle type="target" position={Position.Left} id="left" />
-			<Handle type="target" position={Position.Top} id="top" />
+			<Handle
+				type="target"
+				position={Position.Left}
+				id="left"
+				className="!border-transparent !bg-transparent"
+			/>
+			<Handle
+				type="target"
+				position={Position.Top}
+				id="top"
+				className="!border-transparent !bg-transparent"
+			/>
 			<div className="flex flex-col">
 				{data.icon}
 				<span className="uppervase order-2 text-sm">{data.label}</span>
@@ -80,9 +90,24 @@ export function StomaNode({
 					</div>
 				</div>
 			</div>
-			<Handle type="source" position={Position.Top} id="top" />
-			<Handle type="source" position={Position.Right} id="right" />
-			<Handle type="source" position={Position.Bottom} id="bottom" />
+			<Handle
+				type="source"
+				position={Position.Top}
+				id="top"
+				className="!border-transparent !bg-transparent"
+			/>
+			<Handle
+				type="source"
+				position={Position.Right}
+				id="right"
+				className="!border-transparent !bg-transparent"
+			/>
+			<Handle
+				type="source"
+				position={Position.Bottom}
+				id="bottom"
+				className="!border-transparent !bg-transparent"
+			/>
 		</div>
 	)
 }
