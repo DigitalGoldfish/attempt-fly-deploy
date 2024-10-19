@@ -413,7 +413,7 @@ export function Visualisation() {
 				fitView={true}
 				fitViewOptions={{ padding: 0.1 }}
 				nodes={nodes}
-				edges={edges.map((edge) => ({ ...edge, animated: false }))}
+				edges={edges.map((edge) => ({ ...edge, animated: true }))}
 				edgeTypes={{ custom: CustomEdge }}
 				nodeTypes={{ number: NumberNode, stoma: StomaNode }}
 				panOnDrag={false}

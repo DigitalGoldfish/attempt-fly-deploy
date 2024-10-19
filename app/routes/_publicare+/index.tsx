@@ -85,7 +85,7 @@ export default function Index() {
 					</div>
 				</div>
 				<div className="col-span-2">
-					<div className="border-pcblue-600 flex flex-col gap-4 rounded-2xl border p-4">
+					<div className="border-pcblue-600 flex h-full flex-col gap-6 rounded-2xl border p-4">
 						<h2 className="bold text-h4">Schnellsuche</h2>
 						<div className="flex items-center gap-8">
 							Kundennr.:
