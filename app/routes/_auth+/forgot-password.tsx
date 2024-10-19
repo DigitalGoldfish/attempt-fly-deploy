@@ -139,10 +139,7 @@ export default function ForgotPasswordRoute() {
 		<div className="container pb-32 pt-20">
 			<div className="flex flex-col justify-center">
 				<div className="text-center">
-					<h1 className="text-h1">Forgot Password</h1>
-					<p className="mt-3 text-body-md text-muted-foreground">
-						No worries, we'll send you reset instructions.
-					</p>
+					<h1 className="text-h2">Passwort vergessen</h1>
 				</div>
 				<div className="mx-auto mt-16 min-w-full max-w-sm sm:min-w-[368px]">
 					<forgotPassword.Form method="POST" {...getFormProps(form)}>
@@ -151,7 +148,7 @@ export default function ForgotPasswordRoute() {
 							<Field
 								labelProps={{
 									htmlFor: fields.usernameOrEmail.id,
-									children: 'Username or Email',
+									children: 'Benutzername oder Email',
 								}}
 								inputProps={{
 									autoFocus: true,
@@ -173,7 +170,7 @@ export default function ForgotPasswordRoute() {
 								type="submit"
 								disabled={forgotPassword.state !== 'idle'}
 							>
-								Recover password
+								Passwort zurücksetzen
 							</StatusButton>
 						</div>
 					</forgotPassword.Form>
@@ -181,7 +178,7 @@ export default function ForgotPasswordRoute() {
 						to="/login"
 						className="mt-11 text-center text-body-sm font-bold"
 					>
-						Back to Login
+						Zurück zur Anmeldung
 					</Link>
 				</div>
 			</div>

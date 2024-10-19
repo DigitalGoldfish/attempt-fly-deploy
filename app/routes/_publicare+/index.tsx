@@ -1,11 +1,17 @@
-import { type MetaFunction } from '@remix-run/node'
+import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link } from '@remix-run/react'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Visualisation } from '#app/components/blocks/visualisation.tsx'
 import { Input } from '#app/components/ui/input.tsx'
 import { Button } from '#app/components/ui/button.tsx'
+import { requireUserId } from '#app/utils/auth.server.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare' }]
+
+export async function loader({ request }: LoaderFunctionArgs) {
+	const userId = await requireUserId(request)
+	return null
+}
 
 export default function Index() {
 	return (

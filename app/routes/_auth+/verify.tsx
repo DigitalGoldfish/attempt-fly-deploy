@@ -49,9 +49,10 @@ export default function VerifyRoute() {
 
 	const checkEmail = (
 		<>
-			<h1 className="text-h1">Check your email</h1>
+			<h1 className="text-h2">Überprüf deine E-Mail</h1>
 			<p className="mt-3 text-body-md text-muted-foreground">
-				We've sent you a code to verify your email address.
+				Wir haben dir einen Code zur Verifizierung deiner E-Mail adresse
+				geschickt.
 			</p>
 		</>
 	)
@@ -131,7 +132,7 @@ export default function VerifyRoute() {
 							type="submit"
 							disabled={isPending}
 						>
-							Submit
+							Absenden
 						</StatusButton>
 					</Form>
 				</div>

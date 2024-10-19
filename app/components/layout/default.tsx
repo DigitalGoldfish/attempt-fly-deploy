@@ -1,12 +1,15 @@
 import { Link, Outlet } from '@remix-run/react'
 import logo from '#app/assets/logo-publicare.png'
 import React from 'react'
+import { UserDropdown } from '#app/root.tsx'
 
 export function DefaultLayout({
 	children,
+	aside,
 	pageTitle = '',
 }: {
 	children: React.ReactNode
+	aside?: React.ReactNode
 	pageTitle?: string
 }) {
 	return (
@@ -19,14 +22,14 @@ export function DefaultLayout({
 						</Link>
 					</h1>
 					<div className="flex items-center gap-8">
-						<span>Item 1</span>
-						<span>Item 2</span>
+						{aside}
+						<UserDropdown />
 					</div>
 				</div>
 			</header>
 			<div className="flex-grow">{<Outlet />}</div>
 			<div className="flex flex-col">
-				<div className="h-12 bg-[#009aa4]">
+				<div className="bg-pcteal-default h-12">
 					{pageTitle && (
 						<div className="container flex h-full items-center text-h3 font-bold text-white">
 							{pageTitle}
