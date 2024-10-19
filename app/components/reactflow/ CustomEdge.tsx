@@ -1,13 +1,16 @@
 import React, { type FC } from 'react'
 import {
 	getBezierPath,
+	getSmoothStepPath,
 	EdgeLabelRenderer,
 	BaseEdge,
 	type EdgeProps,
 	type Edge,
 } from '@xyflow/react'
 
-const CustomEdge: FC<EdgeProps<Edge<{ label: string }>>> = ({
+const CustomEdge: FC<
+	EdgeProps<Edge<{ label: string; variant: 'curve' | 'bezier' }>>
+> = ({
 	id,
 	sourceX,
 	sourceY,
@@ -17,18 +20,33 @@ const CustomEdge: FC<EdgeProps<Edge<{ label: string }>>> = ({
 	targetPosition,
 	data,
 }) => {
-	const [edgePath, labelX, labelY] = getBezierPath({
-		sourceX,
-		sourceY,
-		sourcePosition,
-		targetX,
-		targetY,
-		targetPosition,
-	})
+	const [edgePath, labelX, labelY] =
+		data?.variant === 'curve'
+			? getBezierPath({
+					sourceX,
+					sourceY,
+					sourcePosition,
+					targetX,
+					targetY,
+					targetPosition,
+				})
+			: getSmoothStepPath({
+					sourceX,
+					sourceY,
+					sourcePosition,
+					targetX,
+					targetY,
+					targetPosition,
+				})
 
 	return (
 		<>
-			<BaseEdge id={id} path={edgePath} />
+			<BaseEdge
+				id={id}
+				path={edgePath}
+				className="text-red-800"
+				style={{ strokeWidth: 2 }}
+			/>
 			{data && data.label && (
 				<EdgeLabelRenderer>
 					<div

@@ -25,11 +25,11 @@ const nodeVariants = cva('rounded border-2 px-4 py-2 text-right text-white', {
 	},
 	defaultVariants: {
 		variant: 'secondary',
-		size: 'default',
+		size: 'lg',
 	},
 })
 
-export function NumberNode({
+export function StomaNode({
 	data,
 }: {
 	data: {
@@ -47,12 +47,38 @@ export function NumberNode({
 		>
 			<Handle type="target" position={Position.Left} id="left" />
 			<Handle type="target" position={Position.Top} id="top" />
-			<div className="flex flex-col-reverse">
+			<div className="flex flex-col">
 				{data.icon}
-				<span className="uppervase text-sm">{data.label}</span>
-				<span className="text-body-2xl font-bold leading-none">
+				<span className="uppervase order-2 text-sm">{data.label}</span>
+				<span className="order-1 text-body-2xl font-bold leading-none">
 					{data.count || 0}
 				</span>
+				<div className="order-3 mt-2 grid grid-cols-2 gap-x-4 text-left">
+					<div className="flex justify-between">
+						<span>MA1</span>
+						<span>12</span>
+					</div>
+					<div className="flex justify-between">
+						<span>MA2</span>
+						<span>12</span>
+					</div>
+					<div className="flex justify-between">
+						<span>MA3</span>
+						<span>12</span>
+					</div>
+					<div className="flex justify-between">
+						<span>MA4</span>
+						<span>12</span>
+					</div>
+					<div className="flex justify-between">
+						<span>MA5</span>
+						<span>12</span>
+					</div>
+					<div className="flex justify-between">
+						<span>MA6</span>
+						<span>12</span>
+					</div>
+				</div>
 			</div>
 			<Handle type="source" position={Position.Top} id="top" />
 			<Handle type="source" position={Position.Right} id="right" />

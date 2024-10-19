@@ -18,59 +18,74 @@ export default function Index() {
 		<DefaultLayout>
 			<div className="grid grid-cols-5 gap-8">
 				<div className="col-span-3">
-					<div className="grid grid-cols-3 gap-8">
+					<div className="grid grid-cols-3 gap-4">
 						<Link
 							to={'/faxdienst'}
 							className={
-								'relative grid w-full rounded-2xl bg-teal-600/10 p-4 transition hover:-rotate-6 hover:bg-violet-600/15'
+								'hover:bg-pcblue-500 bg-pcblue-default relative grid aspect-[2/1] w-full rounded-2xl p-4 text-white transition hover:-rotate-6'
 							}
 						>
-							<span className="text-h5">Faxdienst</span>
-							<span className="text absolute bottom-2 right-2 text-h1 text-red-500">
-								20
+							<span className="uppervasel text-h4 font-normal uppercase">
+								Faxdienst
 							</span>
+							<span className="text absolute bottom-2 right-2 text-h1">20</span>
 						</Link>
 						<Link
-							to={'/kundendienst'}
+							to={'/stoma'}
 							className={
-								'relative grid w-full rounded-2xl bg-teal-600/10 p-4 transition hover:-rotate-6 hover:bg-violet-600/15'
+								'hover:bg-pcblue-500 bg-pcblue-default relative grid aspect-[2/1] w-full rounded-2xl p-4 text-white transition hover:-rotate-6'
 							}
 						>
-							<span className="text-h5">
-								Kunden-
-								<br />
-								dienst
+							<span className="leading-0 text-h4 font-normal uppercase">
+								Stoma/Inko
+							</span>
+							<span className="text absolute bottom-2 right-2 text-h1">9</span>
+						</Link>
+						<Link
+							to={'/wundversorgung'}
+							className={
+								'hover:bg-pcblue-500 bg-pcblue-default relative grid aspect-[2/1] w-full rounded-2xl p-4 text-white transition hover:-rotate-6'
+							}
+						>
+							<span className="leading-0 text-h4 font-normal uppercase">
+								Wundvers.
 							</span>
 							<span className="text absolute bottom-2 right-2 text-h1">9</span>
 						</Link>
 						<Link
 							to={'/liste'}
 							className={
-								'relative grid w-full rounded-2xl bg-teal-600/10 p-4 transition hover:-rotate-6 hover:bg-violet-600/15'
+								'bg-pcteal-default hover:bg-pcteal-700 relative grid aspect-[2/1] w-full rounded-2xl p-4 transition hover:-rotate-6'
 							}
 						>
-							<span className="text-h5">Liste</span>
+							<div className="flex h-full items-center justify-center text-h4 font-normal uppercase text-white">
+								Liste
+							</div>
 						</Link>
 						<Link
 							to={'/admin'}
 							className={
-								'relative grid w-full rounded-2xl bg-teal-600/10 p-4 transition hover:-rotate-6 hover:bg-violet-600/15'
+								'bg-pcteal-default hover:bg-pcteal-700 relative grid aspect-[2/1] w-full rounded-2xl p-4 transition hover:-rotate-6'
 							}
 						>
-							<span className="text-h5">Zuordnung</span>
+							<div className="flex h-full items-center justify-center text-h4 font-normal uppercase text-white">
+								Zuordnung
+							</div>
 						</Link>
 						<Link
 							to={'/admin'}
 							className={
-								'relative grid w-full rounded-2xl bg-teal-600/10 p-4 transition hover:-rotate-6 hover:bg-violet-600/15'
+								'bg-pcteal-default hover:bg-pcteal-700 relative grid aspect-[2/1] w-full rounded-2xl p-4 transition hover:-rotate-6'
 							}
 						>
-							<span className="text-h5">Admin</span>
+							<div className="flex h-full items-center justify-center text-h4 font-normal uppercase text-white">
+								Admin
+							</div>
 						</Link>
 					</div>
 				</div>
 				<div className="col-span-2">
-					<div className="flex flex-col gap-4 rounded border p-8">
+					<div className="border-pcblue-600 flex flex-col gap-4 rounded-2xl border p-4">
 						<h2 className="bold text-h4">Schnellsuche</h2>
 						<div className="flex items-center gap-8">
 							Kundennr.:
@@ -80,7 +95,7 @@ export default function Index() {
 							Bestellnr.:
 							<Input />
 						</div>
-						<Button variant="default" className="uppercase">
+						<Button variant="pcblue" className="uppercase">
 							Suchen
 						</Button>
 					</div>

@@ -31,7 +31,7 @@ export function DefaultLayout({
 			<div className="flex flex-col">
 				<div className="bg-pcteal-default h-12">
 					{pageTitle && (
-						<div className="container flex h-full items-center text-h3 font-bold text-white">
+						<div className="container flex h-full items-center text-h3 font-normal text-white">
 							{pageTitle}
 						</div>
 					)}
