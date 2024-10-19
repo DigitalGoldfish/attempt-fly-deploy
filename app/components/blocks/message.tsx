@@ -1,7 +1,7 @@
 import { Badge } from '#app/components/ui/badge.tsx'
 import { TextareaField } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { TableEntry } from '#app/routes/_publicare+/exampleData.tsx'
+import { TableEntry } from '#app/routes/_publicare_v1/exampleData.tsx'
 
 export function MessageBlock({ data }: { data: TableEntry }) {
 	return (

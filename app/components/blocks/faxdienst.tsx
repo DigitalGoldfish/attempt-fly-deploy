@@ -1,7 +1,7 @@
 import { Field } from '#app/components/forms.tsx'
 import { OptionButton } from '#app/components/ui/optionbutton.tsx'
 import { useState } from 'react'
-import { TableEntry } from '#app/routes/_publicare+/exampleData.tsx'
+import { TableEntry } from '#app/routes/_publicare_v1/exampleData.tsx'
 
 export function FaxdienstBlock({ data }: { data: TableEntry }) {
 	const [priority, setPriority] = useState('')

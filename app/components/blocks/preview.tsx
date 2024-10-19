@@ -1,4 +1,4 @@
-import { TableEntry } from '#app/routes/_publicare+/exampleData.tsx'
+import { TableEntry } from '#app/routes/_publicare_v1/exampleData.tsx'
 
 export function PreviewBlock({ data }: { data: TableEntry }) {
 	return (
