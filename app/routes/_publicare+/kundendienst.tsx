@@ -4,6 +4,7 @@ import { Field, TextareaField } from '#app/components/forms.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { clsx } from 'clsx'
 import { exampleData } from './exampleData.tsx'
+import { Link } from '@remix-run/react'
 
 export default function NeueBestellungPage() {
 	const assignableTo = [
@@ -184,6 +185,9 @@ export default function NeueBestellungPage() {
 								</div>
 
 								<div className="flex gap-4">
+									<Link to="/original-document">
+										<Button variant="secondary">Fehlende Seite</Button>
+									</Link>
 									<Button variant="destructive">Löschen</Button>
 									<div className="flex-grow"></div>
 									<Button variant="secondary" onClick={() => {}}>
