@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
-import Liste from '../_publicare_v1/liste.tsx'
+import Liste from '../../components/liste/liste.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { z } from 'zod'

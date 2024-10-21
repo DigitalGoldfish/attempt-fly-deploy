@@ -8,4 +8,5 @@ export enum IncomingStatus {
 	Geloescht = 'Geloescht',
 	Weitergeleitet = 'Weitergeleitet',
 	FehlendesProdukt = 'FehlendesProdukt',
+	Storniert = 'Storniert',
 }
