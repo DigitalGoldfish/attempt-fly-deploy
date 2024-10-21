@@ -8,10 +8,12 @@ import { List } from 'lucide-react'
 export function DefaultLayout({
 	children,
 	aside,
+	menuLinks,
 	pageTitle = '',
 }: {
 	children: React.ReactNode
 	aside?: React.ReactNode
+	menuLinks?: React.ReactNode
 	pageTitle?: string
 }) {
 	return (
@@ -31,24 +33,11 @@ export function DefaultLayout({
 			</header>
 			<div className="flex-grow">{<Outlet />}</div>
 			<div className="flex flex-col">
-				<div className="bg-pcteal-default flex h-12 justify-between">
-					{pageTitle && (
-						<div className="container flex h-full items-center justify-between">
-							<div className="text-h3 font-normal text-white">{pageTitle}</div>
-							<div>
-								<Button
-									variant="link"
-									className="flex gap-4 text-white"
-									asChild
-								>
-									<Link to="/liste" className="flex gap-4 text-body-sm">
-										<List />
-										Listeansicht
-									</Link>
-								</Button>
-							</div>
-						</div>
-					)}
+				<div className="flex h-12 justify-between bg-pcteal-default">
+					<div className="container flex h-full items-center justify-between">
+						<div className="text-h3 font-normal text-white">{pageTitle}</div>
+						<div>{menuLinks}</div>
+					</div>
 				</div>
 				<main className="font-poppins container mx-auto my-8 place-items-start">
 					{children}
