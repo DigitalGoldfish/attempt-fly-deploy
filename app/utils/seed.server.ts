@@ -1,42 +1,147 @@
-import { prisma } from '#app/utils/db.server.ts'
-import { Source } from '#app/const/Source.ts'
+import { faker } from '@faker-js/faker'
+import { type Prisma } from '@prisma/client'
+import { Bereich } from '#app/const/Bereich.ts'
 import { IncomingStatus } from '#app/const/IncomingStatus.ts'
+import { Source } from '#app/const/Source.ts'
+import { Types } from '#app/const/Types.ts'
+import { prisma } from '#app/utils/db.server.ts'
+
+class RandomPicker {
+	prefixSums: number[]
+
+	constructor(elements: Weighted[]) {
+		const n = elements.length
+		this.prefixSums = new Array(n + 1).fill(0)
+		for (let i = 0; i < n; ++i) {
+			// @ts-ignore
+			this.prefixSums[i + 1] = this.prefixSums[i] + elements[i].weight
+		}
+	}
+
+	public pickIndex(): number {
+		const n = this.prefixSums.length
+		// @ts-ignore
+		const randomNum = 1 + Math.floor(Math.random() * this.prefixSums[n - 1])
+		let left = 1
+		let right = n - 1
+
+		// Binary search to find the smallest index such that prefixSums[index] >= randomNum
+		while (left < right) {
+			const mid = Math.floor((left + right) / 2)
+			// @ts-ignore
+			if (this.prefixSums[mid] >= randomNum) {
+				right = mid
+			} else {
+				left = mid + 1
+			}
+		}
+		// left - 1 because the prefixSums array starts from 1 to n and we need to return 0 to n-1
+		return left - 1
+	}
+}
 
 const messageTypeProbability = [
 	{
-		probability: 35,
+		name: 'fax',
+		weight: 50,
 		fn: createIncomingFax,
 	},
 	{
-		probability: 45,
+		name: 'email',
+		weight: 50,
 		fn: createIncomingEmail,
 	},
 	{
-		probability: 20,
+		name: 'form',
+		weight: 50,
 		fn: createIncomingFormSubmission,
 	},
 ]
 
+const statusProbability = [
+	{
+		name: 'Faxdienst',
+		status: IncomingStatus.Faxservice,
+		weight: 150,
+	},
+	{
+		name: 'Gelöscht',
+		status: IncomingStatus.Geloescht,
+		weight: 20,
+	},
+	{
+		name: 'Weitergeleitet',
+		status: IncomingStatus.Weitergeleitet,
+		weight: 20,
+	},
+	{
+		name: 'Kundendienst',
+		status: IncomingStatus.Kundendienst,
+		weight: 200,
+	},
+	{
+		name: 'Erledigt',
+		status: IncomingStatus.Erledigt,
+		weight: 400,
+	},
+	{
+		name: 'KV Benötigt',
+		status: IncomingStatus.KVbenoetigt,
+		weight: 30,
+	},
+	{
+		name: 'KV Bestätigt',
+		status: IncomingStatus.KVbestaetigt,
+		weight: 30,
+	},
+	{
+		name: 'Nachfrage',
+		status: IncomingStatus.Nachfrage,
+		weight: 30,
+	},
+	{
+		name: 'Fehlendes Produkt',
+		status: IncomingStatus.FehlendesProdukt,
+		weight: 30,
+	},
+]
+
+const bereichProbability = [
+	{ name: 'Stoma/Inko', bereich: Bereich.StoMa, weight: 100 },
+	{ name: 'Wundversorgung', bereich: Bereich.Wund, weight: 100 },
+]
+
+const typeProbability = [
+	{ name: 'Bestellung', type: Types.Bestellung, weight: 200 },
+	{ name: 'KV Best', type: Types.KVBestaetigung, weight: 5 },
+	{ name: 'Sonstige', type: Types.Sonstiges, weight: 0 },
+]
+
+const bereichPicker = new RandomPicker(bereichProbability)
+const messageTypePicker = new RandomPicker(messageTypeProbability)
+const statusPicker = new RandomPicker(statusProbability)
+const typePicker = new RandomPicker(typeProbability)
+
 export async function createIncoming() {
-	let rand = Math.random()
+	const messageType = messageTypeProbability[messageTypePicker.pickIndex()]
 
-	for (let i = 0; i < messageTypeProbability.length; i++) {
-		const current = messageTypeProbability[i]
-		if (!current) return
-		const normalizedProbability = current.probability / 100
-
-		if (normalizedProbability < rand) {
-			return current.fn()
-		} else {
-			rand = rand - normalizedProbability
-		}
+	if (messageType) {
+		await messageType.fn()
 	}
 }
 
 export async function createIncomingEmail() {
+	const status = statusProbability[statusPicker.pickIndex()]
+	const bereich = bereichProbability[bereichPicker.pickIndex()]
+	const type = typeProbability[typePicker.pickIndex()]
+
+	if (!status || !bereich || !type) {
+		return
+	}
+
 	const email = await prisma.mail.create({
 		data: {
-			sender: 'markus@oehler.at',
+			sender: faker.internet.email(),
 			message: '',
 			subject: 'Bestellung',
 			recipient: 'bestellung@publicare.at',
@@ -49,21 +154,53 @@ export async function createIncomingEmail() {
 			},
 		},
 	})
+	const data: Prisma.IncomingCreateInput = {
+		mail: { connect: { id: email.id } },
+		source: Source.Email,
+		status: status.status,
+		printed: false,
+	}
 
-	const incoming = await prisma.incoming.create({
-		data: {
-			mail: { connect: { id: email.id } },
-			source: Source.Email,
-			status: IncomingStatus.Faxservice,
-			printed: false,
-		},
+	if (data.status != IncomingStatus.Faxservice) {
+		data.bereich = bereich.bereich
+	}
+
+	if (data.status === IncomingStatus.Weitergeleitet) {
+		data.type = Types.Sonstiges
+	} else if (data.status === IncomingStatus.Geloescht) {
+		data.type = Types.Sonstiges
+	} else if (data.status !== IncomingStatus.Faxservice) {
+		data.bereich = bereich.bereich
+		data.type = type.type
+
+		if (data.type === Types.KVBestaetigung) {
+			data.status = 'Erledigt'
+		}
+
+		if (Math.random() < 0.2) {
+			data.neuanlage = true
+		} else {
+			data.kundennr = faker.finance.accountNumber()
+		}
+	}
+
+	await prisma.incoming.create({
+		data,
 	})
 }
 
 export async function createIncomingFormSubmission() {
+	const status = statusProbability[statusPicker.pickIndex()]
+	const bereich = bereichProbability[bereichPicker.pickIndex()]
+	const type = typeProbability[typePicker.pickIndex()]
+
+	if (!status || !bereich || !type) {
+		return
+	}
+
 	const formSubmission = await prisma.formSubmission.create({
 		data: {
-			message: 'This is some random message',
+			message: 'Dringend! Bitte sofort bearbeiten',
 			document: {
 				create: {
 					type: 'Unknown',
@@ -73,22 +210,54 @@ export async function createIncomingFormSubmission() {
 			},
 		},
 	})
-	const incoming = await prisma.incoming.create({
-		data: {
-			formSubmission: { connect: { id: formSubmission.id } },
-			source: Source.Form,
-			status: IncomingStatus.Faxservice,
-			printed: false,
-		},
+
+	const data: Prisma.IncomingCreateInput = {
+		formSubmission: { connect: { id: formSubmission.id } },
+		source: Source.Form,
+		status: status.status,
+		printed: false,
+		bereich: bereich.bereich,
+	}
+
+	if (data.status === IncomingStatus.Weitergeleitet) {
+		data.type = Types.Sonstiges
+	} else if (data.status === IncomingStatus.Geloescht) {
+		data.type = Types.Sonstiges
+	} else if (data.status != IncomingStatus.Faxdienst) {
+		data.bereich = bereich.bereich
+		data.type = type.type
+
+		if (data.type === Types.KVBestaetigung) {
+			data.status = 'Erledigt'
+		}
+
+		if (Math.random() < 0.2) {
+			data.neuanlage = true
+		} else {
+			data.kundennr = faker.finance.accountNumber()
+		}
+	}
+
+	await prisma.incoming.create({
+		data,
 	})
 }
 
 export async function createIncomingFax() {
+	const status = statusProbability[statusPicker.pickIndex()]
+	const bereich = bereichProbability[bereichPicker.pickIndex()]
+	const type = typeProbability[typePicker.pickIndex()]
+
+	if (!status || !bereich || !type) {
+		return
+	}
+
 	const email = await prisma.mail.create({
 		data: {
-			sender: 'markus@oehler.at',
-			message: '',
-			subject: 'Bestellung',
+			sender: 'no-reply@yuuphone.at',
+			message:
+				'You got new fax:<br />From:     0043767620763550<br />To:        Kundendienst 1 60 Publicare (960)<br />Number of received pages: 1 ',
+			subject: 'New fax from 0043767620763550',
 			recipient: 'bestellung@publicare.at',
 			type: 'fax',
 			attachments: {
@@ -99,12 +268,38 @@ export async function createIncomingFax() {
 			},
 		},
 	})
-	const incoming = await prisma.incoming.create({
-		data: {
-			mail: { connect: { id: email.id } },
-			source: Source.Fax,
-			status: IncomingStatus.Faxservice,
-			printed: false,
-		},
+
+	const data: Prisma.IncomingCreateInput = {
+		mail: { connect: { id: email.id } },
+		source: Source.Fax,
+		printed: false,
+		status: status.status,
+	}
+
+	if (data.status === IncomingStatus.Weitergeleitet) {
+		data.type = Types.Sonstiges
+	} else if (data.status === IncomingStatus.Geloescht) {
+		data.type = Types.Sonstiges
+	} else if (data.status != IncomingStatus.Faxservice) {
+		data.bereich = bereich.bereich
+		data.type = type.type
+
+		if (data.type === Types.KVBestaetigung) {
+			data.status = 'Erledigt'
+		}
+
+		if (Math.random() < 0.2) {
+			data.neuanlage = true
+		} else {
+			data.kundennr = faker.finance.accountNumber()
+		}
+	}
+
+	await prisma.incoming.create({
+		data,
 	})
+}
+
+type Weighted = {
+	weight: number
 }

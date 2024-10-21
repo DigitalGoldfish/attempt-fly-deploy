@@ -228,7 +228,7 @@ model Incoming {
   id             String          @id @default(cuid())
   source         String
   mail           Mail?           @relation(fields: [mailId], references: [id])
-  formSubmission FormSubmission? @relation(fields: [mailId], references: [id])
+  formSubmission FormSubmission? @relation(fields: [formSubmissionId], references: [id])
   document       Document?       @relation("default", fields: [documentId], references: [id])
   documentId     String?         @unique
 
@@ -250,7 +250,8 @@ model Incoming {
   printed   Boolean   @default(false)
   printedAt DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  mailId    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  mailId           String?
+  formSubmissionId String?
 }

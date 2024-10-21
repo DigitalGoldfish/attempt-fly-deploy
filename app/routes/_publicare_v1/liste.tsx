@@ -6,10 +6,6 @@ import {
 	TableHead,
 	TableCell,
 } from '../../components/ui/table.tsx'
-import {
-	exampleData,
-	TableEntry,
-} from '#app/routes/_publicare_v1/exampleData.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { useNavigate } from 'react-router'
 import {
@@ -30,13 +26,20 @@ import {
 	useReactTable,
 } from '@tanstack/react-table'
 import { useState } from 'react'
+import { Incoming } from '@prisma/client'
+import { SerializeFrom } from '@remix-run/node'
 
-const columnHelper = createColumnHelper<TableEntry>()
+const columnHelper = createColumnHelper<SerializeFrom<Incoming>>()
 
 const columns = [
-	columnHelper.accessor('received', {
+	columnHelper.accessor('createdAt', {
 		header: () => 'Erhalten',
 		cell: (info) => info.getValue().toLocaleString(),
+		footer: (info) => info.column.id,
+	}),
+	columnHelper.accessor('status', {
+		header: () => <span>Status</span>,
+		cell: (info) => <Badge>{info.getValue()}</Badge>,
 		footer: (info) => info.column.id,
 	}),
 	columnHelper.accessor('source', {
@@ -44,31 +47,41 @@ const columns = [
 		header: () => <span>Quelle</span>,
 		footer: (info) => info.column.id,
 	}),
+	columnHelper.accessor('type', {
+		cell: (info) => <Badge>{info.getValue()}</Badge>,
+		header: () => <span>Type</span>,
+		footer: (info) => info.column.id,
+	}),
 	columnHelper.accessor('bereich', {
 		header: () => 'Bereich',
+		cell: (info) => <Badge>{info.getValue()}</Badge>,
+		footer: (info) => info.column.id,
+	}),
+	columnHelper.accessor('mitarbeiter', {
+		header: () => 'Mitarbeiter',
 		cell: (info) => info.renderValue(),
 		footer: (info) => info.column.id,
 	}),
-	columnHelper.accessor('bearbeiter', {
-		header: () => <span>Bearbeiter</span>,
-		footer: (info) => info.column.id,
-	}),
-	columnHelper.accessor('kunde', {
-		header: 'Kunde',
-		footer: (info) => info.column.id,
-	}),
-	columnHelper.accessor('status', {
-		header: 'Status',
+	columnHelper.accessor((d) => [d.neuanlage, d.kundennr], {
+		id: 'kundennr',
+		header: () => 'Kundennr.',
+		cell: (info) => {
+			const value = info.getValue()
+			if (value[0]) {
+				return <span>Neuanlage</span>
+			}
+			return value[1]
+		},
 		footer: (info) => info.column.id,
 	}),
 ]
 
-export default function () {
+export default function ({ data }: { data: SerializeFrom<Incoming>[] }) {
 	const navigate = useNavigate()
 
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const table = useReactTable({
-		data: exampleData,
+		data: data,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(), //client side filtering
@@ -108,11 +121,7 @@ export default function () {
 							<TableRow
 								key={row.id}
 								onClick={() => {
-									if (row.original.status === 'Faxdienst') {
-										navigate('/faxdienst')
-									} else {
-										navigate('/kundendienst')
-									}
+									navigate('/detail')
 								}}
 							>
 								{row.getVisibleCells().map((cell) => (
