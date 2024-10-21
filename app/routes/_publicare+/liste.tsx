@@ -5,7 +5,7 @@ import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { z } from 'zod'
 
-export const meta: MetaFunction = () => [{ title: 'Publicare' }]
+export const meta: MetaFunction = () => [{ title: 'Publicare - Liste' }]
 
 export const DateFilterTypes = [
 	'all',

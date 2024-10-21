@@ -51,7 +51,6 @@ export function FilterFancyBox(props: FilterFancyBoxProps) {
 		many_selected: labels?.many_selected ?? 'Optionen ausgewählt',
 	}
 
-	console.log('rerender filter fancy box')
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [open, setOpen] = useState(false)
 	const [filter, setFilter] = useState('')

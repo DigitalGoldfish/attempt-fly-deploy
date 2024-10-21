@@ -9,14 +9,25 @@ const nodes = [
 	{
 		id: 'fax', // required
 		position: { x: 0, y: 400 },
-		data: { label: 'Faxdienst', count: 10, variant: 'blue', size: 'sm' },
+		data: {
+			label: 'Faxdienst',
+			count: 10,
+			variant: 'blue',
+			size: 'sm',
+			href: '/liste?status=Faxdienst',
+		},
 		type: 'number',
 		targetPosition: Position.Right,
 	},
 	{
 		id: 'stoma', // required
 		position: { x: 175, y: 25 }, // required
-		data: { label: 'StoMa/Inko', count: 10, variant: 'blue' }, // required
+		data: {
+			label: 'StoMa/Inko',
+			count: 10,
+			variant: 'blue',
+			href: '/liste?status=Kundendienst&bereich=StoMa',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'stoma',
@@ -24,7 +35,12 @@ const nodes = [
 	{
 		id: 'wund', // required
 		position: { x: 200, y: 400 }, // required
-		data: { label: 'Wundversorgung', count: 10, variant: 'blue' }, // required
+		data: {
+			label: 'Wundversorgung',
+			count: 10,
+			variant: 'blue',
+			href: '/liste?status=Kundendienst&bereich=Wundversorgung',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -34,6 +50,7 @@ const nodes = [
 		position: { x: 200, y: 650 }, // required
 		data: {
 			label: 'Weitergeleitet',
+			href: '/liste?status=Weitergeleitet',
 			icon: (
 				<Forward
 					className="absolute left-0 top-[-10px] h-full leading-none text-white opacity-50"
@@ -50,6 +67,7 @@ const nodes = [
 		position: { x: 200, y: 735 }, // required
 		data: {
 			label: 'Gelöscht',
+			href: '/liste?status=Geloescht',
 			variant: 'deleted',
 			icon: (
 				<Trash2
@@ -65,7 +83,11 @@ const nodes = [
 	{
 		id: 'stoma_kv', // required
 		position: { x: 500, y: 115 }, // required
-		data: { label: 'KV erstellt', variant: 'teal' }, // required
+		data: {
+			label: 'KV erstellt',
+			variant: 'teal',
+			href: '/liste?bereich=StoMa&status=KVbenoetigt',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -73,7 +95,11 @@ const nodes = [
 	{
 		id: 'stoma_kvbest', // required
 		position: { x: 775, y: 115 }, // required
-		data: { label: 'KV bestätigt', variant: 'teal' }, // required
+		data: {
+			label: 'KV bestätigt',
+			variant: 'teal',
+			href: '/liste?bereich=StoMa&status=KVbestaetigt',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -81,7 +107,11 @@ const nodes = [
 	{
 		id: 'stoma_missing', // required
 		position: { x: 500, y: 200 }, // required
-		data: { label: 'Produkt fehlt', variant: 'teal' }, // required
+		data: {
+			label: 'Produkt fehlt',
+			variant: 'teal',
+			href: '/liste?bereich=StoMa&status=FehlendesProdukt',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -89,7 +119,11 @@ const nodes = [
 	{
 		id: 'stoma_nachfrage', // required
 		position: { x: 500, y: 285 }, // required
-		data: { label: 'Nachfrage', variant: 'teal' }, // required
+		data: {
+			label: 'Nachfrage',
+			variant: 'teal',
+			href: '/liste?bereich=StoMa&status=Nachfrage',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -100,6 +134,7 @@ const nodes = [
 		data: {
 			label: 'Storniert',
 			variant: 'deleted',
+			href: '/liste?bereich=StoMa&status=Storniert',
 			icon: (
 				<Trash2
 					className="absolute bottom-0 left-0 h-full text-white opacity-50"
@@ -115,7 +150,11 @@ const nodes = [
 	{
 		id: 'stoma_done', // required
 		position: { x: 1050, y: 65 }, // required
-		data: { label: 'Erledigt', variant: 'green' }, // required
+		data: {
+			label: 'Erledigt',
+			variant: 'green',
+			href: '/liste?bereich=StoMa&status=Erledigt',
+		}, // required
 		sourcePosition: Position.Left,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -124,7 +163,11 @@ const nodes = [
 	{
 		id: 'wund_kv', // required
 		position: { x: 500, y: 450 }, // required
-		data: { label: 'KV erstellt', variant: 'teal' }, // required
+		data: {
+			label: 'KV erstellt',
+			variant: 'teal',
+			href: '/liste?bereich=Wund&status=KVbenoetigt',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -132,7 +175,11 @@ const nodes = [
 	{
 		id: 'wund_kvbest', // required
 		position: { x: 775, y: 450 }, // required
-		data: { label: 'KV bestätigt', variant: 'teal' }, // required
+		data: {
+			label: 'KV bestätigt',
+			variant: 'teal',
+			href: '/liste?bereich=Wund&status=KVbestaetigt',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -140,7 +187,11 @@ const nodes = [
 	{
 		id: 'wund_missing', // required
 		position: { x: 500, y: 535 }, // required
-		data: { label: 'Produkt fehlt', variant: 'teal' }, // required
+		data: {
+			label: 'Produkt fehlt',
+			variant: 'teal',
+			href: '/liste?bereich=Wund&status=FehlendesProdukt',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -148,7 +199,11 @@ const nodes = [
 	{
 		id: 'wund_nachfrage', // required
 		position: { x: 500, y: 620 }, // required
-		data: { label: 'Nachfrage', variant: 'teal' }, // required
+		data: {
+			label: 'Nachfrage',
+			variant: 'teal',
+			href: '/liste?bereich=Wund&status=Nachfrage',
+		}, // required
 		sourcePosition: Position.Right,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -160,6 +215,7 @@ const nodes = [
 		data: {
 			label: 'Storniert',
 			variant: 'deleted',
+			href: '/liste?bereich=Wund&status=Storniert',
 			icon: (
 				<Trash2
 					className="absolute bottom-0 left-0 h-full text-white opacity-50"
@@ -175,7 +231,11 @@ const nodes = [
 	{
 		id: 'wund_done', // required
 		position: { x: 1050, y: 400 }, // required
-		data: { label: 'Erledigt', variant: 'green' }, // required
+		data: {
+			label: 'Erledigt',
+			variant: 'green',
+			href: '/liste?bereich=Wund&status=Erledigt',
+		}, // required
 		sourcePosition: Position.Left,
 		targetPosition: Position.Left,
 		type: 'number',
@@ -417,7 +477,7 @@ export function Visualisation() {
 				edgeTypes={{ custom: CustomEdge }}
 				nodeTypes={{ number: NumberNode, stoma: StomaNode }}
 				panOnDrag={false}
-				preventScrolling={true}
+				preventScrolling={false}
 				nodesDraggable={false}
 				nodesFocusable={false}
 				zoomOnScroll={false}

@@ -61,7 +61,7 @@ const messageTypeProbability = [
 const statusProbability = [
 	{
 		name: 'Faxdienst',
-		status: IncomingStatus.Faxservice,
+		status: IncomingStatus.Faxdienst,
 		weight: 150,
 	},
 	{
@@ -98,6 +98,11 @@ const statusProbability = [
 		name: 'Nachfrage',
 		status: IncomingStatus.Nachfrage,
 		weight: 30,
+	},
+	{
+		name: 'Storniert',
+		status: IncomingStatus.Storniert,
+		weight: 40,
 	},
 	{
 		name: 'Fehlendes Produkt',
@@ -161,7 +166,7 @@ export async function createIncomingEmail() {
 		printed: false,
 	}
 
-	if (data.status != IncomingStatus.Faxservice) {
+	if (data.status != IncomingStatus.Faxdienst) {
 		data.bereich = bereich.bereich
 	}
 
@@ -169,7 +174,7 @@ export async function createIncomingEmail() {
 		data.type = Types.Sonstiges
 	} else if (data.status === IncomingStatus.Geloescht) {
 		data.type = Types.Sonstiges
-	} else if (data.status !== IncomingStatus.Faxservice) {
+	} else if (data.status !== IncomingStatus.Faxdienst) {
 		data.bereich = bereich.bereich
 		data.type = type.type
 
@@ -280,7 +285,7 @@ export async function createIncomingFax() {
 		data.type = Types.Sonstiges
 	} else if (data.status === IncomingStatus.Geloescht) {
 		data.type = Types.Sonstiges
-	} else if (data.status != IncomingStatus.Faxservice) {
+	} else if (data.status != IncomingStatus.Faxdienst) {
 		data.bereich = bereich.bereich
 		data.type = type.type
 

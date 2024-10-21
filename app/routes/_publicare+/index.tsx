@@ -6,7 +6,7 @@ import { Input } from '#app/components/ui/input.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
-export const meta: MetaFunction = () => [{ title: 'Publicare' }]
+export const meta: MetaFunction = () => [{ title: 'Publicare - Dashboard' }]
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -22,7 +22,7 @@ export default function Index() {
 						<Link
 							to={'/faxdienst'}
 							className={
-								'hover:bg-pcblue-500 bg-pcblue-default relative grid aspect-[2/1] w-full rounded-2xl p-4 text-white transition hover:-rotate-6'
+								'relative grid aspect-[2/1] w-full rounded-2xl bg-pcblue-default p-4 text-white transition hover:-rotate-6 hover:bg-pcblue-500'
 							}
 						>
 							<span className="uppervasel text-h4 font-normal uppercase">
@@ -33,7 +33,7 @@ export default function Index() {
 						<Link
 							to={'/stoma'}
 							className={
-								'hover:bg-pcblue-500 bg-pcblue-default relative grid aspect-[2/1] w-full rounded-2xl p-4 text-white transition hover:-rotate-6'
+								'relative grid aspect-[2/1] w-full rounded-2xl bg-pcblue-default p-4 text-white transition hover:-rotate-6 hover:bg-pcblue-500'
 							}
 						>
 							<span className="leading-0 text-h4 font-normal uppercase">
@@ -44,7 +44,7 @@ export default function Index() {
 						<Link
 							to={'/wundversorgung'}
 							className={
-								'hover:bg-pcblue-500 bg-pcblue-default relative grid aspect-[2/1] w-full rounded-2xl p-4 text-white transition hover:-rotate-6'
+								'relative grid aspect-[2/1] w-full rounded-2xl bg-pcblue-default p-4 text-white transition hover:-rotate-6 hover:bg-pcblue-500'
 							}
 						>
 							<span className="leading-0 text-h4 font-normal uppercase">
@@ -55,7 +55,7 @@ export default function Index() {
 						<Link
 							to={'/liste'}
 							className={
-								'bg-pcteal-default hover:bg-pcteal-700 relative grid aspect-[2/1] w-full rounded-2xl p-4 transition hover:-rotate-6'
+								'relative grid aspect-[2/1] w-full rounded-2xl bg-pcteal-default p-4 transition hover:-rotate-6 hover:bg-pcteal-700'
 							}
 						>
 							<div className="flex h-full items-center justify-center text-h4 font-normal uppercase text-white">
@@ -65,7 +65,7 @@ export default function Index() {
 						<Link
 							to={'/admin'}
 							className={
-								'bg-pcteal-default hover:bg-pcteal-700 relative grid aspect-[2/1] w-full rounded-2xl p-4 transition hover:-rotate-6'
+								'relative grid aspect-[2/1] w-full rounded-2xl bg-pcteal-default p-4 transition hover:-rotate-6 hover:bg-pcteal-700'
 							}
 						>
 							<div className="flex h-full items-center justify-center text-h4 font-normal uppercase text-white">
@@ -75,7 +75,7 @@ export default function Index() {
 						<Link
 							to={'/admin'}
 							className={
-								'bg-pcteal-default hover:bg-pcteal-700 relative grid aspect-[2/1] w-full rounded-2xl p-4 transition hover:-rotate-6'
+								'relative grid aspect-[2/1] w-full rounded-2xl bg-pcteal-default p-4 transition hover:-rotate-6 hover:bg-pcteal-700'
 							}
 						>
 							<div className="flex h-full items-center justify-center text-h4 font-normal uppercase text-white">
@@ -85,7 +85,7 @@ export default function Index() {
 					</div>
 				</div>
 				<div className="col-span-2">
-					<div className="border-pcblue-600 flex h-full flex-col gap-6 rounded-2xl border p-4">
+					<div className="flex h-full flex-col gap-6 rounded-2xl border border-pcblue-600 p-4">
 						<h2 className="bold text-h4">Schnellsuche</h2>
 						<div className="flex items-center gap-8">
 							Kundennr.:

@@ -160,7 +160,7 @@ const values: Record<string, Selectable[]> = {
 	],
 	bereich: [
 		{ value: 'StoMa', label: 'StoMa' },
-		{ value: 'Wundversorgung', label: 'Wundversorgung' },
+		{ value: 'Wund', label: 'Wund' },
 	],
 	bearbeiter: [
 		{ value: 'all', label: 'Alle' },
