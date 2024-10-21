@@ -166,7 +166,13 @@ export async function createIncomingEmail() {
 		printed: false,
 	}
 
-	if (data.status != IncomingStatus.Faxdienst) {
+	if (
+		![
+			IncomingStatus.Faxdienst,
+			IncomingStatus.Weitergeleitet,
+			IncomingStatus.Geloescht,
+		].includes(data.status)
+	) {
 		data.bereich = bereich.bereich
 	}
 
@@ -221,7 +227,16 @@ export async function createIncomingFormSubmission() {
 		source: Source.Form,
 		status: status.status,
 		printed: false,
-		bereich: bereich.bereich,
+	}
+
+	if (
+		![
+			IncomingStatus.Faxdienst,
+			IncomingStatus.Weitergeleitet,
+			IncomingStatus.Geloescht,
+		].includes(data.status)
+	) {
+		data.bereich = bereich.bereich
 	}
 
 	if (data.status === IncomingStatus.Weitergeleitet) {
@@ -229,7 +244,6 @@ export async function createIncomingFormSubmission() {
 	} else if (data.status === IncomingStatus.Geloescht) {
 		data.type = Types.Sonstiges
 	} else if (data.status != IncomingStatus.Faxdienst) {
-		data.bereich = bereich.bereich
 		data.type = type.type
 
 		if (data.type === Types.KVBestaetigung) {
@@ -281,12 +295,21 @@ export async function createIncomingFax() {
 		status: status.status,
 	}
 
+	if (
+		![
+			IncomingStatus.Faxdienst,
+			IncomingStatus.Weitergeleitet,
+			IncomingStatus.Geloescht,
+		].includes(data.status)
+	) {
+		data.bereich = bereich.bereich
+	}
+
 	if (data.status === IncomingStatus.Weitergeleitet) {
 		data.type = Types.Sonstiges
 	} else if (data.status === IncomingStatus.Geloescht) {
 		data.type = Types.Sonstiges
 	} else if (data.status != IncomingStatus.Faxdienst) {
-		data.bereich = bereich.bereich
 		data.type = type.type
 
 		if (data.type === Types.KVBestaetigung) {

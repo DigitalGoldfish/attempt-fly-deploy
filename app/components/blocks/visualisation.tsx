@@ -5,252 +5,12 @@ import { NumberNode } from '#app/components/reactflow/CustomNode.tsx'
 import { Forward, Trash2 } from 'lucide-react'
 import { StomaNode } from '#app/components/reactflow/StomaNode.tsx'
 
-const nodes = [
-	{
-		id: 'fax', // required
-		position: { x: 0, y: 400 },
-		data: {
-			label: 'Faxdienst',
-			count: 10,
-			variant: 'blue',
-			size: 'sm',
-			href: '/liste?status=Faxdienst',
-		},
-		type: 'number',
-		targetPosition: Position.Right,
-	},
-	{
-		id: 'stoma', // required
-		position: { x: 175, y: 25 }, // required
-		data: {
-			label: 'StoMa/Inko',
-			count: 10,
-			variant: 'blue',
-			href: '/liste?status=Kundendienst&bereich=StoMa',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'stoma',
-	},
-	{
-		id: 'wund', // required
-		position: { x: 200, y: 400 }, // required
-		data: {
-			label: 'Wundversorgung',
-			count: 10,
-			variant: 'blue',
-			href: '/liste?status=Kundendienst&bereich=Wundversorgung',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'forwarded', // required
-		position: { x: 200, y: 650 }, // required
-		data: {
-			label: 'Weitergeleitet',
-			href: '/liste?status=Weitergeleitet',
-			icon: (
-				<Forward
-					className="absolute left-0 top-[-10px] h-full leading-none text-white opacity-50"
-					size={60}
-				/>
-			),
-		}, // required
-		sourcePosition: Position.Left,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'deleted', // required
-		position: { x: 200, y: 735 }, // required
-		data: {
-			label: 'Gelöscht',
-			href: '/liste?status=Geloescht',
-			variant: 'deleted',
-			icon: (
-				<Trash2
-					className="absolute bottom-0 left-0 h-full text-white opacity-50"
-					size={60}
-				/>
-			),
-		}, // required
-		sourcePosition: Position.Left,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'stoma_kv', // required
-		position: { x: 500, y: 115 }, // required
-		data: {
-			label: 'KV erstellt',
-			variant: 'teal',
-			href: '/liste?bereich=StoMa&status=KVbenoetigt',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'stoma_kvbest', // required
-		position: { x: 775, y: 115 }, // required
-		data: {
-			label: 'KV bestätigt',
-			variant: 'teal',
-			href: '/liste?bereich=StoMa&status=KVbestaetigt',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'stoma_missing', // required
-		position: { x: 500, y: 200 }, // required
-		data: {
-			label: 'Produkt fehlt',
-			variant: 'teal',
-			href: '/liste?bereich=StoMa&status=FehlendesProdukt',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'stoma_nachfrage', // required
-		position: { x: 500, y: 285 }, // required
-		data: {
-			label: 'Nachfrage',
-			variant: 'teal',
-			href: '/liste?bereich=StoMa&status=Nachfrage',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'stoma_storniert', // required
-		position: { x: 200, y: 220 }, // required
-		data: {
-			label: 'Storniert',
-			variant: 'deleted',
-			href: '/liste?bereich=StoMa&status=Storniert',
-			icon: (
-				<Trash2
-					className="absolute bottom-0 left-0 h-full text-white opacity-50"
-					size={60}
-				/>
-			),
-		}, // required
-		sourcePosition: Position.Top,
-		targetPosition: Position.Top,
-		sourceHandle: 'top',
-		type: 'number',
-	},
-	{
-		id: 'stoma_done', // required
-		position: { x: 1050, y: 65 }, // required
-		data: {
-			label: 'Erledigt',
-			variant: 'green',
-			href: '/liste?bereich=StoMa&status=Erledigt',
-		}, // required
-		sourcePosition: Position.Left,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-
-	{
-		id: 'wund_kv', // required
-		position: { x: 500, y: 450 }, // required
-		data: {
-			label: 'KV erstellt',
-			variant: 'teal',
-			href: '/liste?bereich=Wund&status=KVbenoetigt',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'wund_kvbest', // required
-		position: { x: 775, y: 450 }, // required
-		data: {
-			label: 'KV bestätigt',
-			variant: 'teal',
-			href: '/liste?bereich=Wund&status=KVbestaetigt',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'wund_missing', // required
-		position: { x: 500, y: 535 }, // required
-		data: {
-			label: 'Produkt fehlt',
-			variant: 'teal',
-			href: '/liste?bereich=Wund&status=FehlendesProdukt',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-	{
-		id: 'wund_nachfrage', // required
-		position: { x: 500, y: 620 }, // required
-		data: {
-			label: 'Nachfrage',
-			variant: 'teal',
-			href: '/liste?bereich=Wund&status=Nachfrage',
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-
-	{
-		id: 'wund_storniert', // required
-		position: { x: 200, y: 520 }, // required
-		data: {
-			label: 'Storniert',
-			variant: 'deleted',
-			href: '/liste?bereich=Wund&status=Storniert',
-			icon: (
-				<Trash2
-					className="absolute bottom-0 left-0 h-full text-white opacity-50"
-					size={60}
-				/>
-			),
-		}, // required
-		sourcePosition: Position.Right,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-
-	{
-		id: 'wund_done', // required
-		position: { x: 1050, y: 400 }, // required
-		data: {
-			label: 'Erledigt',
-			variant: 'green',
-			href: '/liste?bereich=Wund&status=Erledigt',
-		}, // required
-		sourcePosition: Position.Left,
-		targetPosition: Position.Left,
-		type: 'number',
-	},
-]
-
 const edges: Edge[] = [
 	{
 		id: 'fax-wund',
 		source: 'fax',
 		target: 'wund',
 		sourceHandle: 'right',
-		data: {
-			label: '1500',
-		},
 		type: 'custom',
 	},
 	{
@@ -258,9 +18,6 @@ const edges: Edge[] = [
 		sourceHandle: 'top',
 		source: 'fax',
 		target: 'stoma',
-		data: {
-			label: '100',
-		},
 		type: 'custom',
 	},
 	{
@@ -269,9 +26,6 @@ const edges: Edge[] = [
 		target: 'forwarded',
 		type: 'custom',
 		sourceHandle: 'bottom',
-		data: {
-			label: '20',
-		},
 	},
 	{
 		id: 'fax-deleted',
@@ -279,9 +33,6 @@ const edges: Edge[] = [
 		target: 'deleted',
 		sourceHandle: 'bottom',
 		type: 'custom',
-		data: {
-			label: '10',
-		},
 	},
 	{
 		id: 'stoma_missing-stoma_done',
@@ -463,7 +214,321 @@ const edges: Edge[] = [
 	},
 ]
 
-export function Visualisation() {
+export function Visualisation({
+	counts,
+}: {
+	counts: {
+		count: number
+		bereich: string
+		status: string
+	}[]
+}) {
+	const nodes = [
+		{
+			id: 'fax', // required
+			position: { x: 0, y: 400 },
+			data: {
+				label: 'Faxdienst',
+				count:
+					counts.find((count) => count.status === 'Faxdienst')?.count || -1,
+				variant: 'blue',
+				size: 'sm',
+				href: '/liste?status=Faxdienst',
+			},
+			type: 'number',
+			targetPosition: Position.Right,
+		},
+		{
+			id: 'stoma', // required
+			position: { x: 175, y: 25 }, // required
+			data: {
+				label: 'StoMa/Inko',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'Kundendienst' && count.bereich === 'StoMa',
+					)?.count || 0,
+				variant: 'blue',
+				href: '/liste?status=Kundendienst&bereich=StoMa',
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'stoma',
+		},
+		{
+			id: 'wund', // required
+			position: { x: 200, y: 400 }, // required
+			data: {
+				label: 'Wundversorgung',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'Kundendienst' && count.bereich === 'Wund',
+					)?.count || 0,
+				variant: 'blue',
+				href: '/liste?status=Kundendienst&bereich=Wundversorgung',
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'forwarded', // required
+			position: { x: 200, y: 650 }, // required
+			data: {
+				label: 'Weitergeleitet',
+				href: '/liste?status=Weitergeleitet',
+				count:
+					counts.find((count) => count.status === 'Weitergeleitet')?.count || 0,
+				icon: (
+					<Forward
+						className="absolute left-0 top-[-10px] h-full leading-none text-white opacity-50"
+						size={60}
+					/>
+				),
+			}, // required
+			sourcePosition: Position.Left,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'deleted', // required
+			position: { x: 200, y: 735 }, // required
+			data: {
+				label: 'Gelöscht',
+				href: '/liste?status=Geloescht',
+				variant: 'deleted',
+				count:
+					counts.find((count) => count.status === 'Geloescht')?.count || -1,
+				icon: (
+					<Trash2
+						className="absolute bottom-0 left-0 h-full text-white opacity-50"
+						size={60}
+					/>
+				),
+			}, // required
+			sourcePosition: Position.Left,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'stoma_kv', // required
+			position: { x: 500, y: 115 }, // required
+			data: {
+				label: 'KV erstellt',
+				variant: 'teal',
+				href: '/liste?bereich=StoMa&status=KVbenoetigt',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'KVbenoetigt' && count.bereich === 'StoMa',
+					)?.count || 0,
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'stoma_kvbest', // required
+			position: { x: 775, y: 115 }, // required
+			data: {
+				label: 'KV bestätigt',
+				variant: 'teal',
+				href: '/liste?bereich=StoMa&status=KVbestaetigt',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'KVbestaetigt' && count.bereich === 'StoMa',
+					)?.count || 0,
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'stoma_missing', // required
+			position: { x: 500, y: 200 }, // required
+			data: {
+				label: 'Produkt fehlt',
+				variant: 'teal',
+				href: '/liste?bereich=StoMa&status=FehlendesProdukt',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'FehlendesProdukt' && count.bereich === 'StoMa',
+					)?.count || 0,
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'stoma_nachfrage', // required
+			position: { x: 500, y: 285 }, // required
+			data: {
+				label: 'Nachfrage',
+				variant: 'teal',
+				href: '/liste?bereich=StoMa&status=Nachfrage',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'Nachfrage' && count.bereich === 'StoMa',
+					)?.count || 0,
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'stoma_storniert', // required
+			position: { x: 200, y: 220 }, // required
+			data: {
+				label: 'Storniert',
+				variant: 'deleted',
+				href: '/liste?bereich=StoMa&status=Storniert',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'Storniert' && count.bereich === 'StoMa',
+					)?.count || 0,
+				icon: (
+					<Trash2
+						className="absolute bottom-0 left-0 h-full text-white opacity-50"
+						size={60}
+					/>
+				),
+			}, // required
+			sourcePosition: Position.Top,
+			targetPosition: Position.Top,
+			sourceHandle: 'top',
+			type: 'number',
+		},
+		{
+			id: 'stoma_done', // required
+			position: { x: 1050, y: 65 }, // required
+			data: {
+				label: 'Erledigt',
+				variant: 'green',
+				href: '/liste?bereich=StoMa&status=Erledigt',
+				count:
+					counts.find(
+						(count) => count.status === 'Erledigt' && count.bereich === 'StoMa',
+					)?.count || 0,
+			}, // required
+			sourcePosition: Position.Left,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+
+		{
+			id: 'wund_kv', // required
+			position: { x: 500, y: 450 }, // required
+			data: {
+				label: 'KV erstellt',
+				variant: 'teal',
+				href: '/liste?bereich=Wund&status=KVbenoetigt',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'KVbenoetigt' && count.bereich === 'Wund',
+					)?.count || 0,
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'wund_kvbest', // required
+			position: { x: 775, y: 450 }, // required
+			data: {
+				label: 'KV bestätigt',
+				variant: 'teal',
+				href: '/liste?bereich=Wund&status=KVbestaetigt',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'KVbestaetigt' && count.bereich === 'Wund',
+					)?.count || 0,
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'wund_missing', // required
+			position: { x: 500, y: 535 }, // required
+			data: {
+				label: 'Produkt fehlt',
+				variant: 'teal',
+				href: '/liste?bereich=Wund&status=FehlendesProdukt',
+				count:
+					counts.find(
+						(count) =>
+							count.status === 'FehlendesProdukt' && count.bereich === 'Wund',
+					)?.count || 0,
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+		{
+			id: 'wund_nachfrage', // required
+			position: { x: 500, y: 620 }, // required
+			data: {
+				label: 'Nachfrage',
+				variant: 'teal',
+				count:
+					counts.find(
+						(count) => count.status === 'Nachfrage' && count.bereich === 'Wund',
+					)?.count || 0,
+				href: '/liste?bereich=Wund&status=Nachfrage',
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+
+		{
+			id: 'wund_storniert', // required
+			position: { x: 200, y: 520 }, // required
+			data: {
+				label: 'Storniert',
+				count:
+					counts.find(
+						(count) => count.status === 'Storniert' && count.bereich === 'Wund',
+					)?.count || 0,
+				variant: 'deleted',
+				href: '/liste?bereich=Wund&status=Storniert',
+				icon: (
+					<Trash2
+						className="absolute bottom-0 left-0 h-full text-white opacity-50"
+						size={60}
+					/>
+				),
+			}, // required
+			sourcePosition: Position.Right,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+
+		{
+			id: 'wund_done', // required
+			position: { x: 1050, y: 400 }, // required
+			data: {
+				label: 'Erledigt',
+				variant: 'green',
+				count:
+					counts.find(
+						(count) => count.status === 'Erledigt' && count.bereich === 'Wund',
+					)?.count || 0,
+				href: '/liste?bereich=Wund&status=Erledigt',
+			}, // required
+			sourcePosition: Position.Left,
+			targetPosition: Position.Left,
+			type: 'number',
+		},
+	]
+
 	return (
 		<div className="relative h-[1000px] w-full rounded-2xl border">
 			<h2 className="absolute left-4 top-4 text-h3 font-normal">

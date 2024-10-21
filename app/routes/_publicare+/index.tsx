@@ -1,19 +1,35 @@
-import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
-import { Link } from '@remix-run/react'
+import { json, LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
+import { Link, useLoaderData } from '@remix-run/react'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Visualisation } from '#app/components/blocks/visualisation.tsx'
 import { Input } from '#app/components/ui/input.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
+import { prisma } from '#app/utils/db.server.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Dashboard' }]
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
-	return null
+
+	const counts = await prisma.incoming.groupBy({
+		by: ['bereich', 'status'],
+		_count: {
+			_all: true,
+		},
+	})
+	console.log(counts)
+	return json({
+		counts: counts.map((count) => ({
+			count: count._count._all,
+			bereich: count.bereich,
+			status: count.status,
+		})),
+	})
 }
 
 export default function Index() {
+	const { counts } = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout>
 			<div className="grid grid-cols-5 gap-8">
@@ -101,7 +117,7 @@ export default function Index() {
 					</div>
 				</div>
 				<div className={'col-span-5'}>
-					<Visualisation />
+					<Visualisation counts={counts} />
 				</div>
 			</div>
 		</DefaultLayout>
