@@ -96,6 +96,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 							id: true,
 							name: true,
 							username: true,
+							kuerzel: true,
+							status: true,
 							image: { select: { id: true } },
 							roles: {
 								select: {
@@ -258,11 +260,19 @@ export function UserDropdown() {
 						onClick={(e) => e.preventDefault()}
 						className="flex items-center gap-2 !p-0"
 					>
-						<img
-							className="h-12 w-12 rounded-full object-cover"
-							alt={user.name ?? user.username}
-							src={getUserImgSrc(user.image?.id)}
-						/>
+						{user.image?.id ? (
+							<img
+								className="h-12 w-12 rounded-full object-cover"
+								alt={user.name ?? user.username}
+								src={getUserImgSrc(user.image?.id)}
+							/>
+						) : (
+							<span className="relative flex h-12 w-12 shrink-0 overflow-hidden rounded-full">
+								<span className="flex h-full w-full items-center justify-center rounded-full bg-muted text-body-md">
+									{user.kuerzel}
+								</span>
+							</span>
+						)}
 					</Link>
 				</Button>
 			</DropdownMenuTrigger>

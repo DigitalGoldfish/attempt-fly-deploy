@@ -65,13 +65,13 @@ const columns = [
 		},
 	}),
 	columnHelper.accessor('username', {
-		header: 'Username',
-	}) /*
-	columnHelper.accessor('shortname', {
-		header: 'ABBR',
+		header: 'Benutzername',
+	}),
+	columnHelper.accessor('kuerzel', {
+		header: 'Kürzel',
 		cell: (info) => (
 			<span className="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
-				<span className="flex h-full w-full items-center justify-center rounded-full bg-muted">
+				<span className="flex h-full w-full items-center justify-center rounded-full bg-muted text-body-md">
 					{info.getValue()}
 				</span>
 			</span>
@@ -79,19 +79,19 @@ const columns = [
 		meta: {
 			className: 'w-[50px]',
 		},
-	}), */,
+	}),
 	columnHelper.accessor((row) => row, {
-		header: 'Full Name & Email',
+		header: 'Name & E-Mail',
 		cell: (info) => (
 			<>
 				{info.getValue().name}
 				<br />
-				<span className="text-secondary">{info.getValue().email}</span>
+				<span className="text-pcteal-default">{info.getValue().email}</span>
 			</>
 		),
 	}),
 	columnHelper.accessor('roles', {
-		header: 'Roles',
+		header: 'Rollen',
 		cell: (info) => (
 			<div className="flex max-w-[250px] flex-wrap gap-1">
 				{info.getValue().map((role) => (
@@ -100,15 +100,15 @@ const columns = [
 			</div>
 		),
 	}),
-	/* columnHelper.accessor('status', {
+	columnHelper.accessor('status', {
 		header: 'Status',
 		cell: (info) => UserStatusBadge[info.getValue()],
 		meta: {
 			align: 'right',
 		},
-	}), */
+	}),
 	columnHelper.accessor('createdAt', {
-		header: 'Created',
+		header: 'Erstellt',
 		sortingFn: 'datetime',
 		cell: DateTimeCell,
 		meta: {
@@ -116,7 +116,7 @@ const columns = [
 		},
 	}),
 	columnHelper.accessor('updatedAt', {
-		header: 'Updated',
+		header: 'Aktualisiert',
 		sortingFn: 'datetime',
 		cell: DateTimeCell,
 		meta: {
@@ -134,7 +134,7 @@ const columns = [
 		meta: {
 			align: 'right',
 		},
-		header: () => 'Actions',
+		header: () => '',
 	}),
 ]
 

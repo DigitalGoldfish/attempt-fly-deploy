@@ -8,6 +8,8 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { cva } from 'class-variance-authority'
 import { DashboardTile } from '#app/components/dashboard-tile.js'
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Dashboard' }]
 
@@ -32,6 +34,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Dashboard() {
 	const { counts } = useLoaderData<typeof loader>()
+	const [kundennr, setKundennr] = useState('')
+	const [bestellnr, setBestellnr] = useState('')
+	const navigate = useNavigate()
 	return (
 		<DefaultLayout>
 			<div className="grid grid-cols-5 gap-4">
@@ -48,13 +53,25 @@ export default function Dashboard() {
 					<h2 className="bold text-h4">Schnellsuche</h2>
 					<div className="flex items-center gap-8">
 						Kundennr.:
-						<Input />
+						<Input
+							onChange={(e) => setKundennr(e.target.value)}
+							value={kundennr}
+						/>
 					</div>
 					<div className="flex items-center gap-8">
 						Bestellnr.:
-						<Input />
+						<Input
+							onChange={(e) => setBestellnr(e.target.value)}
+							value={bestellnr}
+						/>
 					</div>
-					<Button variant="pcblue" className="uppercase">
+					<Button
+						variant="pcblue"
+						className="uppercase"
+						onClick={() => {
+							navigate(`/liste?kundenr=${kundennr}&bestellnr=${bestellnr}`)
+						}}
+					>
 						Suchen
 					</Button>
 				</div>

@@ -58,9 +58,7 @@ export function FilterWidget(props: {
 
 	const onSelect = useCallback(
 		(value: string[]) => {
-			console.log('onselect', id, value)
 			if (value.length === 0 && searchParams.has(id)) {
-				console.log(id, value, searchParams.has(id))
 				searchParams.delete(id)
 				setSearchParams(searchParams)
 			} else if (value.length > 0) {
@@ -70,8 +68,6 @@ export function FilterWidget(props: {
 					setSearchParams(searchParams)
 				}
 			}
-			console.log('onselect set search Params')
-			// setSearchParams(searchParams)
 		},
 		[id, searchParams, setSearchParams],
 	)
