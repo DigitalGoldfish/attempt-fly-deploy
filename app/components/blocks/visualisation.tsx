@@ -530,13 +530,10 @@ export function Visualisation({
 	]
 
 	return (
-		<div className="relative h-[1000px] w-full rounded-2xl border">
-			<h2 className="absolute left-4 top-4 text-h3 font-normal">
-				Aktueller Status
-			</h2>
+		<div className="relative h-[900px] w-full">
 			<ReactFlow
 				fitView={true}
-				fitViewOptions={{ padding: 0.1 }}
+				fitViewOptions={{ padding: 0 }}
 				nodes={nodes}
 				edges={edges.map((edge) => ({ ...edge, animated: true }))}
 				edgeTypes={{ custom: CustomEdge }}
@@ -546,6 +543,9 @@ export function Visualisation({
 				nodesDraggable={false}
 				nodesFocusable={false}
 				zoomOnScroll={false}
+				proOptions={{
+					hideAttribution: true,
+				}}
 			></ReactFlow>
 		</div>
 	)

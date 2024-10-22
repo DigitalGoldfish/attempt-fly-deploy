@@ -42,7 +42,7 @@ export default defineConfig({
 			? null
 			: remix({
 					future: {
-						unstable_singleFetch: true,
+						v3_singleFetch: true,
 					},
 					ignoredRouteFiles: ['**/*'],
 					serverModuleFormat: 'esm',

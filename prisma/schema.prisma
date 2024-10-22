@@ -11,10 +11,12 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  username String  @unique
-  name     String?
+  id       String @id @default(cuid())
+  email    String @unique
+  username String @unique
+  name     String
+  kuerzel  String @default("")
+  status   String @default("")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -25,6 +27,23 @@ model User {
   roles       Role[]
   sessions    Session[]
   connections Connection[]
+}
+
+model Bereich {
+  id    String @id @default(cuid())
+  name  String
+  label String
+
+  tags Tag[]
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  label String
+  type  String
+
+  bereich   Bereich? @relation(fields: [bereichId], references: [id])
+  bereichId String?
 }
 
 model Note {
@@ -114,6 +133,7 @@ model Permission {
 model Role {
   id          String @id @default(cuid())
   name        String @unique
+  label       String @default("")
   description String @default("")
 
   createdAt DateTime @default(now())
