@@ -1,10 +1,9 @@
 import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link, Outlet } from '@remix-run/react'
-import Liste from '../_publicare_v1/liste.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Counter } from '#app/components/layout/counter.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import Bestelldetails from '#app/routes/_publicare+/detail.tsx'
+import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { List } from 'lucide-react'
 import React from 'react'
@@ -18,7 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return null
 }
 
-export default function Stoma() {
+export default function Wundversorgung() {
 	return (
 		<DefaultLayout
 			pageTitle="Bestellungen Wundversorgung"

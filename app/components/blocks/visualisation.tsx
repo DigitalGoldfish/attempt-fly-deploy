@@ -219,7 +219,7 @@ export function Visualisation({
 }: {
 	counts: {
 		count: number
-		bereich: string
+		bereich: string | null
 		status: string
 	}[]
 }) {

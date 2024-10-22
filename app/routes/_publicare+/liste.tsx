@@ -69,7 +69,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { incomings }
 }
 
-export default function Faxdienst() {
+export default function Bestellungsliste() {
 	const { incomings } = useLoaderData<typeof loader>()
 
 	return (

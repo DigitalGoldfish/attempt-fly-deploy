@@ -28,7 +28,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	})
 }
 
-export default function Index() {
+export default function Dashboard() {
 	const { counts } = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout>
