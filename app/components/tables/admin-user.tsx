@@ -42,8 +42,8 @@ export type UserTableModel = {
 	email: string
 	username: string
 	name: string | null
-	// shortname: string
-	// status: UserStatus
+	kuerzel: string
+	status: UserStatus
 	roles: string[]
 	createdAt: Date
 	updatedAt: Date
@@ -127,8 +127,10 @@ const columns = [
 		id: 'actions',
 		cell: (info) => (
 			<TableActionCell>
-				<EditButton target={`/admin/users/edit/${info.getValue()}`} />
-				<DeleteButton target={`/admin/users/delete/${info.getValue()}`} />
+				<EditButton target={`/admin/benutzer/edit/${info.getValue()}`} />
+				<DeleteButton
+					target={`/admin/benutzer/change-status/${info.getValue()}`}
+				/>
 			</TableActionCell>
 		),
 		meta: {

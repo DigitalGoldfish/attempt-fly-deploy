@@ -38,6 +38,16 @@ export function DeleteButton({ target }: { target: string }) {
 	)
 }
 
+export function ChangeStatusButton({ target }: { target: string }) {
+	return (
+		<Button variant="destructive" size="icon" asChild>
+			<Link to={target} title="Delete">
+				<Icon name="trash" size="md" />
+			</Link>
+		</Button>
+	)
+}
+
 export function CreateExperimentButton({ target }: { target: string }) {
 	return (
 		<TooltipProvider>

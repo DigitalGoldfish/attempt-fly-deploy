@@ -35,6 +35,9 @@ model Bereich {
   label String
 
   tags Tag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Tag {
@@ -44,6 +47,9 @@ model Tag {
 
   bereich   Bereich? @relation(fields: [bereichId], references: [id])
   bereichId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Note {

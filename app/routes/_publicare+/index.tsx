@@ -22,7 +22,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			_all: true,
 		},
 	})
-	console.log(counts)
 	return json({
 		counts: counts.map((count) => ({
 			count: count._count._all,
@@ -40,13 +39,37 @@ export default function Dashboard() {
 	return (
 		<DefaultLayout>
 			<div className="grid grid-cols-5 gap-4">
-				<DashboardTile to={'/faxdienst'} color="blue" count={20}>
+				<DashboardTile
+					to={'/faxdienst'}
+					color="blue"
+					count={
+						counts.find((count) => count.status === 'Faxdienst')?.count || 0
+					}
+				>
 					Faxdienst
 				</DashboardTile>
-				<DashboardTile to={'/stoma'} color="blue" count={20}>
+				<DashboardTile
+					to={'/stoma'}
+					color="blue"
+					count={
+						counts.find(
+							(count) =>
+								count.status === 'Kundendienst' && count.bereich === 'StoMa',
+						)?.count || 0
+					}
+				>
 					StoMa/INKO
 				</DashboardTile>
-				<DashboardTile to={'/wundversorgung'} color="blue" count={20}>
+				<DashboardTile
+					to={'/wundversorgung'}
+					color="blue"
+					count={
+						counts.find(
+							(count) =>
+								count.status === 'Kundendienst' && count.bereich === 'Wund',
+						)?.count || 0
+					}
+				>
 					Wundvers.
 				</DashboardTile>
 				<div className="col-span-2 row-span-2 flex h-full flex-col gap-6 rounded-2xl border border-pcblue-600 p-4">

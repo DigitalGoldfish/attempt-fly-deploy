@@ -33,14 +33,17 @@ const columns = [
 		},
 	}),
 	columnHelper.accessor((row) => row, {
+		id: 'name',
 		header: 'Name',
-		cell: (info) => (
-			<>
-				{info.getValue().label}
-				<br />
-				<span className="text-teal-default"> {info.getValue().name}</span>
-			</>
-		),
+		cell: (info) => <>{info.getValue().label}</>,
+		sortingFn: (a, b) => {
+			return a.original.label.localeCompare(b.original.label)
+		},
+	}),
+	columnHelper.accessor((row) => row, {
+		id: 'label',
+		header: 'Label',
+		cell: (info) => <>{info.getValue().name}</>,
 		sortingFn: (a, b) => {
 			return a.original.label.localeCompare(b.original.label)
 		},
