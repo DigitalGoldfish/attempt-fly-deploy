@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState } from 'react'
 import { PDFDocument, degrees } from 'pdf-lib'
-import { Download, RotateCw, Trash } from 'lucide-react'
+import { Download, Minus, Plus, RotateCw } from 'lucide-react'
 import { Button } from '#app/components/ui/button.tsx'
 import {
 	Dialog,
@@ -8,6 +8,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '#app/components/ui/dialog.tsx'
+import * as pdfjs from 'pdfjs-dist'
+import 'pdfjs-dist/build/pdf.worker.entry'
 interface PDFPageData {
 	imageUrl: string
 	pdfUrl: string
@@ -16,6 +18,7 @@ interface PDFPageData {
 	stackIndex: number
 	rotation: number
 	stackedBelow?: PDFPageData
+	isGrayedOut: boolean
 }
 
 interface State {
@@ -73,14 +76,9 @@ export default function PDFSplitter() {
 		pdfUrl: null,
 	})
 
-	async function initializePdfJsLib() {
-		const pdfjs = await import('pdfjs-dist')
-		pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-			'pdfjs-dist/build/pdf.worker.min.js',
-			import.meta.url,
-		).toString()
-		return pdfjs
-	}
+	useEffect(() => {
+		pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
+	}, [])
 	const openPdfModal = (pdfUrl: string) => {
 		setModal({
 			isOpen: true,
@@ -112,7 +110,6 @@ export default function PDFSplitter() {
 		const loadPdf = async () => {
 			try {
 				dispatch({ type: 'SET_LOADING', payload: true })
-				const pdfjs = await initializePdfJsLib()
 				const loadingTask = pdfjs.getDocument(PDF_PATH)
 				const pdfDocument = await loadingTask.promise
 				const pagesData: PDFPageData[] = []
@@ -143,6 +140,7 @@ export default function PDFSplitter() {
 						columnIndex: pageNum - 1,
 						stackIndex: 0,
 						rotation: 0,
+						isGrayedOut: false,
 					})
 				}
 
@@ -202,46 +200,48 @@ export default function PDFSplitter() {
 		try {
 			const newPages = [...pages]
 
-			const sourceColumn = newPages.filter(
-				(p) => p.columnIndex === sourceColumnIndex,
+			const sourcePage = newPages.find(
+				(p) =>
+					p.columnIndex === sourceColumnIndex &&
+					p.stackIndex === sourceStackIndex,
 			)
-			const sourcePage = sourceColumn[sourceStackIndex]
+			const targetPage = newPages.find(
+				(p) =>
+					p.columnIndex === targetColumnIndex &&
+					p.stackIndex === targetStackIndex,
+			)
 
 			if (!sourcePage) return
 
-			const sourcePageCopy: PDFPageData = {
-				...sourcePage,
-				columnIndex: targetColumnIndex,
-				stackIndex: targetStackIndex,
-				stackedBelow: undefined,
+			if (sourceColumnIndex === targetColumnIndex) {
+				newPages.forEach((page) => {
+					if (page === sourcePage) {
+						page.stackIndex = targetStackIndex
+					} else if (targetPage && page === targetPage) {
+						page.stackIndex = sourceStackIndex
+					}
+				})
+			} else {
+				sourcePage.columnIndex = targetColumnIndex
+				sourcePage.stackIndex = targetStackIndex
+
+				newPages.forEach((page) => {
+					if (
+						page.columnIndex === targetColumnIndex &&
+						page.stackIndex >= targetStackIndex &&
+						page !== sourcePage
+					) {
+						page.stackIndex++
+					}
+				})
+
+				const sourceIndex = newPages.findIndex((p) => p === sourcePage)
+				if (sourceIndex !== -1) {
+					newPages.splice(sourceIndex, 1)
+				}
+
+				newPages.push(sourcePage)
 			}
-
-			newPages.splice(
-				newPages.findIndex(
-					(p) =>
-						p.columnIndex === sourceColumnIndex &&
-						p.stackIndex === sourceStackIndex,
-				),
-				1,
-			)
-
-			newPages
-				.filter(
-					(p) =>
-						p.columnIndex === sourceColumnIndex &&
-						p.stackIndex > sourceStackIndex,
-				)
-				.forEach((p) => p.stackIndex--)
-
-			const targetColumnPages = newPages.filter(
-				(p) => p.columnIndex === targetColumnIndex,
-			)
-
-			targetColumnPages
-				.filter((p) => p.stackIndex >= targetStackIndex)
-				.forEach((p) => p.stackIndex++)
-
-			newPages.push(sourcePageCopy)
 
 			newPages.sort((a, b) => {
 				if (a.columnIndex === b.columnIndex) {
@@ -318,30 +318,23 @@ export default function PDFSplitter() {
 			console.error('Failed to rotate page', err)
 		}
 	}
-	const deletePdf = (columnIndex: number, stackIndex: number) => {
+	const toggleGrayOut = (columnIndex: number, stackIndex: number) => {
 		try {
-			const newPages = [...pages]
-
-			const pageToDeleteIndex = newPages.findIndex(
-				(p) => p.columnIndex === columnIndex && p.stackIndex === stackIndex,
-			)
-
-			if (pageToDeleteIndex !== -1) {
-				newPages.splice(pageToDeleteIndex, 1)
-
-				newPages
-					.filter(
-						(p) => p.columnIndex === columnIndex && p.stackIndex > stackIndex,
-					)
-					.forEach((p) => p.stackIndex--)
-
-				dispatch({ type: 'SET_PAGES', payload: newPages })
-			}
+			const newPages = pages.map((page) => {
+				if (
+					page.columnIndex === columnIndex &&
+					page.stackIndex === stackIndex
+				) {
+					return { ...page, isGrayedOut: !page.isGrayedOut }
+				}
+				return page
+			})
+			dispatch({ type: 'SET_PAGES', payload: newPages })
 		} catch (err) {
-			console.error('Failed to delete page', err)
+			console.error('Failed to toggle page visibility', err)
 			dispatch({
 				type: 'SET_ERROR',
-				payload: 'Failed to delete page. Please try again.',
+				payload: 'Failed to toggle page visibility. Please try again.',
 			})
 		}
 	}
@@ -349,7 +342,7 @@ export default function PDFSplitter() {
 	const downloadColumnPdf = async (columnIndex: number) => {
 		try {
 			const columnPages = pages.filter(
-				(page) => page.columnIndex === columnIndex,
+				(page) => page.columnIndex === columnIndex && !page.isGrayedOut,
 			)
 			if (columnPages.length === 0) return
 
@@ -379,6 +372,26 @@ export default function PDFSplitter() {
 		}
 	}
 
+	const BottomDropZone = ({
+		onDrop,
+		columnIndex,
+	}: {
+		onDrop: (e: React.DragEvent) => void
+		columnIndex: number
+	}) => (
+		<div
+			className="mt-4 h-24 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 transition-colors hover:border-blue-400 hover:bg-blue-100"
+			onDragOver={(e) => e.preventDefault()}
+			onDrop={onDrop}
+		>
+			<div className="flex h-full items-center justify-center">
+				<p className="text-sm text-blue-600">
+					Drop here to add to end of Column {columnIndex + 1}
+				</p>
+			</div>
+		</div>
+	)
+
 	const renderPage = (page: PDFPageData): JSX.Element => {
 		const isDragged =
 			draggedPage?.columnIndex === page.columnIndex &&
@@ -387,7 +400,7 @@ export default function PDFSplitter() {
 		return (
 			<div
 				key={`${page.columnIndex}-${page.stackIndex}`}
-				className={`rounded-lg border border-gray-200 p-4 ${isDragged ? 'opacity-50' : ''}`}
+				className={`rounded-lg border border-gray-200 p-4 ${isDragged ? 'opacity-50' : ''} ${page.isGrayedOut ? 'bg-gray-100 opacity-50' : ''}`}
 				draggable
 				onDragStart={() => handleDragStart(page.columnIndex, page.stackIndex)}
 				onDragOver={handleDragOver}
@@ -411,11 +424,11 @@ export default function PDFSplitter() {
 						</Button>
 					</div>
 					<Button
-						className="h-auto bg-transparent p-0 text-red-600"
-						onClick={() => deletePdf(page.columnIndex, page.stackIndex)}
+						className={`h-auto bg-transparent p-0 ${page.isGrayedOut ? 'text-gray-400' : 'text-gray-600'}`}
+						onClick={() => toggleGrayOut(page.columnIndex, page.stackIndex)}
 					>
-						<Trash size={15} />
-						Delete
+						{page.isGrayedOut ? <Plus size={15} /> : <Minus size={15} />}
+						{page.isGrayedOut ? 'Include' : 'Ignore'}
 					</Button>
 				</div>
 
@@ -433,13 +446,44 @@ export default function PDFSplitter() {
 		)
 	}
 
+	const renderColumn = (column: PDFPageData[], columnIndex: number) => {
+		const lastStackIndex = column.length
+
+		return (
+			<div
+				key={columnIndex}
+				className="flex flex-col gap-6"
+				style={{ width: '300px' }}
+			>
+				<div className="mx-2 flex items-center justify-between text-center font-bold">
+					Page {columnIndex + 1}
+					<Button
+						className="h-auto bg-transparent p-0 text-black"
+						onClick={() => downloadColumnPdf(columnIndex)}
+					>
+						<Download size={20} /> Download
+					</Button>
+				</div>
+
+				{column.map((page) => renderPage(page))}
+
+				{draggedPage && draggedPage.columnIndex !== columnIndex && (
+					<BottomDropZone
+						onDrop={(e) => handleDrop(e, columnIndex, lastStackIndex)}
+						columnIndex={columnIndex}
+					/>
+				)}
+			</div>
+		)
+	}
+
 	const getColumnsFromPages = () => {
 		const columns: PDFPageData[][] = []
 		pages.forEach((page) => {
 			if (!columns[page.columnIndex]) {
 				columns[page.columnIndex] = []
 			}
-			columns[page.columnIndex][page.stackIndex] = page
+			;(columns[page.columnIndex] as PDFPageData[])[page.stackIndex] = page
 		})
 		return columns
 	}
@@ -464,25 +508,9 @@ export default function PDFSplitter() {
 						className="flex gap-6"
 						style={{ minWidth: `${Math.max(pages.length * 300, 1000)}px` }}
 					>
-						{getColumnsFromPages().map((column, columnIndex) => (
-							<div
-								key={columnIndex}
-								className="flex flex-col gap-6"
-								style={{ width: '300px' }}
-							>
-								<div className="mx-2 flex items-center justify-between text-center font-bold">
-									Page {columnIndex + 1}
-									<Button
-										className="h-auto bg-transparent p-0 text-black"
-										onClick={() => downloadColumnPdf(columnIndex)}
-									>
-										<Download size={20} /> Download
-									</Button>
-								</div>
-
-								{column.map((page) => renderPage(page))}
-							</div>
-						))}
+						{getColumnsFromPages().map((column, columnIndex) =>
+							renderColumn(column, columnIndex),
+						)}
 					</div>
 				</div>
 			)}

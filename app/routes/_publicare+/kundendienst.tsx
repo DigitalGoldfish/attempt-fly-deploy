@@ -185,7 +185,7 @@ export default function NeueBestellungPage() {
 								</div>
 
 								<div className="flex gap-4">
-									<Link to="/original-document">
+									<Link to="/modify-document">
 										<Button variant="secondary">Fehlende Seite</Button>
 									</Link>
 									<Button variant="destructive">Löschen</Button>
