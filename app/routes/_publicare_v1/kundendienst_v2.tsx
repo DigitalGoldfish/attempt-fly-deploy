@@ -121,53 +121,7 @@ export default function NeueBestellungPage() {
 										<Button>Weiterleiten</Button>
 									</div>
 								</div>
-								{isDeleted && (
-									<div>
-										<h3 className={'text-h5'}>Kundendienst</h3>
-										<div className={'my-8 grid grid-cols-5'}>
-											<span>Grund:</span>
-											<div className="col-span-4 flex gap-4">
-												<OptionButton
-													value="SPAM"
-													currentValue={deletionReason}
-													setFn={setDeletionReason}
-												/>
-												<OptionButton
-													value="Nicht lieferbar"
-													currentValue={deletionReason}
-													setFn={setDeletionReason}
-												/>
-												<OptionButton
-													value="Auf Nachfrage nicht reagiert"
-													currentValue={deletionReason}
-													setFn={setDeletionReason}
-												/>
-												<OptionButton
-													value="Sonstige"
-													currentValue={deletionReason}
-													setFn={setDeletionReason}
-												/>
-											</div>
-										</div>
-										<div className={'my-8 grid grid-cols-5'}>
-											<span>Anmerkung:</span>
-											<div className="col-span-4 flex gap-4">
-												<TextareaField
-													className={'w-full'}
-													labelProps={{ children: '' }}
-													textareaProps={{
-														className: 'w-full',
-													}}
-												/>
-											</div>
-										</div>
-										<div className={'my-8'} onClick={() => setIsDeleted(false)}>
-											<Button variant="link" className="text-teal-600">
-												Löschen rückgängig machen
-											</Button>
-										</div>
-									</div>
-								)}
+
 								{!isDeleted && (
 									<>
 										<div>

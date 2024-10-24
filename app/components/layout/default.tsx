@@ -39,7 +39,10 @@ export function DefaultLayout({
 						<div>{menuLinks}</div>
 					</div>
 				</div>
-				<main className="font-poppins container mx-auto my-8 place-items-start">
+				<main
+					className="font-poppins container mx-auto my-8 h-full place-items-start"
+					style={{ minHeight: 'calc(100vh - 120px - 4rem)', maxWidth: 1800 }}
+				>
 					{children}
 				</main>
 			</div>

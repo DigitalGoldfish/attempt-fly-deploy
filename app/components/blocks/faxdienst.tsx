@@ -2,8 +2,9 @@ import { Field } from '#app/components/forms.tsx'
 import { OptionButton } from '#app/components/ui/optionbutton.tsx'
 import { useState } from 'react'
 import { TableEntry } from '#app/routes/_publicare_v1/exampleData.tsx'
+import { Incoming } from '@prisma/client'
 
-export function FaxdienstBlock({ data }: { data: TableEntry }) {
+export function FaxdienstBlock({ data }: { data: Incoming }) {
 	const [priority, setPriority] = useState('')
 	const [type, setType] = useState('Bestellung')
 	const [bereich, setBereich] = useState('')
@@ -31,7 +32,7 @@ export function FaxdienstBlock({ data }: { data: TableEntry }) {
 	return (
 		<div>
 			<h3 className={'mb-2 text-h5'}>Faxdienst</h3>
-			<div className={'my-8 grid grid-cols-5'}>
+			<div className={'my-4 grid grid-cols-5'}>
 				<span>Art der Nachricht:</span>
 				<div className="col-span-4 flex gap-4">
 					<OptionButton
@@ -77,7 +78,7 @@ export function FaxdienstBlock({ data }: { data: TableEntry }) {
 					</div>
 				</>
 			)}
-			<div className={'my-8 grid grid-cols-5'}>
+			<div className={'my-4 grid grid-cols-5'}>
 				<span>Attribute:</span>
 				<div className="col-span-4 flex gap-4">
 					<OptionButton
@@ -93,7 +94,7 @@ export function FaxdienstBlock({ data }: { data: TableEntry }) {
 				</div>
 			</div>
 			{bereich === 'StoMa' && (
-				<div className={'my-8 grid grid-cols-5'}>
+				<div className={'my-4 grid grid-cols-5'}>
 					<span>Kundendienst-MA:</span>
 					<div className="col-span-4 flex flex-wrap gap-4">
 						{assignableTo.map((short) => (
@@ -107,7 +108,7 @@ export function FaxdienstBlock({ data }: { data: TableEntry }) {
 					</div>
 				</div>
 			)}
-			<div className={'my-8 grid grid-cols-5'}>
+			<div className={'my-4 grid grid-cols-5'}>
 				<span>Kunde:</span>
 				<div className="col-span-4 flex flex-wrap items-baseline gap-4">
 					<OptionButton
