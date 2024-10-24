@@ -8,8 +8,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '#app/components/ui/dialog.tsx'
-import * as pdfjs from 'pdfjs-dist'
-import 'pdfjs-dist/build/pdf.worker.entry'
+
 interface PDFPageData {
 	imageUrl: string
 	pdfUrl: string
@@ -26,6 +25,7 @@ interface State {
 	isLoading: boolean
 	error: string | null
 	draggedPage: { columnIndex: number; stackIndex: number } | null
+	dropTarget: { columnIndex: number; stackIndex: number } | null // New state for drop target
 }
 interface ModalState {
 	isOpen: boolean
@@ -40,6 +40,10 @@ type Action =
 			type: 'SET_DRAGGED_PAGE'
 			payload: { columnIndex: number; stackIndex: number } | null
 	  }
+	| {
+			type: 'SET_DROP_TARGET'
+			payload: { columnIndex: number; stackIndex: number } | null
+	  }
 	| { type: 'UPDATE_PAGES_AFTER_COMBINE'; payload: { newPages: PDFPageData[] } }
 
 const PDF_PATH = '/demodata/samplepdf2.pdf'
@@ -49,6 +53,7 @@ const initialState: State = {
 	isLoading: true,
 	error: null,
 	draggedPage: null,
+	dropTarget: null,
 }
 
 function reducer(state: State, action: Action): State {
@@ -61,8 +66,12 @@ function reducer(state: State, action: Action): State {
 			return { ...state, error: action.payload }
 		case 'SET_DRAGGED_PAGE':
 			return { ...state, draggedPage: action.payload }
+
 		case 'UPDATE_PAGES_AFTER_COMBINE':
 			return { ...state, pages: action.payload.newPages }
+		case 'SET_DROP_TARGET':
+			return { ...state, dropTarget: action.payload }
+
 		default:
 			return state
 	}
@@ -70,15 +79,21 @@ function reducer(state: State, action: Action): State {
 
 export default function PDFSplitter() {
 	const [state, dispatch] = useReducer(reducer, initialState)
-	const { pages, isLoading, error, draggedPage } = state
+	const { pages, isLoading, error, draggedPage, dropTarget } = state
 	const [modal, setModal] = useState<ModalState>({
 		isOpen: false,
 		pdfUrl: null,
 	})
 
-	useEffect(() => {
-		pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
-	}, [])
+	async function initializePdfJsLib() {
+		const pdfjs = await import('pdfjs-dist')
+		pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+			'pdfjs-dist/build/pdf.worker.min.js',
+			import.meta.url,
+		).toString()
+		return pdfjs
+	}
+
 	const openPdfModal = (pdfUrl: string) => {
 		setModal({
 			isOpen: true,
@@ -110,9 +125,11 @@ export default function PDFSplitter() {
 		const loadPdf = async () => {
 			try {
 				dispatch({ type: 'SET_LOADING', payload: true })
+				const pdfjs = await initializePdfJsLib()
 				const loadingTask = pdfjs.getDocument(PDF_PATH)
 				const pdfDocument = await loadingTask.promise
 				const pagesData: PDFPageData[] = []
+
 				for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
 					const page = await pdfDocument.getPage(pageNum)
 					const viewport = page.getViewport({ scale: 1 })
@@ -165,8 +182,20 @@ export default function PDFSplitter() {
 		})
 	}
 
-	const handleDragOver = (e: React.DragEvent) => {
+	const handleDragOver = (
+		e: React.DragEvent,
+		columnIndex: number,
+		stackIndex: number,
+	) => {
 		e.preventDefault()
+		dispatch({
+			type: 'SET_DROP_TARGET',
+			payload: { columnIndex, stackIndex },
+		})
+	}
+
+	const handleDragLeave = () => {
+		dispatch({ type: 'SET_DROP_TARGET', payload: null })
 	}
 
 	const handleDrop = (
@@ -189,6 +218,7 @@ export default function PDFSplitter() {
 			targetStackIndex,
 		)
 		dispatch({ type: 'SET_DRAGGED_PAGE', payload: null })
+		dispatch({ type: 'SET_DROP_TARGET', payload: null })
 	}
 
 	const movePageToNewPosition = (
@@ -378,34 +408,43 @@ export default function PDFSplitter() {
 	}: {
 		onDrop: (e: React.DragEvent) => void
 		columnIndex: number
-	}) => (
-		<div
-			className="mt-4 h-24 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 transition-colors hover:border-blue-400 hover:bg-blue-100"
-			onDragOver={(e) => e.preventDefault()}
-			onDrop={onDrop}
-		>
-			<div className="flex h-full items-center justify-center">
-				<p className="text-sm text-blue-600">
-					Drop here to add to end of Column {columnIndex + 1}
-				</p>
+	}) => {
+		return (
+			<div
+				className="mt-4 h-24 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 transition-colors hover:border-blue-400 hover:bg-blue-100"
+				onDragOver={(e) => e.preventDefault()}
+				onDrop={onDrop}
+			>
+				<div className="flex h-full items-center justify-center">
+					<p className="text-sm text-blue-600">
+						Drop here to add to end of Column {columnIndex + 1}
+					</p>
+				</div>
 			</div>
-		</div>
-	)
-
+		)
+	}
 	const renderPage = (page: PDFPageData): JSX.Element => {
 		const isDragged =
 			draggedPage?.columnIndex === page.columnIndex &&
 			draggedPage?.stackIndex === page.stackIndex
-
+		const isDropTarget =
+			dropTarget?.columnIndex === page.columnIndex &&
+			dropTarget?.stackIndex === page.stackIndex
 		return (
 			<div
 				key={`${page.columnIndex}-${page.stackIndex}`}
-				className={`rounded-lg border border-gray-200 p-4 ${isDragged ? 'opacity-50' : ''} ${page.isGrayedOut ? 'bg-gray-100 opacity-50' : ''}`}
+				className={`relative rounded-lg border border-gray-200 p-4 ${
+					isDragged ? 'opacity-50' : ''
+				} ${page.isGrayedOut ? 'bg-gray-100 opacity-50' : ''}`}
 				draggable
 				onDragStart={() => handleDragStart(page.columnIndex, page.stackIndex)}
-				onDragOver={handleDragOver}
+				onDragOver={(e) => handleDragOver(e, page.columnIndex, page.stackIndex)}
+				onDragLeave={handleDragLeave}
 				onDrop={(e) => handleDrop(e, page.columnIndex, page.stackIndex)}
 			>
+				{isDropTarget && (
+					<div className="pointer-events-none absolute inset-0 z-10 bg-black bg-opacity-20" />
+				)}
 				<div className="mb-2 flex justify-between">
 					<div className="flex items-end justify-end">
 						<Button
@@ -461,7 +500,7 @@ export default function PDFSplitter() {
 						className="h-auto bg-transparent p-0 text-black"
 						onClick={() => downloadColumnPdf(columnIndex)}
 					>
-						<Download size={20} /> Download
+						<Download size={15} /> Download
 					</Button>
 				</div>
 
