@@ -5,6 +5,7 @@ import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 import { Source } from '#app/const/Source.ts'
 import { Types } from '#app/const/Types.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import fs from 'node:fs'
 
 class RandomPicker {
 	prefixSums: number[]
@@ -50,12 +51,12 @@ const messageTypeProbability = [
 		name: 'email',
 		weight: 50,
 		fn: createIncomingEmail,
-	},
+	} /*
 	{
 		name: 'form',
 		weight: 50,
 		fn: createIncomingFormSubmission,
-	},
+	}, */,
 ]
 
 const statusProbability = [
@@ -144,6 +145,8 @@ export async function createIncomingEmail() {
 		return
 	}
 
+	const attachments = await getMailAttachmentData()
+
 	const email = await prisma.mail.create({
 		data: {
 			sender: faker.internet.email(),
@@ -151,12 +154,13 @@ export async function createIncomingEmail() {
 			subject: 'Bestellung',
 			recipient: 'bestellung@publicare.at',
 			type: 'email',
-			attachments: {
-				create: {
-					contentType: 'application/pdf',
-					blob: Buffer.from(''),
-				},
-			},
+			attachments: attachments
+				? {
+						createMany: {
+							data: attachments,
+						},
+					}
+				: undefined,
 		},
 	})
 	const data: Prisma.IncomingCreateInput = {
@@ -198,6 +202,90 @@ export async function createIncomingEmail() {
 	await prisma.incoming.create({
 		data,
 	})
+}
+
+type FileSpec = {
+	blob: Buffer
+	fileName: string
+	size: number
+	contentType: string
+}
+
+async function getMailAttachmentData() {
+	const directory = 'public/demodata/email/'
+	const demoData = [
+		[
+			{ fileName: '20240524_102403.jpg', contentType: 'image/jpg' },
+			{ fileName: '20240524_102408.jpg', contentType: 'image/jpg' },
+		],
+		[{ fileName: 'IMG_20240507_114413_MP.jpg', contentType: 'image/jpg' }],
+		[{ fileName: 'IMG_1331.jpeg', contentType: 'image/jpg' }],
+		[
+			{ fileName: '20240502_062122.jpg', contentType: 'image/jpg' },
+			{
+				fileName: 'hwnoe_dc70d159-dec7-4247-8aa9-8290ad561fa4 (1).jpg',
+				contentType: 'image/jpg',
+			},
+			{
+				fileName:
+					'SocialLink_Facebook_32x32_e4e74d03-c269-4176-a616-c785d68e6e90.png',
+				contentType: 'image/png',
+			},
+			{
+				fileName:
+					'MenserviceBanner_Email_d0bb6150-d8a4-4747-9cd4-e756e76e1560.jpg',
+				contentType: 'image/jpg',
+			},
+			{
+				fileName:
+					'Instagram_logo_2022_2fc05db4-50db-46a2-bcbc-28e593de90b7.png',
+				contentType: 'image/jpg',
+			},
+		],
+	]
+
+	const randomIndex = Math.floor(demoData.length * Math.random())
+	const selectedFiles = demoData[randomIndex]
+
+	if (selectedFiles) {
+		const files = await Promise.all(
+			selectedFiles.map((selectedFile) =>
+				fs.promises.readFile(`${directory}${selectedFile.fileName}`),
+			),
+		)
+		return selectedFiles.map((file, index) => ({
+			fileName: file.fileName,
+			contentType: file.contentType,
+			size: files[index] ? Buffer.byteLength(files[index]) : 0,
+			blob: files[index] || Buffer.from(''),
+		}))
+	}
+
+	return []
+}
+
+async function getFaxAttachmentData(): Promise<FileSpec | null> {
+	const directory = 'public/demodata/fax/'
+	const demoData = [
+		{ fileName: 'fax_2024-05-03_07-46.pdf', contentType: 'application/pdf' },
+		{ fileName: 'fax_2024-05-21_15-19.pdf', contentType: 'application/pdf' },
+		{ fileName: 'fax_2024-05-31_09-52.pdf', contentType: 'application/pdf' },
+	]
+	const randomIndex = Math.floor(demoData.length * Math.random())
+	const selectedFile = demoData[randomIndex]
+	if (selectedFile) {
+		const buffer = await fs.promises.readFile(
+			`${directory}${selectedFile.fileName}`,
+		)
+		return {
+			fileName: selectedFile.fileName,
+			contentType: selectedFile.contentType,
+			blob: buffer,
+			size: Buffer.byteLength(buffer),
+		}
+	}
+
+	return null
 }
 
 export async function createIncomingFormSubmission() {
@@ -271,6 +359,8 @@ export async function createIncomingFax() {
 		return
 	}
 
+	const attachment = await getFaxAttachmentData()
+
 	const email = await prisma.mail.create({
 		data: {
 			sender: 'no-reply@yuuphone.at',
@@ -279,12 +369,13 @@ export async function createIncomingFax() {
 			subject: 'New fax from 0043767620763550',
 			recipient: 'bestellung@publicare.at',
 			type: 'fax',
-			attachments: {
-				create: {
-					contentType: 'application/pdf',
-					blob: Buffer.from(''),
-				},
-			},
+			attachments: attachment
+				? {
+						createMany: {
+							data: [attachment],
+						},
+					}
+				: undefined,
 		},
 	})
 

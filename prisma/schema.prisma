@@ -197,6 +197,8 @@ model Connection {
 model MailAttachment {
   id          String @id @default(cuid())
   contentType String
+  fileName    String
+  size        Int
   blob        Bytes
 
   createdAt DateTime @default(now())

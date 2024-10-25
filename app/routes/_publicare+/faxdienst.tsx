@@ -1,24 +1,26 @@
-import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
+import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
-import { DefaultLayout } from '#app/components/layout/default.tsx'
-import { Counter } from '#app/components/layout/counter.tsx'
-import { useUser } from '#app/utils/user.ts'
-import { requireUserId } from '#app/utils/auth.server.ts'
-import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
-import { Button } from '#app/components/ui/button.tsx'
 import { List } from 'lucide-react'
 import React from 'react'
+import { Counter } from '#app/components/layout/counter.tsx'
+import { DefaultLayout } from '#app/components/layout/default.tsx'
+import { Button } from '#app/components/ui/button.tsx'
+import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
+import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare Faxdienst' }]
 
 export async function loader({ request }: LoaderFunctionArgs) {
-	const userId = await requireUserId(request)
+	await requireUserId(request)
 	return await prisma.incoming.findFirst({
 		include: {
-			mail: true,
+			mail: {
+				include: { attachments: true },
+			},
 			formSubmission: true,
 		},
+		skip: 17,
 	})
 }
 
