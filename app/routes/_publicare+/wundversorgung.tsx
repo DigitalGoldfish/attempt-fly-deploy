@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
-import { Link, Outlet } from '@remix-run/react'
+import { Link, Outlet, useLoaderData } from '@remix-run/react'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Counter } from '#app/components/layout/counter.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
@@ -7,17 +7,31 @@ import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { List } from 'lucide-react'
 import React from 'react'
+import { prisma } from '#app/utils/db.server.ts'
 
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellungen Wundversorgung' },
 ]
 
 export async function loader({ request }: LoaderFunctionArgs) {
-	const userId = await requireUserId(request)
-	return null
+	await requireUserId(request)
+	return await prisma.incoming.findFirst({
+		where: {
+			status: 'Kundendienst',
+			bereich: 'Wund',
+		},
+		include: {
+			mail: {
+				include: { attachments: true },
+			},
+			formSubmission: true,
+		},
+		skip: 0,
+	})
 }
 
 export default function Wundversorgung() {
+	const data = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
 			pageTitle="Bestellungen Wundversorgung"
@@ -37,7 +51,7 @@ export default function Wundversorgung() {
 				</Button>
 			}
 		>
-			<Bestelldetails />
+			<Bestelldetails data={data} />
 			<Outlet />
 		</DefaultLayout>
 	)

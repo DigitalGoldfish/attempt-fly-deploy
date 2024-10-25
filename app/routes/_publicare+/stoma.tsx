@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
-import { Link, Outlet } from '@remix-run/react'
+import { Link, Outlet, useLoaderData } from '@remix-run/react'
 import Liste from '../_publicare_v1/liste.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Counter } from '#app/components/layout/counter.tsx'
@@ -8,17 +8,31 @@ import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { List } from 'lucide-react'
 import React from 'react'
+import { prisma } from '#app/utils/db.server.ts'
 
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellungen StoMa/Inko' },
 ]
 
 export async function loader({ request }: LoaderFunctionArgs) {
-	const userId = await requireUserId(request)
-	return null
+	await requireUserId(request)
+	return await prisma.incoming.findFirst({
+		where: {
+			status: 'Kundendienst',
+			bereich: 'StoMa',
+		},
+		include: {
+			mail: {
+				include: { attachments: true },
+			},
+			formSubmission: true,
+		},
+		skip: 0,
+	})
 }
 
 export default function Stoma() {
+	const data = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
 			pageTitle="Bestellungen Stoma/Inko"
@@ -38,7 +52,7 @@ export default function Stoma() {
 				</Button>
 			}
 		>
-			<Bestelldetails />
+			<Bestelldetails data={data} />
 			<Outlet />
 		</DefaultLayout>
 	)

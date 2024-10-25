@@ -77,7 +77,7 @@ function reducer(state: State, action: Action): State {
 	}
 }
 
-export default function PDFSplitter() {
+export default function PDFSplitter({ onClose }: { onClose: () => void }) {
 	const [state, dispatch] = useReducer(reducer, initialState)
 	const { pages, isLoading, error, draggedPage, dropTarget } = state
 	const [modal, setModal] = useState<ModalState>({
@@ -528,43 +528,50 @@ export default function PDFSplitter() {
 	}
 
 	return (
-		<div className="mx-auto max-w-[1600px] p-6">
-			<div className="mb-6">
-				<h1 className="text-3xl font-bold">PDF Splitter</h1>
-			</div>
-			{isLoading ? (
-				<div className="flex h-96 items-center justify-center">
-					<div className="text-center">
-						<div className="mx-auto h-12 w-12 animate-pulse text-gray-400">
-							Loading...
+		<Dialog open={true} onOpenChange={onClose}>
+			<DialogContent className="max-w-[95%]">
+				<DialogHeader>
+					<DialogTitle>PDF Splitter</DialogTitle>
+				</DialogHeader>
+				<div className="max-w-[1600px] p-6">
+					{isLoading ? (
+						<div className="flex h-96 items-center justify-center">
+							<div className="text-center">
+								<div className="mx-auto h-12 w-12 animate-pulse text-gray-400">
+									Loading...
+								</div>
+								<p className="mt-4 text-gray-600">Loading PDF...</p>
+							</div>
 						</div>
-						<p className="mt-4 text-gray-600">Loading PDF...</p>
-					</div>
-				</div>
-			) : (
-				<div className="overflow-x-auto">
-					<div
-						className="flex gap-6"
-						style={{ minWidth: `${Math.max(pages.length * 300, 1000)}px` }}
-					>
-						{getColumnsFromPages().map((column, columnIndex) =>
-							renderColumn(column, columnIndex),
-						)}
-					</div>
-				</div>
-			)}
-			<Dialog open={modal.isOpen} onOpenChange={closeModal}>
-				<DialogContent className="max-w-7xl">
-					<DialogHeader>
-						<DialogTitle>PDF Preview</DialogTitle>
-					</DialogHeader>
-					{modal.pdfUrl && (
-						<div className="h-[80vh] w-full">
-							<iframe src={modal.pdfUrl} className="h-full w-full rounded-lg" />
+					) : (
+						<div className="overflow-x-auto">
+							<div
+								className="flex gap-6"
+								style={{ minWidth: `${Math.max(pages.length * 300, 1000)}px` }}
+							>
+								{getColumnsFromPages().map((column, columnIndex) =>
+									renderColumn(column, columnIndex),
+								)}
+							</div>
 						</div>
 					)}
-				</DialogContent>
-			</Dialog>
-		</div>
+					<Dialog open={modal.isOpen} onOpenChange={closeModal}>
+						<DialogContent className="max-w-7xl">
+							<DialogHeader>
+								<DialogTitle>PDF Preview</DialogTitle>
+							</DialogHeader>
+							{modal.pdfUrl && (
+								<div className="h-[80vh] w-full">
+									<iframe
+										src={modal.pdfUrl}
+										className="h-full w-full rounded-lg"
+									/>
+								</div>
+							)}
+						</DialogContent>
+					</Dialog>
+				</div>
+			</DialogContent>
+		</Dialog>
 	)
 }

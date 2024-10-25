@@ -15,6 +15,7 @@ import { PreviewBlock } from '#app/components/blocks/preview.tsx'
 import { Form } from '#app/components/publicare-forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
+import PDFSplitter from '#app/routes/_publicare+/modify-document.tsx'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -76,42 +77,44 @@ export default function BestellungsForm({
 	}
 
 	return (
-		<Form<IncomingFormData>
-			methods={methods}
-			method="POST"
-			id="sample_form"
-			layout="horizontal"
-			className="w-full"
-			action="/bestellung_form"
-		>
-			<div
-				className="flex gap-8"
-				style={{ minHeight: 'calc(100vh - 120px - 4rem)' }}
+		<>
+			<Form<IncomingFormData>
+				methods={methods}
+				method="POST"
+				id="sample_form"
+				layout="horizontal"
+				className="w-full"
+				action="/bestellung_form"
 			>
-				<div className="flex-1">
-					<PreviewBlock data={data} />
-				</div>
 				<div
-					className="flex flex-1 flex-col"
-					style={{ height: 'calc(100vh - 120px - 4rem)' }}
+					className="flex gap-8"
+					style={{ minHeight: 'calc(100vh - 120px - 4rem)' }}
 				>
-					<div className="h-full flex-grow overflow-y-scroll pr-4">
-						<MessageBlock data={data} />
-						<FaxdienstBlock data={data} />
-						{!['Faxdienst', 'Forwarded', 'Geloescht'].includes(data.status) && (
-							<KundendienstBlock data={data} />
-						)}
+					<div className="flex-1">
+						<PreviewBlock data={data} />
 					</div>
-					<div className="flex flex-row-reverse content-end gap-4">
-						<Button variant={'pcblue'} type={'submit'}>
-							Speichern
-						</Button>
-						<Button variant={'default'}>Drucken</Button>
-						<div className="flex-1"></div>
-						<Button variant={'destructive'}>Löschen</Button>
+					<div
+						className="flex flex-1 flex-col"
+						style={{ height: 'calc(100vh - 120px - 4rem)' }}
+					>
+						<div className="h-full flex-grow overflow-y-scroll pr-4">
+							<MessageBlock data={data} />
+							<FaxdienstBlock data={data} />
+							{!['Faxdienst', 'Forwarded', 'Geloescht'].includes(
+								data.status,
+							) && <KundendienstBlock data={data} />}
+						</div>
+						<div className="flex flex-row-reverse content-end gap-4">
+							<Button variant={'pcblue'} type={'submit'}>
+								Speichern
+							</Button>
+							<Button variant={'default'}>Drucken</Button>
+							<div className="flex-1"></div>
+							<Button variant={'destructive'}>Löschen</Button>
+						</div>
 					</div>
 				</div>
-			</div>
-		</Form>
+			</Form>
+		</>
 	)
 }
