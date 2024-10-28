@@ -128,16 +128,18 @@ const messageTypePicker = new RandomPicker(messageTypeProbability)
 const statusPicker = new RandomPicker(statusProbability)
 const typePicker = new RandomPicker(typeProbability)
 
-export async function createIncoming() {
+export async function createIncoming(forceFaxdienst: boolean) {
 	const messageType = messageTypeProbability[messageTypePicker.pickIndex()]
 
 	if (messageType) {
-		await messageType.fn()
+		await messageType.fn(forceFaxdienst)
 	}
 }
 
-export async function createIncomingEmail() {
-	const status = statusProbability[statusPicker.pickIndex()]
+export async function createIncomingEmail(forceFaxdienst: boolean) {
+	const status = forceFaxdienst
+		? statusProbability[0]
+		: statusProbability[statusPicker.pickIndex()]
 	const bereich = bereichProbability[bereichPicker.pickIndex()]
 	const type = typeProbability[typePicker.pickIndex()]
 
@@ -288,8 +290,10 @@ async function getFaxAttachmentData(): Promise<FileSpec | null> {
 	return null
 }
 
-export async function createIncomingFormSubmission() {
-	const status = statusProbability[statusPicker.pickIndex()]
+export async function createIncomingFormSubmission(forceFaxdienst: boolean) {
+	const status = forceFaxdienst
+		? statusProbability[0]
+		: statusProbability[statusPicker.pickIndex()]
 	const bereich = bereichProbability[bereichPicker.pickIndex()]
 	const type = typeProbability[typePicker.pickIndex()]
 
@@ -350,8 +354,10 @@ export async function createIncomingFormSubmission() {
 	})
 }
 
-export async function createIncomingFax() {
-	const status = statusProbability[statusPicker.pickIndex()]
+export async function createIncomingFax(forceFaxdienst: boolean) {
+	const status = forceFaxdienst
+		? statusProbability[0]
+		: statusProbability[statusPicker.pickIndex()]
 	const bereich = bereichProbability[bereichPicker.pickIndex()]
 	const type = typeProbability[typePicker.pickIndex()]
 
