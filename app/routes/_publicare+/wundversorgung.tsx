@@ -34,6 +34,7 @@ export default function Wundversorgung() {
 	const data = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
+			wide
 			pageTitle="Bestellungen Wundversorgung"
 			aside={
 				<div className={'flex gap-8'}>

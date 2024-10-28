@@ -21,12 +21,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  defaultTags Tag[]
   image       UserImage?
   password    Password?
   notes       Note[]
   roles       Role[]
   sessions    Session[]
   connections Connection[]
+  bereich     Bereich[]
 }
 
 model Bereich {
@@ -34,7 +36,8 @@ model Bereich {
   name  String
   label String
 
-  tags Tag[]
+  tags  Tag[]
+  users User[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,6 +53,7 @@ model Tag {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  User      User[]
 }
 
 model Note {

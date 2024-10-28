@@ -11,15 +11,18 @@ import TagForm from '#app/routes/_publicare+/admin+/tags+/tag_form.tsx'
 
 export async function loader({ params }: LoaderFunctionArgs) {
 	const { id } = params
-	const { ...tag } = await prisma.tag.findUniqueOrThrow({
+	const { bereich, ...tag } = await prisma.tag.findUniqueOrThrow({
 		where: {
 			id,
 		},
-		include: {},
+		include: {
+			bereich: true,
+		},
 	})
 	return {
 		tag: {
 			...tag,
+			bereich: bereich.id,
 		},
 	}
 }

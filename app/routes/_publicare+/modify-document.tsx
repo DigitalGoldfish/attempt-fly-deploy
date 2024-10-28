@@ -86,6 +86,7 @@ export default function PDFSplitter({ onClose }: { onClose: () => void }) {
 	})
 
 	async function initializePdfJsLib() {
+		console.log('initialize pdf js lib')
 		const pdfjs = await import('pdfjs-dist')
 		pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 			'pdfjs-dist/build/pdf.worker.min.js',

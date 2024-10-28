@@ -25,9 +25,7 @@ export type Selectable = {
 	label: string
 	value: string
 }
-type ApiResponse = {
-	option: Selectable[]
-}
+type ApiResponse = Selectable[]
 
 const widgetlabels = {
 	placeholder: 'Select',
@@ -60,12 +58,13 @@ export function MultiSelectField({
 	const fetcher = useFetcher<ApiResponse>()
 
 	useEffect(() => {
+		console.log('fetcher.state', fetcher.state, fetcher.data)
 		if (fetcher.state === 'idle' && fetcher.data == null) {
-			fetcher.load(`/api/multiselect_options?src=${optionSrc}`)
+			fetcher.load(`/api/multiselect/${optionSrc}`)
 		}
 	}, [fetcher, optionSrc])
 
-	const options = fetcher.data?.option || []
+	const options = fetcher.data || ([] as ApiResponse)
 	const state = !fetcher.data ? 'loading' : 'loaded'
 
 	const {
@@ -85,7 +84,7 @@ export function MultiSelectField({
 		const currentValue = value ? (value as string[]) : []
 		const newValues = !currentValue.includes(option.value)
 			? [...currentValue, option.value]
-			: currentValue.filter((l: string) => l === option.value)
+			: currentValue.filter((l: string) => l !== option.value)
 
 		onChange(newValues)
 		onBlur()

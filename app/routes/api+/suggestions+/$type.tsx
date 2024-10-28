@@ -2,7 +2,7 @@ import { type LoaderFunctionArgs } from '@remix-run/node'
 import { type Selectable } from '#app/components/forms/multiselect-field.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 
-const ALL_SUGGESTION_TYPES = ['orders'] as const
+const ALL_SUGGESTION_TYPES = ['orders', 'roles', 'bereich', 'tags'] as const
 type SuggestionTypeTuple = typeof ALL_SUGGESTION_TYPES
 export type SuggestionType = SuggestionTypeTuple[number]
 

@@ -13,27 +13,46 @@ export const meta: MetaFunction = () => [{ title: 'Publicare Faxdienst' }]
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)
-	return await prisma.incoming.findFirst({
+
+	const countOpen = await prisma.incoming.count({
 		where: {
 			status: 'Faxdienst',
 		},
-		include: {
-			mail: {
-				include: { attachments: true },
-			},
-			formSubmission: true,
-		},
-		skip: 0,
 	})
+	return {
+		incoming: await prisma.incoming.findFirst({
+			where: {
+				status: 'Faxdienst',
+			},
+			include: {
+				mail: {
+					include: {
+						attachments: {
+							select: {
+								id: true,
+								size: true,
+								fileName: true,
+								contentType: true,
+							},
+						},
+					},
+				},
+				formSubmission: true,
+			},
+			skip: 0,
+		}),
+		inbox: countOpen,
+	}
 }
 
 export default function Faxdienst() {
-	const incoming = useLoaderData<typeof loader>()
+	const { inbox, incoming } = useLoaderData<typeof loader>()
 
 	return (
 		<DefaultLayout
+			wide
 			pageTitle="Faxdienst"
-			aside={<Counter label={'Inbox'} count={1000} />}
+			aside={<Counter label={'Inbox'} count={inbox} />}
 			menuLinks={
 				<Button variant="link" className="flex gap-4 text-white" asChild>
 					<Link

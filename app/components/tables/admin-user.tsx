@@ -45,6 +45,8 @@ export type UserTableModel = {
 	kuerzel: string
 	status: UserStatus
 	roles: string[]
+	bereich: string[]
+	tags: string[]
 	createdAt: Date
 	updatedAt: Date
 	image?: {
@@ -96,6 +98,26 @@ const columns = [
 			<div className="flex max-w-[250px] flex-wrap gap-1">
 				{info.getValue().map((role) => (
 					<Badge key={role}>{role}</Badge>
+				))}
+			</div>
+		),
+	}),
+	columnHelper.accessor('bereich', {
+		header: 'Bereich',
+		cell: (info) => (
+			<div className="flex max-w-[250px] flex-wrap gap-1">
+				{info.getValue().map((bereich) => (
+					<Badge key={bereich}>{bereich}</Badge>
+				))}
+			</div>
+		),
+	}),
+	columnHelper.accessor('tags', {
+		header: 'Tags',
+		cell: (info) => (
+			<div className="flex max-w-[250px] flex-wrap gap-1">
+				{info.getValue().map((tag) => (
+					<Badge key={tag}>{tag}</Badge>
 				))}
 			</div>
 		),

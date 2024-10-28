@@ -9,6 +9,7 @@ import { TextField } from '#app/components/forms/text-field.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
+import { MultiSelectField } from '#app/components/forms/multiselect-field.tsx'
 
 const UserFormSchema = z.object({
 	id: z.string().optional(),
@@ -16,6 +17,9 @@ const UserFormSchema = z.object({
 	username: z.string().min(2).max(32),
 	name: z.string().min(2).max(32),
 	kuerzel: z.string().min(1).max(3),
+	roles: z.array(z.string()),
+	bereich: z.array(z.string()),
+	tags: z.array(z.string()),
 })
 type UserFormData = z.infer<typeof UserFormSchema>
 
@@ -46,6 +50,9 @@ const UserFormSchemaServer = UserFormSchema /* .superRefine(
 const userFormDefaultValues = {
 	email: '',
 	username: '',
+	roles: [],
+	bereich: [],
+	tags: [],
 	name: '',
 	shortname: '',
 }
@@ -65,14 +72,52 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 		return json({ errors, defaultValues })
 	}
 
-	const { id, ...rest } = data
+	const { id, tags, roles, bereich, ...rest } = data
+
+	const tag = !id
+		? await prisma.tag.create({
+				data: {
+					label: rest.kuerzel,
+					type: 'User',
+				},
+			})
+		: null
+
+	const newTags = tags.map((tagId) => ({ id: tagId }))
+	if (tag) {
+		newTags.push({ id: tag.id })
+	}
+
 	await prisma.user.upsert({
 		where: {
 			id: id || '',
 		},
-		update: rest,
-		create: rest,
+		update: {
+			...rest,
+			roles: {
+				set: roles.map((roleId) => ({ id: roleId })),
+			},
+			bereich: {
+				set: bereich.map((bereichId) => ({ id: bereichId })),
+			},
+			defaultTags: {
+				set: tags.map((tagId) => ({ id: tagId })),
+			},
+		},
+		create: {
+			...rest,
+			roles: {
+				connect: roles.map((roleId) => ({ id: roleId })),
+			},
+			bereich: {
+				connect: bereich.map((bereichId) => ({ id: bereichId })),
+			},
+			defaultTags: {
+				connect: newTags,
+			},
+		},
 	})
+
 	return redirectWithToast('/admin/benutzer', {
 		type: 'success',
 		description: id ? 'Benutzer gespeichert!' : 'Neuen Benutzer erstellt!',
@@ -105,6 +150,9 @@ export default function UserForm({ user }: { user?: UserFormData }) {
 			<TextField name={'email'} label="Email" />
 			<TextField name={'username'} label="Benutzername" />
 			<TextField name={'name'} label="Name" />
+			<MultiSelectField name="roles" label="Rollen" optionSrc="roles" />
+			<MultiSelectField name="bereich" label="Bereich" optionSrc="bereich" />
+			<MultiSelectField name="tags" label="Default Tags" optionSrc="tags" />
 			<TextField name={'kuerzel'} length="xs" label="Kürzel" />
 			<FormActions>
 				<FormStatusButton type="submit" className="flex-grow">

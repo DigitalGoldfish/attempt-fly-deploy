@@ -16,7 +16,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			_all: true,
 		},
 	})
-	console.log(counts)
 	return json({
 		counts: counts.map((count) => ({
 			count: count._count._all,

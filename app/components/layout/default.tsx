@@ -10,11 +10,13 @@ export function DefaultLayout({
 	aside,
 	menuLinks,
 	pageTitle = '',
+	wide = false,
 }: {
 	children: React.ReactNode
 	aside?: React.ReactNode
 	menuLinks?: React.ReactNode
 	pageTitle?: string
+	wide?: boolean
 }) {
 	return (
 		<div className="flex flex-col">
@@ -41,7 +43,10 @@ export function DefaultLayout({
 				</div>
 				<main
 					className="font-poppins container mx-auto my-8 h-full place-items-start"
-					style={{ minHeight: 'calc(100vh - 120px - 4rem)', maxWidth: 1800 }}
+					style={{
+						minHeight: 'calc(100vh - 120px - 4rem)',
+						minWidth: wide ? 1800 : undefined,
+					}}
 				>
 					{children}
 				</main>

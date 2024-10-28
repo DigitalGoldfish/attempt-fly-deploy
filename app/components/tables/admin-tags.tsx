@@ -9,11 +9,13 @@ import {
 	TableActionCell,
 } from '#app/components/tables/data-table-cells.tsx'
 import { DataTable } from '#app/components/tables/data-table.tsx'
+import { Badge } from '#app/components/ui/badge.tsx'
 
 export type TagsTableModel = {
 	id: string
 	label: string
 	type: string
+	bereich: string
 	createdAt: Date
 	updatedAt: Date
 }
@@ -33,16 +35,18 @@ const columns = [
 	}),
 	columnHelper.accessor('type', {
 		header: 'Type',
-		cell: (info) => (
-			<span className="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
-				<span className="flex h-full w-full items-center justify-center rounded-full bg-muted text-body-md">
-					{info.getValue()}
-				</span>
-			</span>
-		),
+		cell: (info) => <Badge> {info.getValue()}</Badge>,
 		meta: {
 			className: 'w-[50px]',
 		},
+	}),
+	columnHelper.accessor('bereich', {
+		header: 'Bereich',
+		cell: (info) => (
+			<div className="flex max-w-[250px] flex-wrap gap-1">
+				<Badge>{info.getValue()}</Badge>
+			</div>
+		),
 	}),
 	columnHelper.accessor('createdAt', {
 		header: 'Erstellt',
@@ -52,6 +56,7 @@ const columns = [
 			align: 'right',
 		},
 	}),
+
 	columnHelper.accessor('updatedAt', {
 		header: 'Aktualisiert',
 		sortingFn: 'datetime',

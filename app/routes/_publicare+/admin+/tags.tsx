@@ -13,9 +13,12 @@ export const meta: MetaFunction = () => [{ title: 'Publicare' }]
 export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)
 	const tags = await prisma.tag.findMany({
-		include: {},
+		include: { bereich: true },
 	})
-	return tags
+	return tags.map((tag) => ({
+		...tag,
+		bereich: tag.bereich?.name || '',
+	}))
 }
 
 export default function TagsAdminPage() {

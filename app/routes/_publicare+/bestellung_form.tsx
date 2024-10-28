@@ -16,10 +16,19 @@ import { Form } from '#app/components/publicare-forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import PDFSplitter from '#app/routes/_publicare+/modify-document.tsx'
+import { useEffect } from 'react'
+import { prisma } from '#app/utils/db.server.ts'
 
 export type IncomingFormType = Incoming & {
 	mail?:
-		| (Mail & { attachments: Omit<MailAttachment, 'blob'>[] })
+		| (Mail & {
+				attachments: {
+					id: string
+					contentType: string
+					fileName: string
+					size: number
+				}[]
+		  })
 		| null
 		| undefined
 	formSubmission?: FormSubmission | null
@@ -28,6 +37,11 @@ export type IncomingFormType = Incoming & {
 export const IncomingFormSchema = z.object({
 	id: z.string(),
 	type: z.string(),
+	bereich: z.string(),
+	attribute: z.string(),
+	tags: z.string().optional(),
+	neukunde: z.string(),
+	kundennr: z.string().optional(),
 })
 const resolver = zodResolver(IncomingFormSchema)
 
@@ -47,6 +61,10 @@ export async function action({ request }: ActionFunctionArgs) {
 	if (errors) {
 		return json({ errors, defaultValues })
 	}
+
+	const incoming = await prisma.incoming.findUniqueOrThrow({
+		where: { id: data.id },
+	})
 
 	console.log('successful processing of data', data)
 	return null
@@ -70,6 +88,8 @@ export default function BestellungsForm({
 			navigate: false,
 		},
 	})
+
+	useEffect(() => {}, [data])
 
 	console.log('rerender')
 	if (!data) {

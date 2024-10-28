@@ -25,9 +25,7 @@ export type Selectable = {
 	label: string
 	value: string
 }
-type ApiResponse = {
-	option: Selectable[]
-}
+type ApiResponse = Selectable[]
 
 const widgetlabels = {
 	placeholder: 'Select',
@@ -61,11 +59,11 @@ export function SingleSelectField({
 
 	useEffect(() => {
 		if (fetcher.state === 'idle' && fetcher.data == null) {
-			fetcher.load(`/api/multiselect_options?src=${optionSrc}`)
+			fetcher.load(`/api/multiselect/${optionSrc}`)
 		}
 	}, [fetcher, optionSrc])
 
-	const options = fetcher.data?.option || []
+	const options = fetcher.data || ([] as ApiResponse)
 	const state = !fetcher.data ? 'loading' : 'loaded'
 
 	const {

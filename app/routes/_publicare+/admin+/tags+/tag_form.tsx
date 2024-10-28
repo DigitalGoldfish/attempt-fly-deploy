@@ -9,11 +9,14 @@ import { TextField } from '#app/components/forms/text-field.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
+import { MultiSelectField } from '#app/components/forms/multiselect-field.tsx'
+import { SingleSelectField } from '#app/components/forms/singleselect-field.tsx'
 
 const TagFormSchema = z.object({
 	id: z.string().optional(),
 	label: z.string(),
 	type: z.string(),
+	bereich: z.string(),
 })
 type TagFormData = z.infer<typeof TagFormSchema>
 
@@ -44,6 +47,7 @@ const UserFormSchemaServer = TagFormSchema /* .superRefine(
 const userFormDefaultValues = {
 	label: '',
 	type: '',
+	bereich: '',
 }
 const resolver = zodResolver(TagFormSchema)
 
@@ -61,13 +65,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 		return json({ errors, defaultValues })
 	}
 
-	const { id, ...rest } = data
+	const { id, bereich, ...rest } = data
 	await prisma.tag.upsert({
 		where: {
 			id: id || '',
 		},
-		update: rest,
-		create: rest,
+		update: { ...rest, bereich: { connect: { id: bereich } } },
+		create: { ...rest, bereich: { connect: { id: bereich } } },
 	})
 	return redirectWithToast('/admin/tags', {
 		type: 'success',
@@ -100,6 +104,7 @@ export default function TagForm({ tag }: { tag?: TagFormData }) {
 		>
 			<TextField name={'label'} label="Label" />
 			<TextField name={'type'} label="Type" />
+			<SingleSelectField name="bereich" label="Bereich" optionSrc="bereich" />
 			<FormActions>
 				<FormStatusButton type="submit" className="flex-grow">
 					{tag ? 'Tag speichern' : 'Tag erstellen'}

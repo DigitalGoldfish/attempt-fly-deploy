@@ -298,8 +298,7 @@ export function Visualisation({
 				label: 'Gelöscht',
 				href: '/liste?status=Geloescht',
 				variant: 'deleted',
-				count:
-					counts.find((count) => count.status === 'Geloescht')?.count || -1,
+				count: counts.find((count) => count.status === 'Geloescht')?.count || 0,
 				icon: (
 					<Trash2
 						className="absolute bottom-0 left-0 h-full text-white opacity-50"

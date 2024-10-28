@@ -13,11 +13,13 @@ export const meta: MetaFunction = () => [{ title: 'Publicare' }]
 export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)
 	const users = await prisma.user.findMany({
-		include: { roles: true },
+		include: { roles: true, bereich: true, defaultTags: true },
 	})
 	return users.map((user) => ({
 		...user,
-		roles: user.roles.map((role) => role.name || ''),
+		roles: user.roles.map((role) => role.label || ''),
+		bereich: user.bereich.map((bereich) => bereich.label || ''),
+		tags: user.defaultTags.map((tag) => tag.label),
 	}))
 }
 

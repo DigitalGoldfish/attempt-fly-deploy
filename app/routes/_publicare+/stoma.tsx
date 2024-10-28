@@ -1,6 +1,5 @@
 import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
-import Liste from '../_publicare_v1/liste.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Counter } from '#app/components/layout/counter.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
@@ -16,31 +15,51 @@ export const meta: MetaFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)
-	return await prisma.incoming.findFirst({
+	await prisma.incoming.count({
 		where: {
 			status: 'Kundendienst',
-			bereich: 'StoMa',
+			neuanlage: true,
 		},
-		include: {
-			mail: {
-				include: { attachments: true },
-			},
-			formSubmission: true,
-		},
-		skip: 0,
 	})
+	return {
+		highpriority: await prisma.incoming.count({
+			where: {
+				status: 'Kundendienst',
+				neuanlage: true,
+			},
+		}),
+		others: await prisma.incoming.count({
+			where: {
+				status: 'Kundendienst',
+				neuanlage: false,
+			},
+		}),
+		incoming: await prisma.incoming.findFirst({
+			where: {
+				status: 'Kundendienst',
+				bereich: 'StoMa',
+			},
+			include: {
+				mail: {
+					include: { attachments: true },
+				},
+				formSubmission: true,
+			},
+			skip: 0,
+		}),
+	}
 }
 
 export default function Stoma() {
-	const data = useLoaderData<typeof loader>()
+	const { incoming, highpriority, others } = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
+			wide
 			pageTitle="Bestellungen Stoma/Inko"
 			aside={
 				<div className={'flex gap-8'}>
-					<Counter label={'Inbox'} count={1000} />
-					<Counter label={'Neuanlage'} count={2} />
-					<Counter label={'Meine'} count={100} />
+					<Counter label={'Inbox'} count={others} />
+					<Counter label={'Neuanlage'} count={highpriority} />
 				</div>
 			}
 			menuLinks={
@@ -52,7 +71,7 @@ export default function Stoma() {
 				</Button>
 			}
 		>
-			<Bestelldetails data={data} />
+			<Bestelldetails data={incoming} />
 			<Outlet />
 		</DefaultLayout>
 	)

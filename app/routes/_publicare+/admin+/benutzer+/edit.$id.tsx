@@ -11,15 +11,23 @@ import { prisma } from '#app/utils/db.server.ts'
 
 export async function loader({ params }: LoaderFunctionArgs) {
 	const { id } = params
-	const { ...user } = await prisma.user.findUniqueOrThrow({
-		where: {
-			id,
-		},
-		include: {},
-	})
+	const { roles, bereich, defaultTags, ...user } =
+		await prisma.user.findUniqueOrThrow({
+			where: {
+				id,
+			},
+			include: {
+				roles: true,
+				bereich: true,
+				defaultTags: true,
+			},
+		})
 	return {
 		user: {
 			...user,
+			roles: roles.map((role) => role.id),
+			bereich: bereich.map((bereich) => bereich.id),
+			tags: defaultTags.map((tag) => tag.id),
 		},
 	}
 }
