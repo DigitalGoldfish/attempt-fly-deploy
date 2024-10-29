@@ -22,6 +22,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 
 import { HistoryDrawer } from '#app/routes/_publicare+/drawer.tsx'
 import { stampAndPrint } from '#app/utils/pdf-stamper.tsx'
+import { DeletedBlock } from '#app/components/blocks/geloescht.tsx'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -130,6 +131,7 @@ export default function BestellungsForm({
 	const { reset } = methods
 
 	const [isStamping, setIsStamping] = useState(false)
+	const [isDeleted, setIsDeleted] = useState(false)
 
 	const handleStampAndPrint = async () => {
 		setIsStamping(true)
@@ -168,6 +170,7 @@ export default function BestellungsForm({
 				// tags: [],
 				// attribute: [],
 			})
+			setIsDeleted(false)
 		}
 	}, [reset, data])
 
@@ -201,28 +204,42 @@ export default function BestellungsForm({
 					>
 						<div className="h-full flex-grow overflow-y-scroll pr-4">
 							<MessageBlock data={data} />
-							<FaxdienstBlock data={data} tags={tags} bereiche={bereiche} />
-							{!['Faxdienst', 'Forwarded', 'Geloescht'].includes(
-								data.status,
-							) && <KundendienstBlock data={data} />}
+							{isDeleted ? (
+								<DeletedBlock setIsDeleted={setIsDeleted} />
+							) : (
+								<>
+									<FaxdienstBlock data={data} tags={tags} bereiche={bereiche} />
+									{!['Faxdienst', 'Forwarded', 'Geloescht'].includes(
+										data.status,
+									) && <KundendienstBlock data={data} />}
+								</>
+							)}
 						</div>
 						<div className="flex flex-row-reverse content-end gap-4">
 							<Button variant={'pcblue'} type={'submit'}>
 								Speichern
 							</Button>
-							<Button
-								variant={'default'}
-								type={'button'}
-								onClick={handleStampAndPrint}
-							>
-								Drucken
-							</Button>
+							{!isDeleted && (
+								<Button
+									variant={'default'}
+									type={'button'}
+									onClick={handleStampAndPrint}
+								>
+									Drucken
+								</Button>
+							)}
 							<ClientOnly fallback={null}>{() => <HistoryDrawer />}</ClientOnly>
 
 							<div className="flex-1"></div>
-							<Button variant={'destructive'} type={'button'}>
-								Löschen
-							</Button>
+							{!isDeleted && (
+								<Button
+									variant={'destructive'}
+									type={'button'}
+									onClick={() => setIsDeleted(true)}
+								>
+									Löschen
+								</Button>
+							)}
 						</div>
 					</div>
 				</div>

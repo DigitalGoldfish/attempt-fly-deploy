@@ -25,12 +25,15 @@ function OptionButton(props: {
 	)
 }
 
-export function DeletedBlock() {
-	const [isDeleted, setIsDeleted] = useState(false)
+export function DeletedBlock({
+	setIsDeleted,
+}: {
+	setIsDeleted: (x: boolean) => void
+}) {
 	const [deletionReason, setDeletionReason] = useState('')
 	return (
 		<div>
-			<h3 className={'text-h5'}>Kundendienst</h3>
+			<h3 className={'text-h5'}>Gelöscht</h3>
 			<div className={'my-8 grid grid-cols-5'}>
 				<span>Grund:</span>
 				<div className="col-span-4 flex gap-4">

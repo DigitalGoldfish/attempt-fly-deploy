@@ -57,6 +57,7 @@
     "@epic-web/remember": "^1.1.0",
     "@epic-web/totp": "^1.1.2",
     "@fontsource/titillium-web": "^5.1.0",
+    "@headlessui/react": "^2.2.0",
     "@hookform/resolvers": "^3.9.0",
     "@nasa-gcn/remix-seo": "^2.0.1",
     "@paralleldrive/cuid2": "^2.2.2",
