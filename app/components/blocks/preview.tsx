@@ -6,6 +6,13 @@ import PDFSplitter, {
 	PDFPageData,
 } from '#app/routes/_publicare+/modify-document.tsx'
 import { parse } from 'node-html-parser'
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from '#app/components/ui/tabs.tsx'
+import { MailAttachment } from '@prisma/client'
 
 export function PreviewBlock({ data }: { data: IncomingFormType }) {
 	const { mail } = data
@@ -62,36 +69,29 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 		return (
 			<>
 				<div className="flex max-w-[800px] flex-col gap-4">
-					<div className="flex flex-wrap gap-4">
-						{attachments.map((attachment, index) => (
+					<Tabs defaultValue="account" className="m-r-[100px] w-full">
+						<TabsList className="relative flex w-full justify-start overflow-x-auto">
+							{attachments.map((attachment, index) => (
+								<TabsTrigger value={`file${index + 1}`} key={attachment.id}>
+									<div className={'max-w-24 overflow-hidden overflow-ellipsis'}>
+										{attachment.fileName}
+									</div>
+								</TabsTrigger>
+							))}
 							<Button
-								key={attachment.id}
+								className="absolute right-0"
 								variant="outline"
-								onClick={() => setDisplayedFile(index)}
+								onClick={() => setEditFiles(true)}
 							>
-								{attachment.fileName}
+								Edit Files
 							</Button>
+						</TabsList>
+						{attachments.map((attachment, index) => (
+							<TabsContent value={`file${index + 1}`}>
+								<FilePreview attachment={attachment} />
+							</TabsContent>
 						))}
-						<Button variant="outline" onClick={() => setEditFiles(true)}>
-							Edit Files
-						</Button>
-					</div>
-					<div
-						className="aspect-[2/3] w-full"
-						style={{ maxHeight: 'calc(100vh - 300px)' }}
-					>
-						{selectedAttachment.contentType.includes('pdf') ? (
-							<iframe
-								className="h-full w-full"
-								src={`/resources/mail-attachment/${selectedAttachment.id}`}
-							></iframe>
-						) : (
-							<img
-								className="w-full max-w-full"
-								src={`/resources/mail-attachment/${selectedAttachment.id}`}
-							/>
-						)}
-					</div>
+					</Tabs>
 				</div>
 				{editFiles && (
 					<PDFSplitter data={pages} onClose={() => setEditFiles(false)} />
@@ -100,4 +100,29 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 		)
 	}
 	return null
+}
+
+export function FilePreview({
+	attachment,
+}: {
+	attachment: Omit<MailAttachment, 'blob'>
+}) {
+	return (
+		<div
+			className="aspect-[2/3] w-full"
+			style={{ maxHeight: 'calc(100vh - 300px)' }}
+		>
+			{attachment.contentType.includes('pdf') ? (
+				<iframe
+					className="h-full w-full"
+					src={`/resources/mail-attachment/${attachment.id}`}
+				></iframe>
+			) : (
+				<img
+					className="max-w-full"
+					src={`/resources/mail-attachment/${attachment.id}`}
+				/>
+			)}
+		</div>
+	)
 }
