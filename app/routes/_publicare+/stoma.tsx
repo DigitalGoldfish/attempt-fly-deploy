@@ -9,6 +9,7 @@ import { List } from 'lucide-react'
 import React from 'react'
 import { prisma } from '#app/utils/db.server.ts'
 import { IncomingStatus } from '#app/const/IncomingStatus.ts'
+import { nextIncoming } from '#app/db/incoming.tsx'
 
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellungen StoMa/Inko' },
@@ -42,27 +43,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 				bereich: 'StoMa',
 			},
 		}),
-		incoming: await prisma.incoming.findFirst({
-			where: {
-				status: 'Kundendienst',
-				bereich: 'StoMa',
-			},
-			include: {
-				mail: {
-					include: {
-						attachments: {
-							select: {
-								id: true,
-								fileName: true,
-								contentType: true,
-								size: true,
-							},
-						},
-					},
-				},
-				formSubmission: true,
-			},
-			skip: 0,
+		incoming: await nextIncoming({
+			status: 'Kundendienst',
+			bereich: 'StoMa',
 		}),
 	}
 }
@@ -70,6 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function Stoma() {
 	const { incoming, highpriority, onhold, inbox } =
 		useLoaderData<typeof loader>()
+
 	return (
 		<DefaultLayout
 			wide

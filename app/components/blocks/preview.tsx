@@ -2,7 +2,10 @@ import { IncomingFormType } from '#app/routes/_publicare+/bestellung_form.tsx'
 import { useEffect, useState } from 'react'
 import { Button } from '#app/components/ui/button.tsx'
 import { Link } from '@remix-run/react'
-import PDFSplitter from '#app/routes/_publicare+/modify-document.tsx'
+import PDFSplitter, {
+	PDFPageData,
+} from '#app/routes/_publicare+/modify-document.tsx'
+import { parse } from 'node-html-parser'
 
 export function PreviewBlock({ data }: { data: IncomingFormType }) {
 	const { mail } = data
@@ -20,6 +23,39 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 	if (!attachments || !attachments.length) {
 		return <div>No Attachments</div>
 	}
+
+	const pages: PDFPageData[] = []
+	attachments.forEach((attachment, attachmentIndex) => {
+		if (attachment.contentType.includes('pdf')) {
+			const previewImages = attachment.previewImages
+				? (JSON.parse(attachment.previewImages) as string[])
+				: ([] as string[])
+
+			previewImages.forEach((previewImage, pageIndex) => {
+				pages.push({
+					imageUrl: previewImage,
+					pdfUrl: undefined,
+					columnIndex: attachmentIndex,
+					pageNumber: pageIndex + 1,
+					stackIndex: pageIndex,
+					rotation: 0,
+					stackedBelow: pageIndex > 0 ? pages[pages.length - 1] : undefined,
+					isGrayedOut: false,
+				})
+			})
+		} else {
+			pages.push({
+				imageUrl: `/resources/mail-attachment/${attachment.id}`,
+				pdfUrl: undefined,
+				columnIndex: attachmentIndex,
+				pageNumber: 1,
+				stackIndex: 0,
+				rotation: 0,
+				stackedBelow: undefined,
+				isGrayedOut: false,
+			})
+		}
+	})
 
 	const selectedAttachment = attachments[displayedFile]
 	if (selectedAttachment) {
@@ -57,7 +93,9 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 						)}
 					</div>
 				</div>
-				{editFiles && <PDFSplitter onClose={() => setEditFiles(false)} />}
+				{editFiles && (
+					<PDFSplitter data={pages} onClose={() => setEditFiles(false)} />
+				)}
 			</>
 		)
 	}

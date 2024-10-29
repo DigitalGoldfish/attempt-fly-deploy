@@ -9,6 +9,7 @@ import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import { nextIncoming } from '#app/db/incoming.tsx'
 
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellungen Wundversorgung' },
@@ -17,27 +18,9 @@ export const meta: MetaFunction = () => [
 export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)
 	return {
-		incoming: await prisma.incoming.findFirst({
-			where: {
-				status: 'Kundendienst',
-				bereich: 'Wund',
-			},
-			include: {
-				mail: {
-					include: {
-						attachments: {
-							select: {
-								id: true,
-								fileName: true,
-								contentType: true,
-								size: true,
-							},
-						},
-					},
-				},
-				formSubmission: true,
-			},
-			skip: 0,
+		incoming: await nextIncoming({
+			status: 'Kundendienst',
+			bereich: 'Wund',
 		}),
 		highpriority: await prisma.incoming.count({
 			where: {

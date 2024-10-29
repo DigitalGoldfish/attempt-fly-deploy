@@ -9,9 +9,9 @@ import {
 	DialogTitle,
 } from '#app/components/ui/dialog.tsx'
 
-interface PDFPageData {
+export interface PDFPageData {
 	imageUrl: string
-	pdfUrl: string
+	pdfUrl?: string
 	pageNumber: number
 	columnIndex: number
 	stackIndex: number
