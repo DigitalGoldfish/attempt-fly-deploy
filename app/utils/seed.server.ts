@@ -137,6 +137,40 @@ export async function createIncoming(forceFaxdienst: boolean) {
 	}
 }
 
+export async function createSpecialCaseIncoming() {
+	const status = statusProbability[0]
+	const attachments = await getMailAttachmentData(3)
+
+	if (!status) {
+		return false
+	}
+	const email = await prisma.mail.create({
+		data: {
+			sender: faker.internet.email(),
+			message: '',
+			subject: 'Bestellung',
+			recipient: 'bestellung@publicare.at',
+			type: 'email',
+			attachments: attachments
+				? {
+						createMany: {
+							data: attachments,
+						},
+					}
+				: undefined,
+		},
+	})
+
+	await prisma.incoming.create({
+		data: {
+			printed: false,
+			status: status.status,
+			source: Source.Email,
+			mail: { connect: { id: email.id } },
+		},
+	})
+}
+
 export async function createIncomingEmail(forceFaxdienst: boolean) {
 	const status = forceFaxdienst
 		? statusProbability[0]
@@ -212,9 +246,10 @@ type FileSpec = {
 	fileName: string
 	size: number
 	contentType: string
+	previewImages?: string
 }
 
-async function getMailAttachmentData() {
+async function getMailAttachmentData(forceIndex: number | boolean = false) {
 	const directory = 'public/demodata/email/'
 	const demoData = [
 		[
@@ -248,20 +283,30 @@ async function getMailAttachmentData() {
 	]
 
 	const randomIndex = Math.floor(demoData.length * Math.random())
-	const selectedFiles = demoData[randomIndex]
+	const selectedFiles = demoData[forceIndex ? forceIndex : randomIndex]
 
+	console.log('selectedFiles', selectedFiles)
 	if (selectedFiles) {
 		const files = await Promise.all(
 			selectedFiles.map((selectedFile) =>
 				fs.promises.readFile(`${directory}${selectedFile.fileName}`),
 			),
 		)
-		return selectedFiles.map((file, index) => ({
-			fileName: file.fileName,
-			contentType: file.contentType,
-			size: files[index] ? Buffer.byteLength(files[index]) : 0,
-			blob: files[index] || Buffer.from(''),
-		}))
+
+		const promises = selectedFiles.map(async (file, index) => {
+			const imageUrls = file.contentType.includes('pdf')
+				? await pdfToImages(`${directory}${file.fileName}`, 2)
+				: []
+			return {
+				fileName: file.fileName,
+				contentType: file.contentType,
+				size: files[index] ? Buffer.byteLength(files[index]) : 0,
+				blob: files[index] || Buffer.from(''),
+				previewImages: JSON.stringify(imageUrls),
+			}
+		})
+
+		return Promise.all(promises)
 	}
 
 	return []
@@ -286,16 +331,15 @@ async function getFaxAttachmentData(): Promise<FileSpec | null> {
 			`${directory}${selectedFile.fileName}`,
 		)
 
-		const imageUrls = await pdfToImages(
-			`${directory}${selectedFile.fileName}`,
-			2,
-		)
-		console.log('preview image urls', imageUrls)
+		const imageUrls = selectedFile.contentType.includes('pdf')
+			? await pdfToImages(`${directory}${selectedFile.fileName}`, 2)
+			: []
 		return {
 			fileName: selectedFile.fileName,
 			contentType: selectedFile.contentType,
 			blob: buffer,
 			size: Buffer.byteLength(buffer),
+			previewImages: JSON.stringify(imageUrls),
 		}
 	}
 

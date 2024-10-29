@@ -17,7 +17,10 @@ import { z } from 'zod'
 import { getValidatedFormData, useRemixForm } from 'remix-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
-import { createIncoming } from '#app/utils/seed.server.ts'
+import {
+	createIncoming,
+	createSpecialCaseIncoming,
+} from '#app/utils/seed.server.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare' }]
 
@@ -47,8 +50,12 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	const { type, count } = data
-	for (let i = 0; i < count; i++) {
-		await createIncoming(type === 'faxdienst')
+	if (type === 'specialcase') {
+		await createSpecialCaseIncoming()
+	} else {
+		for (let i = 0; i < count; i++) {
+			await createIncoming(type === 'faxdienst')
+		}
 	}
 
 	return redirectWithToast('/admin/demodata', {
@@ -130,6 +137,9 @@ export default function TagsAdminPage() {
 				</SeedTile>
 				<SeedTile type="random" count={1000} color="smalltext">
 					Create with random status
+				</SeedTile>
+				<SeedTile type="specialcase" count={1} color="smalltext">
+					Mail with lots of attachments
 				</SeedTile>
 			</div>
 		</DefaultLayout>
