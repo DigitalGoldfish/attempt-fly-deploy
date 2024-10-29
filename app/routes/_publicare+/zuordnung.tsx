@@ -70,22 +70,22 @@ export default function BestellungsDetails() {
 	const { fields } = useFieldArray({ name: 'users', control: methods.control })
 
 	return (
-		<DefaultLayout pageTitle="Details">
+		<DefaultLayout pageTitle="Zuordnung">
 			<Form<UserFormData>
 				methods={methods}
 				method="POST"
 				id="user_form"
 				layout="horizontal"
-				className="flex flex-col gap-4"
+				className="flex w-full flex-col gap-4"
 			>
 				{fields.map((field, index) => (
-					<div key={field.id} className="flex flex-row gap-2">
-						<MultiSelectField
-							name={`users.${index}.tagIds`}
-							label={users[index]?.name || 'Unknown user'}
-							optionSrc={'tags'}
-						/>
-					</div>
+					<MultiSelectField
+						key={field.id}
+						name={`users.${index}.tagIds`}
+						label={users[index]?.name || 'Unknown user'}
+						optionSrc={'tags'}
+						maxValuesShown={4}
+					/>
 				))}
 			</Form>
 			<Outlet />

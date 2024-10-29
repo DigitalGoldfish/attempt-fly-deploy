@@ -118,7 +118,7 @@ export default function ({ data }: { data: SerializeFrom<Incoming>[] }) {
 							<TableRow
 								key={row.id}
 								onClick={() => {
-									navigate('/details')
+									navigate(`/details/${row.original.id}`)
 								}}
 							>
 								{row.getVisibleCells().map((cell) => (

@@ -66,6 +66,23 @@ export async function action({ request }: ActionFunctionArgs) {
 		where: { id: data.id },
 	})
 
+	if (incoming.status === 'Faxdienst') {
+		await prisma.incoming.update({
+			where: {
+				id: incoming.id,
+			},
+			data: {
+				type: data?.type,
+				bereich: data?.bereich,
+				neuanlage: data?.neukunde === 'JA',
+				kundennr: data?.kundennr,
+				// TODO: Mitarbeiter, Attribute
+
+				status: 'Kundendienst',
+			},
+		})
+	}
+
 	console.log('successful processing of data', data)
 	return null
 }
@@ -89,9 +106,24 @@ export default function BestellungsForm({
 		},
 	})
 
-	useEffect(() => {}, [data])
-
 	console.log('rerender')
+	const { reset } = methods
+
+	useEffect(() => {
+		if (data) {
+			reset({
+				id: data.id,
+				type: data.type || 'Bestellung',
+				bereich: data.bereich || '',
+				kundennr: data.kundennr || '',
+				neukunde: data.kundennr ? (data.neuanlage ? 'JA' : 'NEIN') : '',
+				// TODO:
+				// tags: [],
+				// attribute: [],
+			})
+		}
+	}, [reset, data])
+
 	if (!data) {
 		return <div>No work to do</div>
 	}

@@ -8,6 +8,7 @@ import { Button } from '#app/components/ui/button.tsx'
 import { List } from 'lucide-react'
 import React from 'react'
 import { prisma } from '#app/utils/db.server.ts'
+import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellungen StoMa/Inko' },
@@ -15,23 +16,30 @@ export const meta: MetaFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)
-	await prisma.incoming.count({
-		where: {
-			status: 'Kundendienst',
-			neuanlage: true,
-		},
-	})
 	return {
+		inbox: await prisma.incoming.count({
+			where: {
+				status: 'Kundendienst',
+				bereich: 'StoMa',
+			},
+		}),
 		highpriority: await prisma.incoming.count({
 			where: {
 				status: 'Kundendienst',
+				bereich: 'StoMa',
 				neuanlage: true,
 			},
 		}),
-		others: await prisma.incoming.count({
+		onhold: await prisma.incoming.count({
 			where: {
-				status: 'Kundendienst',
-				neuanlage: false,
+				status: {
+					in: [
+						IncomingStatus.Nachfrage,
+						IncomingStatus.KVbenoetigt,
+						IncomingStatus.FehlendesProdukt,
+					],
+				},
+				bereich: 'StoMa',
 			},
 		}),
 		incoming: await prisma.incoming.findFirst({
@@ -41,7 +49,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			},
 			include: {
 				mail: {
-					include: { attachments: true },
+					include: {
+						attachments: {
+							select: {
+								id: true,
+								fileName: true,
+								contentType: true,
+								size: true,
+							},
+						},
+					},
 				},
 				formSubmission: true,
 			},
@@ -51,15 +68,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Stoma() {
-	const { incoming, highpriority, others } = useLoaderData<typeof loader>()
+	const { incoming, highpriority, onhold, inbox } =
+		useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
 			wide
 			pageTitle="Bestellungen Stoma/Inko"
 			aside={
 				<div className={'flex gap-8'}>
-					<Counter label={'Inbox'} count={others} />
+					<Counter label={'Inbox'} count={inbox} />
 					<Counter label={'Neuanlage'} count={highpriority} />
+					<Counter label={'OnHold'} count={onhold} />
 				</div>
 			}
 			menuLinks={

@@ -1,12 +1,13 @@
-import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
+import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
-import { DefaultLayout } from '#app/components/layout/default.tsx'
-import { Counter } from '#app/components/layout/counter.tsx'
-import { requireUserId } from '#app/utils/auth.server.ts'
-import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
-import { Button } from '#app/components/ui/button.tsx'
 import { List } from 'lucide-react'
 import React from 'react'
+import { Counter } from '#app/components/layout/counter.tsx'
+import { DefaultLayout } from '#app/components/layout/default.tsx'
+import { Button } from '#app/components/ui/button.tsx'
+import { IncomingStatus } from '#app/const/IncomingStatus.ts'
+import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
+import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
 export const meta: MetaFunction = () => [
@@ -15,32 +16,70 @@ export const meta: MetaFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)
-	return await prisma.incoming.findFirst({
-		where: {
-			status: 'Kundendienst',
-			bereich: 'Wund',
-		},
-		include: {
-			mail: {
-				include: { attachments: true },
+	return {
+		incoming: await prisma.incoming.findFirst({
+			where: {
+				status: 'Kundendienst',
+				bereich: 'Wund',
 			},
-			formSubmission: true,
-		},
-		skip: 0,
-	})
+			include: {
+				mail: {
+					include: {
+						attachments: {
+							select: {
+								id: true,
+								fileName: true,
+								contentType: true,
+								size: true,
+							},
+						},
+					},
+				},
+				formSubmission: true,
+			},
+			skip: 0,
+		}),
+		highpriority: await prisma.incoming.count({
+			where: {
+				status: 'Kundendienst',
+				bereich: 'Wund',
+				neuanlage: true,
+			},
+		}),
+		onhold: await prisma.incoming.count({
+			where: {
+				status: {
+					in: [
+						IncomingStatus.Nachfrage,
+						IncomingStatus.KVbenoetigt,
+						IncomingStatus.FehlendesProdukt,
+					],
+				},
+				bereich: 'Wund',
+				neuanlage: false,
+			},
+		}),
+		inbox: await prisma.incoming.count({
+			where: {
+				status: 'Kundendienst',
+				bereich: 'Wund',
+			},
+		}),
+	}
 }
 
 export default function Wundversorgung() {
-	const data = useLoaderData<typeof loader>()
+	const { incoming, onhold, inbox, highpriority } =
+		useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
 			wide
 			pageTitle="Bestellungen Wundversorgung"
 			aside={
 				<div className={'flex gap-8'}>
-					<Counter label={'Inbox'} count={1000} />
-					<Counter label={'Neuanlage'} count={2} />
-					<Counter label={'Meine'} count={100} />
+					<Counter label={'Inbox'} count={inbox} />
+					<Counter label={'Neuanlage'} count={highpriority} />
+					<Counter label={'OnHold'} count={onhold} />
 				</div>
 			}
 			menuLinks={
@@ -52,7 +91,7 @@ export default function Wundversorgung() {
 				</Button>
 			}
 		>
-			<Bestelldetails data={data} />
+			<Bestelldetails data={incoming} />
 			<Outlet />
 		</DefaultLayout>
 	)

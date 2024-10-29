@@ -23,8 +23,8 @@ export function MessageBlock({ data }: { data: IncomingFormType }) {
 					<br />
 				</div>
 				<div className="flex flex-col gap-2">
-					<Button>Weiterleiten an buchhaltung@publicare.at </Button>
-					<Button>An office@publicare.at weiterleiten</Button>
+					<Button>FW an buchhaltung@publicare.at </Button>
+					<Button>FW an office@publicare.at</Button>
 					<Button>Weiterleiten</Button>
 				</div>
 				<div className="col-span-3">

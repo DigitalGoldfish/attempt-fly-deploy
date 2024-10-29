@@ -41,6 +41,7 @@ export function MultiSelectField({
 	className,
 	disabled: fieldDisabled,
 	alwaysShowError = false,
+	maxValuesShown = 2,
 }: {
 	name: string
 	label: string
@@ -48,6 +49,7 @@ export function MultiSelectField({
 	className?: string
 	alwaysShowError?: boolean
 	optionSrc?: SuggestionType
+	maxValuesShown?: number
 } & FieldProps & {
 		length?: 'xs' | 'sm' | 'md' | 'lg'
 	}) {
@@ -58,7 +60,6 @@ export function MultiSelectField({
 	const fetcher = useFetcher<ApiResponse>()
 
 	useEffect(() => {
-		console.log('fetcher.state', fetcher.state, fetcher.data)
 		if (fetcher.state === 'idle' && fetcher.data == null) {
 			fetcher.load(`/api/multiselect/${optionSrc}`)
 		}
@@ -138,9 +139,10 @@ export function MultiSelectField({
 										selectedValues.length === 0 &&
 										widgetlabels.placeholder}
 									{selectedValues.length === 1 && selectedValues[0]?.label}
-									{selectedValues.length === 2 &&
+									{selectedValues.length > 1 &&
+										selectedValues.length <= maxValuesShown &&
 										selectedValues.map(({ label }) => label).join(', ')}
-									{selectedValues.length > 2 &&
+									{selectedValues.length > maxValuesShown &&
 										`${selectedValues.length} ${widgetlabels.many_selected}`}
 								</span>
 								<Icon

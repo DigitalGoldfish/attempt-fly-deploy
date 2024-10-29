@@ -45,7 +45,7 @@ export function DefaultLayout({
 					className="font-poppins container mx-auto my-8 h-full place-items-start"
 					style={{
 						minHeight: 'calc(100vh - 120px - 4rem)',
-						minWidth: wide ? 1800 : undefined,
+						maxWidth: wide ? 1800 : undefined,
 					}}
 				>
 					{children}
