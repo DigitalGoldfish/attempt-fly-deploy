@@ -146,7 +146,7 @@ export default function BestellungsForm({
 
 					if (pdfAttachment) {
 						await stampAndPrint(
-							`http://localhost:3000/resources/mail-attachment/${pdfAttachment.id}`,
+							`https://publicare.prototype.mangomedia.at/resources/mail-attachment/${pdfAttachment.id}`,
 						)
 					}
 				}

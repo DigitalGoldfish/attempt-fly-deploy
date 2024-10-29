@@ -14,12 +14,16 @@ export async function pdfToImages(
 
 	for await (const image of document) {
 		const imagePath = path.join(
-			'public',
-			'preview',
+			process.env.FILESYSTEM_PATH,
+			`${uniqueIdentifier}-page${counter}.png`,
+		)
+		const publicPath = path.join(
+			'resources',
+			'pdfpreview',
 			`${uniqueIdentifier}-page${counter}.png`,
 		)
 		await fs.writeFile(imagePath, image)
-		imagePaths.push(imagePath)
+		imagePaths.push(publicPath)
 		counter++
 	}
 
