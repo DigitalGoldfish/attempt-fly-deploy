@@ -1,4 +1,4 @@
-import { Incoming } from '@prisma/client'
+import { Bereich, Incoming, Tag } from '@prisma/client'
 import { clsx } from 'clsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { useController, useFormContext, useWatch } from 'react-hook-form'
@@ -8,57 +8,66 @@ import { TextField } from '#app/components/forms/text-field.tsx'
 export function SelectButtons({
 	fieldName,
 	options,
+	multiple = false,
 }: {
 	fieldName: string
 	options: Selectable[]
+	multiple?: boolean
 }) {
 	const { field } = useController({ name: fieldName })
 	const { onChange, onBlur, name, value } = field
+	const currentValue = (value as string[]) || ([] as string[])
 
 	return (
 		<div className="col-span-4 flex gap-4">
-			{options.map((option) => (
-				<Button
-					id={`${name}_${option.value}`}
-					type={'button'}
-					className={clsx(
-						value === option.value
-							? 'bg-teal-600 text-white hover:bg-teal-200'
-							: 'border border-gray-700 bg-white text-black hover:bg-teal-200',
-					)}
-					onClick={() => {
-						onChange(option.value)
-						onBlur()
-					}}
-				>
-					{option.label}
-				</Button>
-			))}
+			{options.map((option) => {
+				const selected = multiple
+					? currentValue.includes(option.value)
+					: value === option.value
+				return (
+					<Button
+						key={option.value}
+						id={`${name}_${option.value}`}
+						type={'button'}
+						className={clsx(
+							selected
+								? 'bg-teal-600 text-white hover:bg-teal-200'
+								: 'border border-gray-700 bg-white text-black hover:bg-teal-200',
+						)}
+						onClick={() => {
+							if (multiple) {
+								if (currentValue.includes(option.value)) {
+									onChange(currentValue.filter((val) => val !== option.value))
+								} else {
+									onChange([...currentValue, option.value])
+								}
+							} else {
+								onChange(option.value)
+							}
+							onBlur()
+						}}
+					>
+						{option.label}
+					</Button>
+				)
+			})}
 		</div>
 	)
 }
 
-export function FaxdienstBlock({ data }: { data: Incoming }) {
+export function FaxdienstBlock({
+	data,
+	tags,
+}: {
+	data: Incoming
+	tags: (Tag & { bereich: Bereich | null })[]
+}) {
 	const bereich = useWatch({ name: 'bereich' })
 	const type = useWatch({ name: 'type' })
 
-	const assignableTo = [
-		{ label: 'AR', value: 'AR' },
-		{ label: 'AWO', value: 'AWO' },
-		{ label: 'BL', value: 'BL' },
-		{ label: 'CH', value: 'CH' },
-		{ label: 'JU', value: 'JU' },
-		{ label: 'EK', value: 'EK' },
-
-		/* 'MAS',
-		'NR',
-		'SIST',
-		'SKA',
-		'SP',
-		'STS',
-		'SUFU',
-		'SUL', */
-	]
+	const assignableTo = tags
+		.filter((tag) => tag.bereich && tag.bereich.name === bereich)
+		.map((tag) => ({ value: tag.id, label: tag.label }))
 
 	return (
 		<div>
@@ -88,7 +97,7 @@ export function FaxdienstBlock({ data }: { data: Incoming }) {
 							fieldName="bereich"
 							options={[
 								{ label: 'StoMa', value: 'StoMa' },
-								{ label: 'Wundversorgung', value: 'Wund' },
+								{ label: 'Wundversorgung', value: 'Wundversorgung' },
 							]}
 						/>
 					</div>
@@ -99,6 +108,7 @@ export function FaxdienstBlock({ data }: { data: Incoming }) {
 				<div className="col-span-4 flex gap-4">
 					<SelectButtons
 						fieldName="attribute"
+						multiple
 						options={[
 							{ label: 'Ohne Verordnung', value: 'Ohne Verordnung' },
 							{ label: 'Benötigt KV', value: 'Benötigt KV' },
@@ -106,9 +116,9 @@ export function FaxdienstBlock({ data }: { data: Incoming }) {
 					/>
 				</div>
 			</div>
-			{bereich === 'StoMa' && (
+			{assignableTo.length > 0 && (
 				<div className={'my-4 grid grid-cols-5'}>
-					<span>Kundendienst-MA:</span>
+					<span>Tags:</span>
 					<SelectButtons fieldName="tags" options={assignableTo} />
 				</div>
 			)}

@@ -11,7 +11,7 @@ export function MessageBlock({ data }: { data: IncomingFormType }) {
 				<div className="col-span-2">
 					<h3 className={'mb-2 text-h5'}>Nachricht</h3>
 					Quelle: <Badge>{data.source}</Badge> &nbsp; Erhalten am:{' '}
-					{data.createdAt.toLocaleDateString()}
+					{data.createdAt.toLocaleDateString('de-DE')}
 					<br />
 					Sender: {mail.sender || ''}
 					<br />
@@ -34,6 +34,7 @@ export function MessageBlock({ data }: { data: IncomingFormType }) {
 						}}
 						textareaProps={{
 							value: mail.message,
+							onChange: () => {},
 							rows: 8,
 						}}
 					/>

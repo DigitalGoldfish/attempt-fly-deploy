@@ -24,13 +24,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		incoming: await nextIncoming({
 			status: 'Faxdienst',
 		}),
+		tags: await prisma.tag.findMany({ include: { bereich: true } }),
 		inbox: countOpen,
 	}
 }
 
 export default function Faxdienst() {
-	const { inbox, incoming } = useLoaderData<typeof loader>()
+	const { inbox, incoming, tags } = useLoaderData<typeof loader>()
 
+	console.log(tags)
 	return (
 		<DefaultLayout
 			wide
@@ -48,7 +50,7 @@ export default function Faxdienst() {
 				</Button>
 			}
 		>
-			<Bestelldetails data={incoming} />
+			<Bestelldetails data={incoming} tags={tags} />
 			<Outlet />
 		</DefaultLayout>
 	)

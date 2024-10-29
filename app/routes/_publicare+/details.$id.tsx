@@ -7,6 +7,7 @@ import { Button } from '#app/components/ui/button.tsx'
 import { List } from 'lucide-react'
 import React from 'react'
 import { prisma } from '#app/utils/db.server.ts'
+import { nextIncoming } from '#app/db/incoming.tsx'
 
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellung Details' },
@@ -15,33 +16,16 @@ export const meta: MetaFunction = () => [
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const { id } = params
 	await requireUserId(request)
-	const result = await prisma.incoming.findUniqueOrThrow({
-		where: {
-			id: id,
-		},
-		include: {
-			mail: {
-				include: {
-					attachments: {
-						select: {
-							id: true,
-							fileName: true,
-							contentType: true,
-							size: true,
-						},
-					},
-				},
-			},
-			formSubmission: true,
-		},
-	})
 	return {
-		incoming: result,
+		incoming: await nextIncoming({
+			id: id,
+		}),
+		tags: await prisma.tag.findMany({ include: { bereich: true } }),
 	}
 }
 
 export default function BestellungsDetails() {
-	const { incoming } = useLoaderData<typeof loader>()
+	const { incoming, tags } = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
 			pageTitle="Details"
@@ -54,7 +38,7 @@ export default function BestellungsDetails() {
 				</Button>
 			}
 		>
-			<BestellungsForm data={incoming} />
+			<BestellungsForm data={incoming} tags={tags} />
 			<Outlet />
 		</DefaultLayout>
 	)

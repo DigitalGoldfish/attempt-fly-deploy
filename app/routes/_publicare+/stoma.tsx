@@ -43,6 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 				bereich: 'StoMa',
 			},
 		}),
+		tags: await prisma.tag.findMany({ include: { bereich: true } }),
 		incoming: await nextIncoming({
 			status: 'Kundendienst',
 			bereich: 'StoMa',
@@ -51,7 +52,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Stoma() {
-	const { incoming, highpriority, onhold, inbox } =
+	const { incoming, tags, highpriority, onhold, inbox } =
 		useLoaderData<typeof loader>()
 
 	return (
@@ -74,7 +75,7 @@ export default function Stoma() {
 				</Button>
 			}
 		>
-			<Bestelldetails data={incoming} />
+			<Bestelldetails data={incoming} tags={tags} />
 			<Outlet />
 		</DefaultLayout>
 	)

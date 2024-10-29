@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
+	Bereich,
 	type FormSubmission,
 	type Incoming,
 	type Mail,
-	type MailAttachment,
+	Tag,
 } from '@prisma/client'
 import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { getValidatedFormData, useRemixForm } from 'remix-hook-form'
@@ -83,14 +84,18 @@ export async function action({ request }: ActionFunctionArgs) {
 		})
 	}
 
-	console.log('successful processing of data', data)
+	if (incoming.status === 'Kundendienst') {
+	}
+
 	return null
 }
 
 export default function BestellungsForm({
 	data,
+	tags,
 }: {
 	data: IncomingFormType | null
+	tags: (Tag & { bereich: Bereich | null })[]
 }) {
 	const methods = useRemixForm<IncomingFormData>({
 		mode: 'onTouched',
@@ -106,7 +111,6 @@ export default function BestellungsForm({
 		},
 	})
 
-	console.log('rerender')
 	const { reset } = methods
 
 	useEffect(() => {
@@ -151,7 +155,7 @@ export default function BestellungsForm({
 					>
 						<div className="h-full flex-grow overflow-y-scroll pr-4">
 							<MessageBlock data={data} />
-							<FaxdienstBlock data={data} />
+							<FaxdienstBlock data={data} tags={tags} />
 							{!['Faxdienst', 'Forwarded', 'Geloescht'].includes(
 								data.status,
 							) && <KundendienstBlock data={data} />}
