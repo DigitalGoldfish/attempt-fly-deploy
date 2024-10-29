@@ -14,7 +14,9 @@ export function HistoryDrawer() {
 	return (
 		<Drawer direction="right">
 			<DrawerTrigger>
-				<Button variant={'default'}>History</Button>
+				<Button variant={'default'} type={'button'}>
+					History
+				</Button>
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader>

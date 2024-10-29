@@ -16,11 +16,12 @@ import { PreviewBlock } from '#app/components/blocks/preview.tsx'
 import { Form } from '#app/components/publicare-forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { prisma } from '#app/utils/db.server.ts'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { HistoryDrawer } from '#app/routes/_publicare+/drawer.tsx'
+import { stampAndPrint } from '#app/utils/pdf-stamper.tsx'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -42,6 +43,8 @@ export const IncomingFormSchema = z.object({
 	id: z.string(),
 	type: z.string(),
 	bereich: z.string(),
+	sonderstatus: z.string().optional(),
+	wiedervorlage: z.string().optional(),
 	attribute: z.array(z.string()).optional(),
 	tags: z.string().optional(),
 	neukunde: z.string(),
@@ -88,6 +91,14 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	if (incoming.status === 'Kundendienst') {
+		await prisma.incoming.update({
+			where: {
+				id: incoming.id,
+			},
+			data: {
+				status: 'Erledigt',
+			},
+		})
 	}
 
 	return null
@@ -117,6 +128,33 @@ export default function BestellungsForm({
 	})
 
 	const { reset } = methods
+
+	const [isStamping, setIsStamping] = useState(false)
+
+	const handleStampAndPrint = async () => {
+		setIsStamping(true)
+		try {
+			if (data) {
+				const { mail } = data
+				if (mail) {
+					const { attachments } = mail
+					const pdfAttachment = attachments.find((attachment) =>
+						attachment.contentType.includes('pdf'),
+					)
+
+					if (pdfAttachment) {
+						await stampAndPrint(
+							`http://localhost:3000/resources/mail-attachment/${pdfAttachment.id}`,
+						)
+					}
+				}
+			}
+		} catch (error) {
+			console.error('Failed to stamp and print the PDF:', error)
+		} finally {
+			setIsStamping(false)
+		}
+	}
 
 	useEffect(() => {
 		if (data) {
@@ -172,11 +210,19 @@ export default function BestellungsForm({
 							<Button variant={'pcblue'} type={'submit'}>
 								Speichern
 							</Button>
-							<Button variant={'default'}>Drucken</Button>
+							<Button
+								variant={'default'}
+								type={'button'}
+								onClick={handleStampAndPrint}
+							>
+								Drucken
+							</Button>
 							<ClientOnly fallback={null}>{() => <HistoryDrawer />}</ClientOnly>
 
 							<div className="flex-1"></div>
-							<Button variant={'destructive'}>Löschen</Button>
+							<Button variant={'destructive'} type={'button'}>
+								Löschen
+							</Button>
 						</div>
 					</div>
 				</div>

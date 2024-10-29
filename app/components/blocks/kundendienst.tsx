@@ -3,6 +3,8 @@ import { Button } from '#app/components/ui/button.tsx'
 import { useState } from 'react'
 import { clsx } from 'clsx'
 import { IncomingFormType } from '#app/routes/_publicare+/bestellung_form.tsx'
+import { TextField } from '#app/components/forms/text-field.tsx'
+import { SelectButtons } from '#app/components/blocks/faxdienst.tsx'
 
 function OptionButton(props: {
 	value: string
@@ -45,31 +47,29 @@ export function KundendienstBlock({ data }: { data: IncomingFormType }) {
 			</div>
 			<div className={'grid grid-cols-5'}>
 				<span>Sonderstatus:</span>
-				<div className="col-span-4 flex flex-wrap items-baseline gap-4">
-					<OptionButton
-						value="Kostenvoranschlag gesendet"
-						currentValue={customer}
-						setFn={setCustomer}
-					/>
-					<OptionButton
-						value="KV Bestätigung erhalten"
-						currentValue={customer}
-						setFn={setCustomer}
-					/>
-					<OptionButton
-						value="Produkt fehlt"
-						currentValue={customer}
-						setFn={setCustomer}
-					/>
-					<OptionButton
-						value="Nachfrage"
-						currentValue={customer}
-						setFn={setCustomer}
-					/>
-					<OptionButton
-						value="Sonstiges"
-						currentValue={customer}
-						setFn={setCustomer}
+				<SelectButtons
+					fieldName="sonderstatus"
+					options={[
+						{ value: 'kvnotwendig', label: 'Kostenvoranschlag gesendet' },
+						{ value: 'kvbest', label: 'KV Bestätigung erhalten' },
+						{ value: 'produkt_fehlt', label: 'Produkt fehlt' },
+						{ value: 'nachfrage', label: 'Nachfrage' },
+						{ value: 'sonstiges', label: 'Sonstiges' },
+					]}
+				/>
+			</div>
+			<div className={'grid grid-cols-5'}>
+				<span>Wiedervorlage in:</span>
+				<div className="col-span-4 flex flex-row gap-8">
+					<SelectButtons
+						fieldName="wiedervorlage"
+						options={[
+							{ value: '24', label: '1 Tag' },
+							{ value: '48', label: '2 Tage' },
+							{ value: '72', label: '3 Tage' },
+							{ value: '120', label: '5 Tage' },
+							{ value: '168', label: '7 Tage' },
+						]}
 					/>
 				</div>
 			</div>

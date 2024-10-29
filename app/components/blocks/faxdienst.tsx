@@ -145,6 +145,13 @@ export function FaxdienstBlock({
 					</div>
 				</div>
 			</div>
+			{data.status === 'Kundendienst' && (
+				<div className="flex justify-end">
+					<Button variant="secondary" size="sm" type="button">
+						Speichern und zurücklegen
+					</Button>
+				</div>
+			)}
 		</div>
 	)
 }
