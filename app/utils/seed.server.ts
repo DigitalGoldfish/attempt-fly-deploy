@@ -285,7 +285,6 @@ async function getMailAttachmentData(forceIndex: number | boolean = false) {
 	const randomIndex = Math.floor(demoData.length * Math.random())
 	const selectedFiles = demoData[forceIndex ? forceIndex : randomIndex]
 
-	console.log('selectedFiles', selectedFiles)
 	if (selectedFiles) {
 		const files = await Promise.all(
 			selectedFiles.map((selectedFile) =>

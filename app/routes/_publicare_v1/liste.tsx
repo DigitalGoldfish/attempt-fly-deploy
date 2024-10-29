@@ -177,7 +177,6 @@ function Filter({ column }: { column: Column<any, unknown> }) {
 	return (
 		<Select
 			onValueChange={(val) => {
-				console.log('filtervalue', val)
 				column.setFilterValue((oldVal: string | null) => {
 					return val === 'all' ? undefined : val
 				})

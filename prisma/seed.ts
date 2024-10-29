@@ -1,6 +1,7 @@
 import { promiseHash } from 'remix-utils/promise'
 import { prisma } from '#app/utils/db.server.ts'
 import { createPassword, img } from '#tests/db-utils.ts'
+import { Bereich } from '#app/const/Bereich.ts'
 
 async function seed() {
 	console.log('🌱 Seeding...')
@@ -78,17 +79,17 @@ async function seed() {
 		data: [
 			{
 				id: 'cm2gdeb51000009l79df33l01',
-				name: 'StoMa',
+				name: Bereich.StoMa,
 				label: 'StoMa/Inko',
 			},
 			{
 				id: 'cm2gdeb51000009l79df33l02',
-				name: 'Wundversorgung',
+				name: Bereich.Wund,
 				label: 'Wundversorgung',
 			},
 			{
 				id: 'cm2gdeb51000009l79df33l03',
-				name: 'Sonstige',
+				name: Bereich.Sonstige,
 				label: 'Sonstige',
 			},
 		],
@@ -234,13 +235,13 @@ async function seed() {
 	await prisma.user.create({
 		select: { id: true },
 		data: {
-			email: 'wund@example.org',
-			username: 'wund',
+			email: 'wundversorgung@example.org',
+			username: 'wundversorgung',
 			name: 'Wundversorgung',
 			kuerzel: 'WV',
 			password: { create: createPassword('wund') },
 			roles: { connect: [{ name: 'kundendienst' }] },
-			bereich: { connect: { id: 'cm2gdeb51000009l79df33l01' } },
+			bereich: { connect: { id: 'cm2gdeb51000009l79df33l02' } },
 		},
 	})
 

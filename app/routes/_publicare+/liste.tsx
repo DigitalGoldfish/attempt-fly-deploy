@@ -75,8 +75,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			: undefined
 	}
 
-	console.log(filterParams)
-
 	const incomings = await prisma.incoming.findMany({ where: filterParams })
 
 	return { incomings }
