@@ -37,7 +37,9 @@ export default function Faxdienst() {
 		<DefaultLayout
 			wide
 			pageTitle="Faxdienst"
-			aside={<Counter label={'Inbox'} count={inbox} />}
+			aside={
+				<Counter label={'Inbox'} count={inbox} link="/liste?status=Faxdienst" />
+			}
 			menuLinks={
 				<Button variant="link" className="flex gap-4 text-white" asChild>
 					<Link

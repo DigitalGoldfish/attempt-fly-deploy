@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Stoma() {
-	const { incoming, tags, highpriority, onhold, inbox } =
+	const { incoming, tags, bereiche, highpriority, onhold, inbox } =
 		useLoaderData<typeof loader>()
 
 	return (
@@ -62,9 +62,21 @@ export default function Stoma() {
 			pageTitle="Bestellungen Stoma/Inko"
 			aside={
 				<div className={'flex gap-8'}>
-					<Counter label={'Inbox'} count={inbox} />
-					<Counter label={'Neuanlage'} count={highpriority} />
-					<Counter label={'OnHold'} count={onhold} />
+					<Counter
+						label={'Inbox'}
+						count={inbox}
+						link="/liste?status=Kundendienst&bereich=StoMa"
+					/>
+					<Counter
+						label={'Neuanlage'}
+						count={highpriority}
+						link="/liste?status=Kundendienst&bereich=StoMa&kundennr=Neuanlage"
+					/>
+					<Counter
+						label={'OnHold'}
+						count={onhold}
+						link="/liste?status=FehlendesProdukt%2CNachfrage%2CKVbenoetigt&bereich=StoMa"
+					/>
 				</div>
 			}
 			menuLinks={
@@ -76,7 +88,7 @@ export default function Stoma() {
 				</Button>
 			}
 		>
-			<Bestelldetails data={incoming} tags={tags} />
+			<Bestelldetails data={incoming} tags={tags} bereiche={bereiche} />
 			<Outlet />
 		</DefaultLayout>
 	)

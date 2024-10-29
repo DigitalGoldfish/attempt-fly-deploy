@@ -4,6 +4,8 @@ import Liste from '../../components/liste/liste.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { z } from 'zod'
+import { IncomingWhereInput } from '.prisma/client'
+import { Prisma } from '@prisma/client'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Liste' }]
 
@@ -22,13 +24,15 @@ const filterParamSchema = z
 	.optional()
 	.transform((x) => (x ? x.split(',') : undefined))
 
+const stringFilterParamSchema = z.string().optional()
+
 const LoaderFunctionParamsSchema = z.union([
 	z.object({
 		source: filterParamSchema,
 		status: filterParamSchema,
 		type: filterParamSchema,
 		bereich: filterParamSchema,
-		kundennr: filterParamSchema,
+		kundennr: stringFilterParamSchema,
 		q: z.string().optional(),
 		date: z
 			.enum(DateFilterTypes)
@@ -41,7 +45,7 @@ const LoaderFunctionParamsSchema = z.union([
 		status: filterParamSchema,
 		type: filterParamSchema,
 		bereich: filterParamSchema,
-		kundennr: filterParamSchema,
+		kundennr: stringFilterParamSchema,
 		q: z.string().optional(),
 		date: z.enum(DateFilterTypes).extract(['custom']),
 		from: z.string().transform((v) => new Date(v)),
@@ -56,15 +60,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		Object.fromEntries(url.searchParams),
 	)
 
-	const incomings = await prisma.incoming.findMany({
-		where: {
-			bereich: params.bereich ? { in: params.bereich } : undefined,
-			kundennr: params.kundennr ? { in: params.kundennr } : undefined,
-			source: params.source ? { in: params.source } : undefined,
-			status: params.status ? { in: params.status } : undefined,
-			type: params.type ? { in: params.type } : undefined,
-		},
-	})
+	const filterParams: Prisma.IncomingWhereInput = {
+		bereich: params.bereich ? { in: params.bereich } : undefined,
+		source: params.source ? { in: params.source } : undefined,
+		status: params.status ? { in: params.status } : undefined,
+		type: params.type ? { in: params.type } : undefined,
+	}
+
+	if (params.kundennr === 'Neuanlage') {
+		filterParams.neuanlage = { equals: true }
+	} else if (params.kundennr) {
+		filterParams.kundennr = params.kundennr
+			? { contains: params.kundennr }
+			: undefined
+	}
+
+	console.log(filterParams)
+
+	const incomings = await prisma.incoming.findMany({ where: filterParams })
 
 	return { incomings }
 }

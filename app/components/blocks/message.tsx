@@ -23,7 +23,9 @@ export function MessageBlock({ data }: { data: IncomingFormType }) {
 					<br />
 				</div>
 				<div className="flex flex-col gap-2">
-					<Button>FW an buchhaltung@publicare.at </Button>
+					<Button variant={'pcblue'} disabled={data.source !== 'Email'}>
+						Antworten
+					</Button>
 					<Button>FW an office@publicare.at</Button>
 					<Button>Weiterleiten</Button>
 				</div>

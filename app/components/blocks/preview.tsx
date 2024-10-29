@@ -69,7 +69,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 		return (
 			<>
 				<div className="flex max-w-[800px] flex-col gap-4">
-					<Tabs defaultValue="account" className="m-r-[100px] w-full">
+					<Tabs defaultValue="file1" className="m-r-[100px] w-full">
 						<TabsList className="relative flex w-full justify-start overflow-x-auto">
 							{attachments.map((attachment, index) => (
 								<TabsTrigger value={`file${index + 1}`} key={attachment.id}>
@@ -87,7 +87,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 							</Button>
 						</TabsList>
 						{attachments.map((attachment, index) => (
-							<TabsContent value={`file${index + 1}`}>
+							<TabsContent value={`file${index + 1}`} key={attachment.id}>
 								<FilePreview attachment={attachment} />
 							</TabsContent>
 						))}

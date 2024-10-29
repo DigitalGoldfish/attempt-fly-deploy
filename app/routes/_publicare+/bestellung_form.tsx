@@ -148,7 +148,10 @@ export default function BestellungsForm({
 					className="flex gap-8"
 					style={{ minHeight: 'calc(100vh - 120px - 4rem)' }}
 				>
-					<div className="flex-1">
+					<div
+						className="flex-1 overflow-y-scroll"
+						style={{ height: 'calc(100vh - 120px - 4rem)' }}
+					>
 						<PreviewBlock data={data} />
 					</div>
 					<div

@@ -25,6 +25,7 @@ import {
 	FilterWidget,
 	Selectable,
 } from '#app/components/liste/filter-widget.tsx'
+import { FilterWidgetText } from '#app/components/liste/filter-widget-text.tsx'
 
 const columnHelper = createColumnHelper<SerializeFrom<Incoming>>()
 
@@ -174,6 +175,9 @@ const values: Record<string, Selectable[]> = {
 function Filter({ column }: { column: Column<any, unknown> }) {
 	const { id } = column
 
+	if (id === 'kundennr') {
+		return <FilterWidgetText id={id} label={'Filter'} />
+	}
 	const filterValues = values[id]
 	if (!filterValues) {
 		return null

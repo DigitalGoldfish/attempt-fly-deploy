@@ -92,7 +92,7 @@ export default function Dashboard() {
 						variant="pcblue"
 						className="uppercase"
 						onClick={() => {
-							navigate(`/liste?kundenr=${kundennr}&bestellnr=${bestellnr}`)
+							navigate(`/liste?kundennr=${kundennr}&bestellnr=${bestellnr}`)
 						}}
 					>
 						Suchen

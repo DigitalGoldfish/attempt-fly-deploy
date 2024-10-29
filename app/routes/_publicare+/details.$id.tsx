@@ -26,7 +26,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function BestellungsDetails() {
-	const { incoming, tags } = useLoaderData<typeof loader>()
+	const { incoming, tags, bereiche } = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
 			pageTitle="Details"
@@ -39,7 +39,7 @@ export default function BestellungsDetails() {
 				</Button>
 			}
 		>
-			<BestellungsForm data={incoming} tags={tags} />
+			<BestellungsForm data={incoming} tags={tags} bereiche={bereiche} />
 			<Outlet />
 		</DefaultLayout>
 	)

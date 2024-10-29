@@ -62,9 +62,21 @@ export default function Wundversorgung() {
 			pageTitle="Bestellungen Wundversorgung"
 			aside={
 				<div className={'flex gap-8'}>
-					<Counter label={'Inbox'} count={inbox} />
-					<Counter label={'Neuanlage'} count={highpriority} />
-					<Counter label={'OnHold'} count={onhold} />
+					<Counter
+						label={'Inbox'}
+						count={inbox}
+						link="/liste?status=Kundendienst&bereich=Wund"
+					/>
+					<Counter
+						label={'Neuanlage'}
+						count={highpriority}
+						link="/liste?status=Kundendienst&bereich=Wund&kundennr=Neuanlage"
+					/>
+					<Counter
+						label={'OnHold'}
+						count={onhold}
+						link="/liste?status=FehlendesProdukt%2CNachfrage%2CKVbenoetigt&bereich=Wund"
+					/>
 				</div>
 			}
 			menuLinks={
