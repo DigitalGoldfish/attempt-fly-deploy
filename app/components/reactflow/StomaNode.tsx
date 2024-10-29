@@ -69,27 +69,27 @@ export function StomaNode({
 					<div className="order-3 mt-2 grid grid-cols-2 gap-x-4 text-left">
 						<div className="flex justify-between">
 							<span>MA1</span>
-							<span>12</span>
+							<span>2</span>
 						</div>
 						<div className="flex justify-between">
 							<span>MA2</span>
-							<span>12</span>
+							<span>3</span>
 						</div>
 						<div className="flex justify-between">
 							<span>MA3</span>
-							<span>12</span>
+							<span>6</span>
 						</div>
 						<div className="flex justify-between">
 							<span>MA4</span>
-							<span>12</span>
+							<span>0</span>
 						</div>
 						<div className="flex justify-between">
 							<span>MA5</span>
-							<span>12</span>
+							<span>0</span>
 						</div>
 						<div className="flex justify-between">
 							<span>MA6</span>
-							<span>12</span>
+							<span>2</span>
 						</div>
 					</div>
 				</div>

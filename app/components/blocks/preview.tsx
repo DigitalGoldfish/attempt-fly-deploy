@@ -2,10 +2,10 @@ import { IncomingFormType } from '#app/routes/_publicare+/bestellung_form.tsx'
 import { useEffect, useState } from 'react'
 import { Button } from '#app/components/ui/button.tsx'
 import { Link } from '@remix-run/react'
-import PDFSplitter, {
+import { parse } from 'node-html-parser'
+import DataModifier, {
 	PDFPageData,
 } from '#app/routes/_publicare+/modify-document.tsx'
-import { parse } from 'node-html-parser'
 import {
 	Tabs,
 	TabsContent,
@@ -94,7 +94,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 					</Tabs>
 				</div>
 				{editFiles && (
-					<PDFSplitter data={pages} onClose={() => setEditFiles(false)} />
+					<DataModifier data={pages} onClose={() => setEditFiles(false)} />
 				)}
 			</>
 		)
@@ -105,7 +105,10 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 export function FilePreview({
 	attachment,
 }: {
-	attachment: Omit<MailAttachment, 'blob'>
+	attachment: Omit<
+		MailAttachment,
+		'blob' | 'createdAt' | 'updatedAt' | 'mailId'
+	>
 }) {
 	return (
 		<div

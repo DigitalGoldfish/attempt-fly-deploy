@@ -4,6 +4,7 @@ import { Button } from '#app/components/ui/button.tsx'
 import { useController, useFormContext, useWatch } from 'react-hook-form'
 import { Selectable } from '#app/components/liste/filter-widget.tsx'
 import { TextField } from '#app/components/forms/text-field.tsx'
+import { ErrorList } from '#app/components/forms.tsx'
 
 export function SelectButtons({
 	fieldName,
@@ -67,6 +68,10 @@ export function FaxdienstBlock({
 	const bereich = useWatch({ name: 'bereich' })
 	const type = useWatch({ name: 'type' })
 
+	const {
+		formState: { errors },
+	} = useFormContext()
+
 	const assignableTo = tags
 		.filter((tag) => tag.bereich && tag.bereich.name === bereich)
 		.map((tag) => ({ value: tag.id, label: tag.label }))
@@ -76,9 +81,11 @@ export function FaxdienstBlock({
 		label: bereich.label,
 	}))
 
+	console.log('errors', errors)
 	return (
 		<div>
 			<h3 className={'mb-2 text-h5'}>Faxdienst</h3>
+
 			<div className={'my-4 grid grid-cols-5'}>
 				<span>Art der Nachricht:</span>
 				<SelectButtons

@@ -18,6 +18,9 @@ import { Button } from '#app/components/ui/button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { useEffect } from 'react'
 import { prisma } from '#app/utils/db.server.ts'
+import { ClientOnly } from 'remix-utils/client-only'
+
+import { HistoryDrawer } from '#app/routes/_publicare+/drawer.tsx'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -39,7 +42,7 @@ export const IncomingFormSchema = z.object({
 	id: z.string(),
 	type: z.string(),
 	bereich: z.string(),
-	attribute: z.string(),
+	attribute: z.array(z.string()).optional(),
 	tags: z.string().optional(),
 	neukunde: z.string(),
 	kundennr: z.string().optional(),
@@ -170,6 +173,8 @@ export default function BestellungsForm({
 								Speichern
 							</Button>
 							<Button variant={'default'}>Drucken</Button>
+							<ClientOnly fallback={null}>{() => <HistoryDrawer />}</ClientOnly>
+
 							<div className="flex-1"></div>
 							<Button variant={'destructive'}>Löschen</Button>
 						</div>
