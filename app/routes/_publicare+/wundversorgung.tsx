@@ -42,6 +42,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 				neuanlage: false,
 			},
 		}),
+		bereiche: await prisma.bereich.findMany({}),
 		tags: await prisma.tag.findMany({ include: { bereich: true } }),
 		inbox: await prisma.incoming.count({
 			where: {
@@ -53,7 +54,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Wundversorgung() {
-	const { incoming, tags, onhold, inbox, highpriority } =
+	const { incoming, bereiche, tags, onhold, inbox, highpriority } =
 		useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
@@ -75,7 +76,7 @@ export default function Wundversorgung() {
 				</Button>
 			}
 		>
-			<Bestelldetails data={incoming} tags={tags} />
+			<Bestelldetails data={incoming} tags={tags} bereiche={bereiche} />
 			<Outlet />
 		</DefaultLayout>
 	)

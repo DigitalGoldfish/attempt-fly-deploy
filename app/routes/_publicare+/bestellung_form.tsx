@@ -93,9 +93,11 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function BestellungsForm({
 	data,
 	tags,
+	bereiche,
 }: {
 	data: IncomingFormType | null
 	tags: (Tag & { bereich: Bereich | null })[]
+	bereiche: Bereich[]
 }) {
 	const methods = useRemixForm<IncomingFormData>({
 		mode: 'onTouched',
@@ -155,7 +157,7 @@ export default function BestellungsForm({
 					>
 						<div className="h-full flex-grow overflow-y-scroll pr-4">
 							<MessageBlock data={data} />
-							<FaxdienstBlock data={data} tags={tags} />
+							<FaxdienstBlock data={data} tags={tags} bereiche={bereiche} />
 							{!['Faxdienst', 'Forwarded', 'Geloescht'].includes(
 								data.status,
 							) && <KundendienstBlock data={data} />}

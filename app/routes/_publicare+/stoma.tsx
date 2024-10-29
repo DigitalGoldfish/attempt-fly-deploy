@@ -44,6 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			},
 		}),
 		tags: await prisma.tag.findMany({ include: { bereich: true } }),
+		bereiche: await prisma.bereich.findMany({}),
 		incoming: await nextIncoming({
 			status: 'Kundendienst',
 			bereich: 'StoMa',

@@ -20,6 +20,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		incoming: await nextIncoming({
 			id: id,
 		}),
+		bereiche: await prisma.bereich.findMany({}),
 		tags: await prisma.tag.findMany({ include: { bereich: true } }),
 	}
 }

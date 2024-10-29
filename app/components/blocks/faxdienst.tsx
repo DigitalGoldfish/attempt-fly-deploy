@@ -58,9 +58,11 @@ export function SelectButtons({
 export function FaxdienstBlock({
 	data,
 	tags,
+	bereiche,
 }: {
 	data: Incoming
 	tags: (Tag & { bereich: Bereich | null })[]
+	bereiche: Bereich[]
 }) {
 	const bereich = useWatch({ name: 'bereich' })
 	const type = useWatch({ name: 'type' })
@@ -68,6 +70,11 @@ export function FaxdienstBlock({
 	const assignableTo = tags
 		.filter((tag) => tag.bereich && tag.bereich.name === bereich)
 		.map((tag) => ({ value: tag.id, label: tag.label }))
+
+	const bereichOptions = bereiche.map((bereich) => ({
+		value: bereich.name,
+		label: bereich.label,
+	}))
 
 	return (
 		<div>
@@ -93,13 +100,7 @@ export function FaxdienstBlock({
 				<>
 					<div className={'grid grid-cols-5'}>
 						<span>Bereich:</span>
-						<SelectButtons
-							fieldName="bereich"
-							options={[
-								{ label: 'StoMa', value: 'StoMa' },
-								{ label: 'Wundversorgung', value: 'Wundversorgung' },
-							]}
-						/>
+						<SelectButtons fieldName="bereich" options={bereichOptions} />
 					</div>
 				</>
 			)}
