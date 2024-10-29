@@ -6,6 +6,7 @@ import { Source } from '#app/const/Source.ts'
 import { Types } from '#app/const/Types.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import fs from 'node:fs'
+import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
 
 class RandomPicker {
 	prefixSums: number[]
@@ -269,16 +270,27 @@ async function getMailAttachmentData() {
 async function getFaxAttachmentData(): Promise<FileSpec | null> {
 	const directory = 'public/demodata/fax/'
 	const demoData = [
-		{ fileName: 'fax_2024-05-03_07-46.pdf', contentType: 'application/pdf' },
+		{
+			fileName: 'fax_2024-05-03_07-46.pdf',
+			contentType: 'application/pdf',
+			previewImages: [],
+		},
 		{ fileName: 'fax_2024-05-21_15-19.pdf', contentType: 'application/pdf' },
 		{ fileName: 'fax_2024-05-31_09-52.pdf', contentType: 'application/pdf' },
 	]
+
 	const randomIndex = Math.floor(demoData.length * Math.random())
 	const selectedFile = demoData[randomIndex]
 	if (selectedFile) {
 		const buffer = await fs.promises.readFile(
 			`${directory}${selectedFile.fileName}`,
 		)
+
+		const imageUrls = await pdfToImages(
+			`${directory}${selectedFile.fileName}`,
+			2,
+		)
+		console.log('preview image urls', imageUrls)
 		return {
 			fileName: selectedFile.fileName,
 			contentType: selectedFile.contentType,
