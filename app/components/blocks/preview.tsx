@@ -3,9 +3,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '#app/components/ui/button.tsx'
 import { Link } from '@remix-run/react'
 import { parse } from 'node-html-parser'
-import DataModifier, {
-	PDFPageData,
-} from '#app/routes/_publicare+/modify-document.tsx'
+
 import {
 	Tabs,
 	TabsContent,
@@ -13,6 +11,8 @@ import {
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
 import { MailAttachment } from '@prisma/client'
+import { PDFPageData } from '#app/const/PdfTypes.ts'
+import DocumentModifier from '../document-editor/document-modifier'
 
 export function PreviewBlock({ data }: { data: IncomingFormType }) {
 	const { mail } = data
@@ -94,7 +94,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 					</Tabs>
 				</div>
 				{editFiles && (
-					<DataModifier data={pages} onClose={() => setEditFiles(false)} />
+					<DocumentModifier data={pages} onClose={() => setEditFiles(false)} />
 				)}
 			</>
 		)

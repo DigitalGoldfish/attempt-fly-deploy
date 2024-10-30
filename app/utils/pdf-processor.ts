@@ -36,3 +36,31 @@ export function isImageURL(url: string) {
 		imageExtensions.some((ext) => url.toLowerCase().endsWith(ext))
 	)
 }
+
+async function imageUrlToBytes(imageUrl: string): Promise<Uint8Array> {
+	const response = await fetch(imageUrl)
+	const blob = await response.blob()
+	return new Uint8Array(await blob.arrayBuffer())
+}
+
+async function convertImageToPdf(imageUrl: string): Promise<Uint8Array> {
+	const pdfDoc = await PDFDocument.create()
+	const imageBytes = await imageUrlToBytes(imageUrl)
+
+	let image
+	if (imageUrl.toLowerCase().endsWith('.png')) {
+		image = await pdfDoc.embedPng(imageBytes)
+	} else {
+		image = await pdfDoc.embedJpg(imageBytes)
+	}
+
+	const page = pdfDoc.addPage([image.width, image.height])
+	page.drawImage(image, {
+		x: 0,
+		y: 0,
+		width: image.width,
+		height: image.height,
+	})
+
+	return await pdfDoc.save()
+}
