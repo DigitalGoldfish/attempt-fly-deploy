@@ -18,6 +18,7 @@ export async function nextIncoming(where: Prisma.IncomingWhereInput) {
 					},
 				},
 			},
+			tags: true,
 			formSubmission: true,
 		},
 		skip: 0,

@@ -97,19 +97,31 @@ export function FaxdienstBlock({
 					]}
 				/>
 			</div>
-			{type === 'Bestätigung KV' && (
+			{type === 'KVBestaetigung' && (
 				<div className={'grid grid-cols-5'}>
 					<span>Bestellung:</span>
-					<div>Suchmaske um die Bestellung zu finden</div>
+					<Button type="button" variant={'outline'}>
+						Verknüpfe mit Bestellung
+					</Button>
 				</div>
 			)}
-			{type !== 'Bestätigung KV' && (
+			{type !== 'KVBestaetigung' && (
 				<>
 					<div className={'grid grid-cols-5'}>
 						<span>Bereich:</span>
 						<SelectButtons fieldName="bereich" options={bereichOptions} />
 					</div>
 				</>
+			)}
+			{assignableTo.length > 0 && (
+				<div className={'my-4 grid grid-cols-5'}>
+					<span>Tags:</span>
+					<SelectButtons
+						fieldName="tags"
+						options={assignableTo}
+						multiple={true}
+					/>
+				</div>
 			)}
 			<div className={'my-4 grid grid-cols-5'}>
 				<span>Attribute:</span>
@@ -124,12 +136,7 @@ export function FaxdienstBlock({
 					/>
 				</div>
 			</div>
-			{assignableTo.length > 0 && (
-				<div className={'my-4 grid grid-cols-5'}>
-					<span>Tags:</span>
-					<SelectButtons fieldName="tags" options={assignableTo} />
-				</div>
-			)}
+
 			<div className={'my-4 grid grid-cols-5'}>
 				<span>Kunde:</span>
 				<div className="col-span-4 flex flex-row gap-8">

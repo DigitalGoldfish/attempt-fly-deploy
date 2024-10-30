@@ -37,6 +37,7 @@ export type IncomingFormType = Incoming & {
 		  })
 		| null
 		| undefined
+	tags?: Tag[] | null | undefined
 	formSubmission?: FormSubmission | null
 }
 
@@ -47,7 +48,7 @@ export const IncomingFormSchema = z.object({
 	sonderstatus: z.string().optional(),
 	wiedervorlage: z.string().optional(),
 	attribute: z.array(z.string()).optional(),
-	tags: z.string().optional(),
+	tags: z.array(z.string()).optional(),
 	neukunde: z.string(),
 	kundennr: z.string().optional(),
 })
@@ -75,6 +76,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	})
 
 	if (incoming.status === 'Faxdienst') {
+		const { tags = [], attribute = [] } = data
 		await prisma.incoming.update({
 			where: {
 				id: incoming.id,
@@ -84,6 +86,12 @@ export async function action({ request }: ActionFunctionArgs) {
 				bereich: data?.bereich,
 				neuanlage: data?.neukunde === 'JA',
 				kundennr: data?.kundennr,
+				kvnotwendig: attribute.includes('Benötigt KV'),
+				ohneverordnung: attribute.includes('Ohne Verordnung'),
+				tags:
+					tags.length > 0
+						? { connect: tags.map((tagId) => ({ id: tagId })) }
+						: undefined,
 				// TODO: Mitarbeiter, Attribute
 
 				status: 'Kundendienst',
@@ -160,12 +168,21 @@ export default function BestellungsForm({
 
 	useEffect(() => {
 		if (data) {
+			const attributes = []
+			if (data.kvnotwendig) {
+				attributes.push('Benötigt KV')
+			}
+			if (data.ohneverordnung) {
+				attributes.push('Ohne Verordnung')
+			}
 			reset({
 				id: data.id,
-				type: data.type || 'Bestellung',
+				type: data.type === 'Unknown' ? 'Bestellung' : data.type,
 				bereich: data.bereich || '',
 				kundennr: data.kundennr || '',
-				neukunde: data.kundennr ? (data.neuanlage ? 'JA' : 'NEIN') : '',
+				neukunde: !data.kundennr ? (data.neuanlage ? 'JA' : 'NEIN') : '',
+				attribute: attributes,
+				tags: data.tags ? data.tags.map((tag) => tag.id) : [],
 				// TODO:
 				// tags: [],
 				// attribute: [],

@@ -1,11 +1,14 @@
 import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
-import { Link, Outlet, useLoaderData } from '@remix-run/react'
+import { Link, Outlet, useLoaderData, useSearchParams } from '@remix-run/react'
 import Liste from '../../components/liste/liste.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { z } from 'zod'
 import { IncomingWhereInput } from '.prisma/client'
 import { Prisma } from '@prisma/client'
+import { Button } from '#app/components/ui/button.tsx'
+import { Plus } from 'lucide-react'
+import React from 'react'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Liste' }]
 
@@ -82,9 +85,35 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Bestellungsliste() {
 	const { incomings } = useLoaderData<typeof loader>()
+	const [searchParams] = useSearchParams()
+	let link = ''
+	let label = ''
+	if (searchParams.get('bereich') === 'StoMa') {
+		link = '/stoma'
+		label = 'Zum Kundendienst'
+	} else if (searchParams.get('bereich') === 'StoMa') {
+		link = '/wundversorgung'
+		label = 'Zum Kundendienst'
+	} else if (searchParams.get('status') === 'Faxdienst') {
+		link = '/faxdienst'
+		label = 'Zum Faxdienst'
+	}
 
 	return (
-		<DefaultLayout pageTitle="Liste">
+		<DefaultLayout
+			pageTitle="Liste"
+			menuLinks={
+				link ? (
+					<div className="flex gap-8">
+						<Button variant="link" className="flex gap-4 text-white" asChild>
+							<Link to={link} className="flex gap-4 text-body-sm">
+								{label}
+							</Link>
+						</Button>
+					</div>
+				) : undefined
+			}
+		>
 			<Liste data={incomings} />
 			<Outlet />
 		</DefaultLayout>
