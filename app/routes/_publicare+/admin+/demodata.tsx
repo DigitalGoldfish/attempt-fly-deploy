@@ -8,19 +8,23 @@ import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { Button } from '#app/components/ui/button.tsx'
 import { Link, useFetcher } from '@remix-run/react'
-import { ArrowBigLeft } from 'lucide-react'
-import React from 'react'
-import { DashboardTile } from '#app/components/dashboard-tile.tsx'
+import { ArrowBigLeft, Upload } from 'lucide-react'
+import React, { useRef } from 'react'
 import { cn } from '#app/utils/misc.tsx'
 import { clsx } from 'clsx'
 import { z } from 'zod'
-import { getValidatedFormData, useRemixForm } from 'remix-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import path from 'node:path'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import {
 	createIncoming,
 	createSpecialCaseIncoming,
+	importMailData,
 } from '#app/utils/seed.server.ts'
+import {
+	moveProcessedEMLFiles,
+	parseEMLFromZip,
+	readTenEMLFiles,
+} from '#app/utils/email-reader.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare' }]
 
@@ -32,36 +36,53 @@ export async function loader({ request }: LoaderFunctionArgs) {
 const SeedFormSchema = z.object({
 	type: z.string(),
 	count: z.number(),
+	zipFile: z.instanceof(File).optional(),
 })
-type SeedFormData = z.infer<typeof SeedFormSchema>
 
 export async function action({ request }: ActionFunctionArgs) {
-	const {
-		errors,
-		data,
-		receivedValues: defaultValues,
-	} = await getValidatedFormData<SeedFormData>(
-		request,
-		zodResolver(SeedFormSchema),
-	)
+	const formData = await request.formData()
 
-	if (errors) {
-		return json({ errors, defaultValues })
-	}
+	const zipFile = formData.get('zipFile') as File | null
+	const type = formData.get('type') as string
+	const count = Number(formData.get('count')) || 1
 
-	const { type, count } = data
-	if (type === 'specialcase') {
-		await createSpecialCaseIncoming()
-	} else {
-		for (let i = 0; i < count; i++) {
-			await createIncoming(type === 'faxdienst')
+	try {
+		if (type === 'specialcase') {
+			await createSpecialCaseIncoming()
+		} else if (type === 'email' && zipFile) {
+			const parsedEmails = await parseEMLFromZip(zipFile)
+			await importMailData(parsedEmails)
+		} else if (type === 'path') {
+			const directoryPath = path.join(process.env.EMAILS_PATH, 'unused')
+			const parsedEmails = await readTenEMLFiles(directoryPath)
+			const res = await importMailData(parsedEmails)
+			if (res.errors.length === 0) {
+				const processedFileNames = parsedEmails
+					.map((email) => email.filename)
+					.filter((filename): filename is string => filename !== undefined)
+				await moveProcessedEMLFiles(directoryPath, processedFileNames)
+			}
+		} else {
+			for (let i = 0; i < count; i++) {
+				await createIncoming(type === 'faxdienst')
+			}
 		}
-	}
 
-	return redirectWithToast('/admin/demodata', {
-		type: 'success',
-		description: 'Demodata created!!',
-	})
+		return redirectWithToast('/admin/demodata', {
+			type: 'success',
+			description: 'Demodata created successfully!',
+		})
+	} catch (error) {
+		return json(
+			{
+				errors: {
+					general: 'Failed to process request',
+					details: error instanceof Error ? error.message : 'Unknown error',
+				},
+			},
+			{ status: 400 },
+		)
+	}
 }
 
 export function SeedTile({
@@ -84,7 +105,7 @@ export function SeedTile({
 			to={''}
 			onClick={() => {
 				const formdata = new FormData()
-				formdata.set('count', count.toString() || '1')
+				formdata.set('count', count?.toString() || '1')
 				formdata.set('type', type)
 				fetcher.submit(formdata, { method: 'POST' })
 			}}
@@ -109,6 +130,45 @@ export function SeedTile({
 	)
 }
 
+function FileUploadButton() {
+	const fileInputRef = useRef<HTMLInputElement>(null)
+	const fetcher = useFetcher()
+
+	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0]
+		if (file) {
+			const formData = new FormData()
+			formData.set('zipFile', file)
+			formData.set('type', 'email')
+			formData.set('count', '1')
+			fetcher.submit(formData, {
+				method: 'POST',
+				encType: 'multipart/form-data',
+			})
+		}
+	}
+
+	return (
+		<div>
+			<input
+				type="file"
+				ref={fileInputRef}
+				onChange={handleFileChange}
+				accept=".zip"
+				className="hidden"
+			/>
+			<Button
+				onClick={() => fileInputRef.current?.click()}
+				className={cn(
+					'relative flex h-full w-full items-center justify-center rounded-2xl bg-gray-400 p-4 text-h6 font-normal uppercase text-white transition hover:-rotate-6 hover:bg-gray-500',
+				)}
+			>
+				<Upload className="mr-2" />
+				Read and create from zip
+			</Button>
+		</div>
+	)
+}
 export default function TagsAdminPage() {
 	return (
 		<DefaultLayout
@@ -141,6 +201,10 @@ export default function TagsAdminPage() {
 				<SeedTile type="specialcase" count={1} color="smalltext">
 					Mail with lots of attachments
 				</SeedTile>
+				<SeedTile type="path" count={10} color="smalltext">
+					Import 10 Emails
+				</SeedTile>
+				<FileUploadButton />
 			</div>
 		</DefaultLayout>
 	)

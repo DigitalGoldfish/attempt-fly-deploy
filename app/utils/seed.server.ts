@@ -7,6 +7,8 @@ import { Types } from '#app/const/Types.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import fs from 'node:fs'
 import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
+import { ParsedEmail } from './email-reader'
+import mammoth from 'mammoth'
 
 class RandomPicker {
 	prefixSums: number[]
@@ -479,7 +481,178 @@ export async function createIncomingFax(forceFaxdienst: boolean) {
 		data,
 	})
 }
+export async function importMailData(parsedEmails: ParsedEmail[]) {
+	const results = {
+		success: 0,
+		failed: 0,
+		errors: [] as string[],
+		pdfProcessed: 0,
+		previewsGenerated: 0,
+	}
 
-type Weighted = {
-	weight: number
+	for (const emailData of parsedEmails) {
+		try {
+			console.log(`\n=== Processing email from: ${emailData.from} ===`)
+			console.log(`Attachments found: ${emailData?.attachments?.length || 0}`)
+
+			const attachmentsData = []
+			for (const attachment of emailData.attachments || []) {
+				console.log(`\nProcessing attachment: ${attachment.filename}`)
+				console.log(`Content Type: ${attachment.contentType}`)
+
+				let previewImages: string[] = []
+				const isPdf = attachment.filename?.toLowerCase().endsWith('.pdf')
+
+				if (isPdf) {
+					results.pdfProcessed++
+					console.log(`Starting PDF processing for: ${attachment.filename}`)
+
+					if (!attachment.content || attachment.content.length === 0) {
+						console.error('PDF content is empty or invalid')
+						results.errors.push(`Empty PDF content for ${attachment.filename}`)
+						continue
+					}
+
+					try {
+						await new Promise((resolve) => setTimeout(resolve, 100))
+						attachment.contentType = 'application/pdf'
+						previewImages = await pdfToImages(attachment.content, 2)
+
+						if (previewImages && previewImages.length > 0) {
+							results.previewsGenerated++
+							console.log(
+								`✓ Successfully generated ${previewImages.length} preview images for PDF: ${attachment.filename}`,
+							)
+						} else {
+							console.error(
+								`× No preview images generated for PDF: ${attachment.filename}`,
+							)
+						}
+					} catch (error) {
+						const errorMessage =
+							error instanceof Error ? error.message : 'Unknown error'
+						console.error('PDF processing error:', {
+							filename: attachment.filename,
+							error: errorMessage,
+						})
+						results.errors.push(
+							`PDF processing failed for ${attachment.filename}: ${errorMessage}`,
+						)
+					}
+				}
+
+				attachmentsData.push({
+					fileName: attachment.filename || 'unnamed',
+					contentType: attachment.contentType || 'application/octet-stream',
+					size: attachment.content.length,
+					blob: attachment.content,
+					previewImages: JSON.stringify(previewImages),
+				})
+			}
+
+			const email = await prisma.mail.create({
+				data: {
+					sender: emailData.from || '',
+					message: emailData.text || '',
+					subject: emailData.subject || 'No Subject',
+					recipient: emailData.to || '',
+					type: 'email',
+					attachments:
+						attachmentsData.length > 0
+							? {
+									createMany: {
+										data: attachmentsData,
+									},
+								}
+							: undefined,
+				},
+			})
+
+			let status: IncomingStatus =
+				Math.random() < 0.3
+					? IncomingStatus.Faxdienst
+					: Object.values(IncomingStatus)[
+							Math.floor(Math.random() * Object.values(IncomingStatus).length)
+						] || IncomingStatus.Faxdienst
+
+			const data: Prisma.IncomingCreateInput = {
+				mail: { connect: { id: email.id } },
+				source: Source.Email,
+				status: status,
+				printed: false,
+			}
+
+			if (
+				![
+					IncomingStatus.Faxdienst,
+					IncomingStatus.Weitergeleitet,
+					IncomingStatus.Geloescht,
+				].includes(status)
+			) {
+				data.bereich =
+					Object.values(Types)[
+						Math.floor(Math.random() * Object.values(Types).length)
+					]
+			}
+
+			if (
+				status === IncomingStatus.Weitergeleitet ||
+				status === IncomingStatus.Geloescht
+			) {
+				data.type = Types.Sonstiges
+			} else if (status !== IncomingStatus.Faxdienst) {
+				data.type =
+					Object.values(Types)[
+						Math.floor(Math.random() * Object.values(Types).length)
+					] || Types.Sonstiges
+
+				if (data.type === Types.KVBestaetigung) {
+					data.status = 'Erledigt'
+				}
+
+				if (Math.random() < 0.2) {
+					data.neuanlage = true
+				} else {
+					data.kundennr = faker.finance.accountNumber()
+				}
+			}
+
+			await prisma.incoming.create({
+				data,
+			})
+
+			results.success++
+			console.log(`✓ Successfully processed email from ${emailData.from}`)
+		} catch (error) {
+			results.failed++
+			const errorMessage =
+				error instanceof Error ? error.message : 'Unknown error'
+			results.errors.push(
+				`Failed processing email from ${emailData.from}: ${errorMessage}`,
+			)
+			console.error(
+				`× Error processing email from ${emailData.from}:`,
+				errorMessage,
+			)
+		}
+	}
+
+	console.log('\n=== Final Processing Statistics ===')
+	console.log({
+		totalEmails: parsedEmails.length,
+		successfullyProcessed: results.success,
+		failed: results.failed,
+		pdfsFound: results.pdfProcessed,
+		previewsGenerated: results.previewsGenerated,
+		totalErrors: results.errors.length,
+	})
+
+	if (results.errors.length > 0) {
+		console.log('\nErrors encountered:')
+		results.errors.forEach((error, index) => {
+			console.log(`${index + 1}. ${error}`)
+		})
+	}
+
+	return results
 }
