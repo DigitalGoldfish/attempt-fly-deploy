@@ -15,7 +15,12 @@ export interface ParsedEmail {
 	}[]
 	filename?: string
 }
-
+interface AttachmentAnalysis {
+	totalEmlFiles: number
+	attachmentGroupCounts: string[]
+	attachmentTypesCounts: Record<string, number>
+	totalAttachments: number
+}
 function getAddressText(
 	address: AddressObject | AddressObject[] | undefined,
 ): string {
@@ -73,11 +78,9 @@ export async function parseEMLFromZip(zipFile: File): Promise<ParsedEmail[]> {
 				parsedEmails.push(parsedEmail)
 			} catch (error) {
 				console.error(`Error processing ${emlFile.name}:`, error)
-				// Continue processing other files even if one fails
 			}
 		}
 
-		// Sort emails by filename
 		return parsedEmails.sort((a, b) =>
 			(a.filename || '').localeCompare(b.filename || ''),
 		)
@@ -87,38 +90,71 @@ export async function parseEMLFromZip(zipFile: File): Promise<ParsedEmail[]> {
 	}
 }
 
-export async function countAttachmentTypes(
+export async function countAttachment(
 	directoryPath: string,
-): Promise<Record<string, number>> {
-	const attachmentCounts: Record<string, number> = {}
+): Promise<AttachmentAnalysis> {
+	const attachmentTypesCounts: Record<string, number> = {}
+	const attachmentGroupCounts: Record<number, number> = {}
+	let totalEmlFiles = 0
+	let totalAttachments = 0
 
-	try {
-		const files = await fs.readdir(directoryPath)
+	async function processDirectory(currentPath: string) {
+		try {
+			const files = await fs.readdir(currentPath, { withFileTypes: true })
 
-		for (const file of files) {
-			if (path.extname(file).toLowerCase() === '.eml') {
-				const filePath = path.join(directoryPath, file)
-				const fileContent = await fs.readFile(filePath)
+			for (const file of files) {
+				const fullPath = path.join(currentPath, file.name)
 
-				const fileObj = new File([fileContent], file, {
-					type: 'message/rfc822',
-				})
-				const parsedEmail = await parseEMLFile(fileObj)
+				if (file.isDirectory()) {
+					await processDirectory(fullPath)
+				} else if (path.extname(file.name).toLowerCase() === '.eml') {
+					totalEmlFiles++
 
-				for (const attachment of parsedEmail.attachments) {
-					const fileExtension =
-						path.extname(attachment.filename).toUpperCase().slice(1) ||
-						'UNKNOWN'
-					attachmentCounts[fileExtension] =
-						(attachmentCounts[fileExtension] || 0) + 1
+					try {
+						const fileContent = await fs.readFile(fullPath)
+						const fileObj = new File([fileContent], file.name, {
+							type: 'message/rfc822',
+						})
+						const parsedEmail = await parseEMLFile(fileObj)
+
+						const attachmentCount = parsedEmail.attachments.length
+						attachmentGroupCounts[attachmentCount] =
+							(attachmentGroupCounts[attachmentCount] || 0) + 1
+
+						for (const attachment of parsedEmail.attachments) {
+							const fileExtension =
+								path.extname(attachment.filename).toUpperCase().slice(1) ||
+								'UNKNOWN'
+							attachmentTypesCounts[fileExtension] =
+								(attachmentTypesCounts[fileExtension] || 0) + 1
+
+							totalAttachments++
+						}
+					} catch (parseError) {
+						console.error(`Error parsing EML file ${fullPath}:`, parseError)
+					}
 				}
 			}
+		} catch (error) {
+			console.error(`Error processing directory ${currentPath}:`, error)
 		}
+	}
 
-		return attachmentCounts
-	} catch (error) {
-		console.error('Error counting attachment types:', error)
-		throw new Error('Failed to count attachment types')
+	await processDirectory(directoryPath)
+
+	const formattedAttachmentGroupCounts = Object.entries(attachmentGroupCounts)
+		.map(([count, emails]) => `${count} attachment: ${emails}`)
+		.sort((a, b) => {
+			const countA = parseInt(a.split(' ')[0] as string)
+			const countB = parseInt(b.split(' ')[0] as string)
+			return countA - countB
+		})
+
+	return {
+		totalEmlFiles,
+		totalAttachments,
+		attachmentGroupCounts: formattedAttachmentGroupCounts,
+		attachmentTypesCounts,
 	}
 }
 
