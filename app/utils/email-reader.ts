@@ -73,9 +73,11 @@ export async function parseEMLFromZip(zipFile: File): Promise<ParsedEmail[]> {
 				parsedEmails.push(parsedEmail)
 			} catch (error) {
 				console.error(`Error processing ${emlFile.name}:`, error)
+				// Continue processing other files even if one fails
 			}
 		}
 
+		// Sort emails by filename
 		return parsedEmails.sort((a, b) =>
 			(a.filename || '').localeCompare(b.filename || ''),
 		)

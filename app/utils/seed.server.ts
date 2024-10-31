@@ -8,7 +8,6 @@ import { prisma } from '#app/utils/db.server.ts'
 import fs from 'node:fs'
 import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
 import { ParsedEmail } from './email-reader'
-import mammoth from 'mammoth'
 
 class RandomPicker {
 	prefixSums: number[]
@@ -655,4 +654,7 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 	}
 
 	return results
+}
+type Weighted = {
+	weight: number
 }

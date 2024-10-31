@@ -5,6 +5,7 @@ export async function loader() {
 	for (let i = 0; i < 20; i++) {
 		await createIncoming(false)
 	}
+
 	return json({
 		msg: 'Done',
 	})
