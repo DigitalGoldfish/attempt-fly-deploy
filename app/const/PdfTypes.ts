@@ -32,3 +32,10 @@ export type Action =
 			payload: { columnIndex: number; stackIndex: number } | null
 	  }
 	| { type: 'UPDATE_PAGES_AFTER_COMBINE'; payload: { newPages: PDFPageData[] } }
+	| {
+			type: 'HANDLE_DROP'
+			payload: {
+				newColumn: number
+				newStack: number
+			}
+	  }

@@ -1,16 +1,48 @@
+import { useDocumentEditorContext } from '#app/components/document-editor/context.tsx'
+
 interface NewColumnDropZoneProps {
-	onDrop: (e: React.DragEvent) => void
 	isVisible: boolean
 }
-interface BottomDropZoneProps {
-	onDrop: (e: React.DragEvent) => void
-	columnIndex: number
-}
-export function NewColumnDropZone({
-	onDrop,
-	isVisible,
-}: NewColumnDropZoneProps) {
+
+export function NewColumnDropZone({ isVisible }: NewColumnDropZoneProps) {
+	const { state, dispatch } = useDocumentEditorContext()
+	const { draggedPage, pages } = state
+
 	if (!isVisible) return null
+
+	const handleNewColumnDrop = (e: React.DragEvent) => {
+		e.preventDefault()
+		if (!draggedPage) return
+
+		const newColumnIndex = Math.max(...pages.map((p) => p.columnIndex)) + 1
+		const sourcePage = pages.find(
+			(p) =>
+				p.columnIndex === draggedPage.columnIndex &&
+				p.stackIndex === draggedPage.stackIndex,
+		)
+
+		if (!sourcePage) return
+
+		const newPages = pages.filter((p) => p !== sourcePage)
+
+		newPages.forEach((page) => {
+			if (
+				page.columnIndex === draggedPage.columnIndex &&
+				page.stackIndex > draggedPage.stackIndex
+			) {
+				page.stackIndex--
+			}
+		})
+		newPages.push({
+			...sourcePage,
+			columnIndex: newColumnIndex,
+			stackIndex: 0,
+		})
+
+		dispatch({ type: 'SET_PAGES', payload: newPages })
+		dispatch({ type: 'SET_DRAGGED_PAGE', payload: null })
+		dispatch({ type: 'SET_DROP_TARGET', payload: null })
+	}
 
 	return (
 		<div
@@ -20,7 +52,7 @@ export function NewColumnDropZone({
 			<div
 				className="h-full rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 transition-colors hover:border-blue-400 hover:bg-blue-100"
 				onDragOver={(e) => e.preventDefault()}
-				onDrop={onDrop}
+				onDrop={handleNewColumnDrop}
 			>
 				<div className="flex h-full items-center justify-center">
 					<p className="text-sm text-blue-600">
@@ -32,12 +64,32 @@ export function NewColumnDropZone({
 	)
 }
 
-export function BottomDropZone({ onDrop, columnIndex }: BottomDropZoneProps) {
+interface BottomDropZoneProps {
+	columnIndex: number
+	lastStackIndex: number
+}
+
+export function BottomDropZone({
+	columnIndex,
+	lastStackIndex,
+}: BottomDropZoneProps) {
+	const { dispatch } = useDocumentEditorContext()
+	const handleDrop = (e: React.DragEvent) => {
+		e.preventDefault()
+
+		dispatch({
+			type: 'HANDLE_DROP',
+			payload: {
+				newColumn: columnIndex,
+				newStack: lastStackIndex,
+			},
+		})
+	}
 	return (
 		<div
 			className="mt-4 h-24 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 transition-colors hover:border-blue-400 hover:bg-blue-100"
 			onDragOver={(e) => e.preventDefault()}
-			onDrop={onDrop}
+			onDrop={handleDrop}
 		>
 			<div className="flex h-full items-center justify-center">
 				<p className="text-sm text-blue-600">

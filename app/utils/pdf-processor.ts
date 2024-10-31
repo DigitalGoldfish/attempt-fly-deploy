@@ -1,4 +1,4 @@
-import { PDFDocument } from 'pdf-lib'
+import { degrees, PDFDocument } from 'pdf-lib'
 
 export async function initializePdfJsLib() {
 	console.log('initialize pdf js lib')
@@ -64,3 +64,32 @@ async function convertImageToPdf(imageUrl: string): Promise<Uint8Array> {
 
 	return await pdfDoc.save()
 }
+
+/* extracted from document-modifier, we only need to rotate the pdf when done */
+/* async function rotatePdf() {
+	if (pageData.pdfUrl) {
+		const existingPdfBytes = await fetch(pageData.pdfUrl).then((res) =>
+			res.arrayBuffer(),
+		)
+		const pdfDoc = await PDFDocument.load(existingPdfBytes)
+		const [page] = pdfDoc.getPages()
+		page?.setRotation(degrees(newRotation))
+
+		const rotatedPdfBytes = await pdfDoc.save()
+		const rotatedPdfBlob = new Blob([rotatedPdfBytes], {
+			type: 'application/pdf',
+		})
+		const rotatedPdfUrl = URL.createObjectURL(rotatedPdfBlob)
+
+		return {
+			...pageData,
+			pdfUrl: rotatedPdfUrl,
+			rotation: newRotation,
+		}
+	} else {
+		return {
+			...pageData,
+			rotation: newRotation,
+		}
+	}
+} */
