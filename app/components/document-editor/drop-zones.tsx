@@ -78,17 +78,28 @@ export function BottomDropZone({
 		e.preventDefault()
 
 		dispatch({
-			type: 'HANDLE_DROP',
-			payload: {
-				newColumn: columnIndex,
-				newStack: lastStackIndex,
-			},
+			type: 'HANDLE_DROP2',
+			payload: {},
 		})
 	}
+
+	const handleDragOver = (e: React.DragEvent) => {
+		e.preventDefault()
+		dispatch({
+			type: 'SET_DROP_TARGET',
+			payload: { columnIndex: columnIndex, stackIndex: lastStackIndex },
+		})
+	}
+
+	const handleDragLeave = () => {
+		dispatch({ type: 'SET_DROP_TARGET', payload: null })
+	}
+
 	return (
 		<div
 			className="mt-4 h-24 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 transition-colors hover:border-blue-400 hover:bg-blue-100"
-			onDragOver={(e) => e.preventDefault()}
+			onDragOver={handleDragOver}
+			onDragLeave={handleDragLeave}
 			onDrop={handleDrop}
 		>
 			<div className="flex h-full items-center justify-center">

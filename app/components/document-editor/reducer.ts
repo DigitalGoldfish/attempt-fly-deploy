@@ -1,9 +1,29 @@
-import { Action, PDFPageData, State } from '#app/const/PdfTypes.ts'
+import {
+	Action,
+	Document,
+	Page,
+	PDFPageData,
+	State,
+} from '#app/const/PdfTypes.ts'
 
 export const initialState: State = {
 	pages: [],
+	documents: [],
 	draggedPage: null,
 	dropTarget: null,
+}
+
+function getPage(
+	documents: Document[],
+	documentIndex: number,
+	pageIndex: number,
+) {
+	const document = documents[documentIndex]
+	if (document) {
+		const page = document.pages[pageIndex]
+		return page || null
+	}
+	return null
 }
 
 export function reducer(state: State, action: Action): State {
@@ -16,6 +36,30 @@ export function reducer(state: State, action: Action): State {
 			return { ...state, pages: action.payload.newPages }
 		case 'SET_DROP_TARGET':
 			return { ...state, dropTarget: action.payload }
+		case 'TOGGLE_IGNORE': {
+			const { documentIndex, pageIndex } = action.payload
+			const { documents: docs } = state
+			const page = getPage(docs, documentIndex, pageIndex)
+			if (page) {
+				page.ignored = !page.ignored
+				return { ...state }
+			}
+			return state
+		}
+		case 'ROTATE':
+			const { documentIndex, pageIndex, rotation } = action.payload
+			const { documents } = state
+			const page = getPage(documents, documentIndex, pageIndex)
+
+			if (page) {
+				const newRotation = (360 + page.rotation + rotation) % 360
+				page.rotation = newRotation as 90 | 180 | 270
+				return { ...state }
+			}
+			return state
+		case 'HANDLE_DROP2':
+			const newState = movePage(state)
+			return { ...newState, dropTarget: null, draggedPage: null }
 		case 'HANDLE_DROP':
 			const { pages, draggedPage } = state
 			if (!draggedPage) {
@@ -42,6 +86,42 @@ export function reducer(state: State, action: Action): State {
 		default:
 			return state
 	}
+}
+
+export const movePage = (state: State) => {
+	const { documents, draggedPage, dropTarget } = state
+	if (draggedPage && dropTarget) {
+		const { columnIndex, stackIndex } = draggedPage
+		const { columnIndex: targetColumnIndex, stackIndex: targetStackIndex } =
+			dropTarget
+		// remove the page from old document
+		// @ts-ignore
+		const [removedPage] = documents[columnIndex].pages.splice(stackIndex, 1)
+
+		if (removedPage) {
+			// @ts-ignore
+			if (documents[targetColumnIndex].pages.length === 0) {
+				// @ts-ignore
+				documents[targetColumnIndex].name = removedPage.imageUrl
+			}
+
+			// @ts-ignore
+			documents[targetColumnIndex].pages.splice(
+				targetStackIndex,
+				0,
+				removedPage,
+			)
+		}
+
+		return {
+			...state,
+			documents: [
+				...documents.filter((document) => document.pages.length > 0),
+				{ name: '', pages: [] },
+			],
+		}
+	}
+	return state
 }
 
 export const movePageToNewPosition = (

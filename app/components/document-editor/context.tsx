@@ -9,6 +9,7 @@ export type DocumentEditorContextType = {
 
 const DocumentEditorContext = React.createContext<DocumentEditorContextType>({
 	state: {
+		documents: [],
 		pages: [],
 		draggedPage: null,
 		dropTarget: null,

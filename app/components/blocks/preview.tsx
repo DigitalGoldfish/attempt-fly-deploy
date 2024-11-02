@@ -11,8 +11,9 @@ import {
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
 import { MailAttachment } from '@prisma/client'
-import { PDFPageData } from '#app/const/PdfTypes.ts'
+import { PDFPageData, Document, Page } from '#app/const/PdfTypes.ts'
 import DocumentModifier from '../document-editor/document-modifier'
+import DocumentModifier2 from '../document-editor/document-modifier-2'
 
 export function PreviewBlock({ data }: { data: IncomingFormType }) {
 	const { mail } = data
@@ -64,6 +65,42 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 		}
 	})
 
+	const documents: Document[] = []
+	attachments.forEach((attachment, attachmentIndex) => {
+		const document = {
+			name: attachment.fileName,
+			pages: [] as Page[],
+		}
+
+		if (attachment.contentType.includes('pdf')) {
+			const previewImages = attachment.previewImages
+				? (JSON.parse(attachment.previewImages) as string[])
+				: ([] as string[])
+
+			previewImages.forEach((previewImage, pageIndex) => {
+				document.pages.push({
+					imageUrl: previewImage,
+					ignored: false,
+					originalDocumentId: attachment.id,
+					rotation: 0,
+					originalDocumentType: 'pdf',
+					originalDocumentPageNumber: pageIndex,
+				})
+			})
+		} else {
+			document.pages.push({
+				imageUrl: `/resources/mail-attachment/${attachment.id}`,
+				ignored: false,
+				originalDocumentId: attachment.id,
+				rotation: 0,
+				originalDocumentType: 'image',
+				originalDocumentPageNumber: 0,
+			})
+		}
+
+		documents.push(document)
+	})
+
 	const selectedAttachment = attachments[displayedFile]
 	if (selectedAttachment) {
 		return (
@@ -81,6 +118,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 							<Button
 								className="absolute right-0"
 								variant="outline"
+								type={'button'}
 								onClick={() => setEditFiles(true)}
 							>
 								Edit Files
@@ -94,7 +132,10 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 					</Tabs>
 				</div>
 				{editFiles && (
-					<DocumentModifier data={pages} onClose={() => setEditFiles(false)} />
+					<DocumentModifier2
+						data={documents}
+						onClose={() => setEditFiles(false)}
+					/>
 				)}
 			</>
 		)
