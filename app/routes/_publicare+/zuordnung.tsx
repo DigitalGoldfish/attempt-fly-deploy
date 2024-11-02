@@ -53,7 +53,6 @@ export default function BestellungsDetails() {
 		tagIds: user.defaultTags.map((tag) => tag.id),
 	}))
 
-	console.log(defaultData)
 	const fetcher = useFetcher()
 	const methods = useRemixForm<UserFormData>({
 		mode: 'onTouched',
