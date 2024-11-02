@@ -1,8 +1,6 @@
-import { IncomingFormType } from '#app/routes/_publicare+/bestellung_form.tsx'
+import { type MailAttachment } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import { Button } from '#app/components/ui/button.tsx'
-import { Link } from '@remix-run/react'
-import { parse } from 'node-html-parser'
 
 import {
 	Tabs,
@@ -10,10 +8,12 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
-import { MailAttachment } from '@prisma/client'
-import { PDFPageData, Document, Page } from '#app/const/PdfTypes.ts'
-import DocumentModifier from '../document-editor/document-modifier'
-import DocumentModifier2 from '../document-editor/document-modifier-2'
+import {
+	type Document,
+	type Page,
+} from '#app/components/document-editor/types.ts'
+import { type IncomingFormType } from '#app/routes/_publicare+/bestellung_form.tsx'
+import DocumentModifier from '../document-editor/document-modifier.tsx'
 
 export function PreviewBlock({ data }: { data: IncomingFormType }) {
 	const { mail } = data
@@ -32,41 +32,8 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 		return <div>No Attachments</div>
 	}
 
-	const pages: PDFPageData[] = []
-	attachments.forEach((attachment, attachmentIndex) => {
-		if (attachment.contentType.includes('pdf')) {
-			const previewImages = attachment.previewImages
-				? (JSON.parse(attachment.previewImages) as string[])
-				: ([] as string[])
-
-			previewImages.forEach((previewImage, pageIndex) => {
-				pages.push({
-					imageUrl: previewImage,
-					pdfUrl: undefined,
-					columnIndex: attachmentIndex,
-					pageNumber: pageIndex + 1,
-					stackIndex: pageIndex,
-					rotation: 0,
-					stackedBelow: pageIndex > 0 ? pages[pages.length - 1] : undefined,
-					isGrayedOut: false,
-				})
-			})
-		} else {
-			pages.push({
-				imageUrl: `/resources/mail-attachment/${attachment.id}`,
-				pdfUrl: undefined,
-				columnIndex: attachmentIndex,
-				pageNumber: 1,
-				stackIndex: 0,
-				rotation: 0,
-				stackedBelow: undefined,
-				isGrayedOut: false,
-			})
-		}
-	})
-
 	const documents: Document[] = []
-	attachments.forEach((attachment, attachmentIndex) => {
+	attachments.forEach((attachment) => {
 		const document = {
 			name: attachment.fileName,
 			pages: [] as Page[],
@@ -79,6 +46,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 
 			previewImages.forEach((previewImage, pageIndex) => {
 				document.pages.push({
+					fileName: attachment.fileName,
 					imageUrl: previewImage,
 					ignored: false,
 					originalDocumentId: attachment.id,
@@ -89,6 +57,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 			})
 		} else {
 			document.pages.push({
+				fileName: attachment.fileName,
 				imageUrl: `/resources/mail-attachment/${attachment.id}`,
 				ignored: false,
 				originalDocumentId: attachment.id,
@@ -132,9 +101,13 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 					</Tabs>
 				</div>
 				{editFiles && (
-					<DocumentModifier2
+					<DocumentModifier
 						data={documents}
-						onClose={() => setEditFiles(false)}
+						onSave={(documents) => {
+							setEditFiles(false)
+							console.log('save documents', documents)
+						}}
+						onCancel={() => setEditFiles(false)}
 					/>
 				)}
 			</>

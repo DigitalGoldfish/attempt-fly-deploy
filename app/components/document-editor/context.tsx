@@ -1,5 +1,9 @@
 import React from 'react'
-import { State, Action, ModalState } from '#app/const/PdfTypes.ts'
+import {
+	type State,
+	type Action,
+	type ModalState,
+} from '#app/components/document-editor/types.ts'
 
 export type DocumentEditorContextType = {
 	state: State
@@ -10,7 +14,6 @@ export type DocumentEditorContextType = {
 const DocumentEditorContext = React.createContext<DocumentEditorContextType>({
 	state: {
 		documents: [],
-		pages: [],
 		draggedPage: null,
 		dropTarget: null,
 	},

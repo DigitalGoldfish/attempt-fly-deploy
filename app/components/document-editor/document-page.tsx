@@ -1,40 +1,46 @@
-import { Minus, Plus, RotateCw } from 'lucide-react'
-import { Button } from '#app/components/ui/button.tsx'
-import { type PDFPageData } from '#app/const/PdfTypes.ts'
+import { Minus, Plus } from 'lucide-react'
 import { useDocumentEditorContext } from '#app/components/document-editor/context.tsx'
+import {
+	type Page,
+	type Document,
+} from '#app/components/document-editor/types.ts'
+import { Button } from '#app/components/ui/button.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 
-interface PageComponentProps {
-	page: PDFPageData
-}
-
-export function DocumentPage({ page }: PageComponentProps) {
+export function DocumentPage({
+	document,
+	page,
+	documentIndex,
+	pageIndex,
+}: {
+	document: Document
+	page: Page
+	documentIndex: number
+	pageIndex: number
+}) {
 	const { state, dispatch, setModal } = useDocumentEditorContext()
-	const { draggedPage, dropTarget, pages } = state
+	const { draggedPage, dropTarget } = state
 
 	const isDragged =
-		draggedPage?.columnIndex === page.columnIndex &&
-		draggedPage?.stackIndex === page.stackIndex
+		draggedPage?.documentIndex === documentIndex &&
+		draggedPage?.pageIndex === pageIndex
 
 	const isDropTarget =
-		dropTarget?.columnIndex === page.columnIndex &&
-		dropTarget?.stackIndex === page.stackIndex
+		dropTarget?.documentIndex === documentIndex &&
+		dropTarget?.pageIndex === pageIndex
 
-	const handleDragStart = (columnIndex: number, stackIndex: number) => {
+	const handleDragStart = () => {
 		dispatch({
 			type: 'SET_DRAGGED_PAGE',
-			payload: { columnIndex, stackIndex },
+			payload: { documentIndex: documentIndex, pageIndex: pageIndex },
 		})
 	}
 
-	const handleDragOver = (
-		e: React.DragEvent,
-		columnIndex: number,
-		stackIndex: number,
-	) => {
+	const handleDragOver = (e: React.DragEvent) => {
 		e.preventDefault()
 		dispatch({
 			type: 'SET_DROP_TARGET',
-			payload: { columnIndex, stackIndex },
+			payload: { documentIndex: documentIndex, pageIndex: pageIndex },
 		})
 	}
 
@@ -42,96 +48,114 @@ export function DocumentPage({ page }: PageComponentProps) {
 		dispatch({ type: 'SET_DROP_TARGET', payload: null })
 	}
 
-	const handleRotate = async (page: PDFPageData, degrees: number) => {
+	const handleRotate = async (degrees: 90 | -90 | 180) => {
 		try {
-			const newRotation = (page.rotation + degrees) % 360
-			const rotatedPageData = {
-				...page,
-				rotation: newRotation,
-			}
-			const updatedPages = state.pages.map((p) =>
-				p.pageNumber === page.pageNumber ? rotatedPageData : p,
-			)
-			dispatch({ type: 'SET_PAGES', payload: updatedPages })
+			dispatch({
+				type: 'ROTATE',
+				payload: {
+					documentIndex,
+					pageIndex,
+					rotation: degrees,
+				},
+			})
 		} catch (err) {
 			console.error('Failed to rotate page', err)
 		}
 	}
 
-	const toggleGrayOut = (columnIndex: number, stackIndex: number) => {
-		const newPages = pages.map((page) => {
-			if (page.columnIndex === columnIndex && page.stackIndex === stackIndex) {
-				return { ...page, isGrayedOut: !page.isGrayedOut }
-			}
-			return page
+	const toggleGrayOut = () => {
+		dispatch({
+			type: 'TOGGLE_IGNORE',
+			payload: {
+				documentIndex,
+				pageIndex,
+			},
 		})
-		dispatch({ type: 'SET_PAGES', payload: newPages })
 	}
 
-	const openPreviewModal = (page: PDFPageData) => {
+	const newDocumentFromPage = () => {
+		dispatch({
+			type: 'NEW_DOCUMENT_FROM_PAGE',
+			payload: {
+				documentIndex,
+				pageIndex,
+			},
+		})
+	}
+
+	const openPreviewModal = () => {
 		setModal({
 			isOpen: true,
-			previewUrl: page.pdfUrl || page.imageUrl,
+			previewUrl: page.imageUrl,
 			previewRotation: page.rotation,
 		})
 	}
 
-	const handleDrop = (
-		e: React.DragEvent,
-		targetColumnIndex: number,
-		targetStackIndex: number,
-	) => {
+	const handleDrop = (e: React.DragEvent) => {
 		e.preventDefault()
 
 		dispatch({
 			type: 'HANDLE_DROP',
-			payload: {
-				newColumn: targetColumnIndex,
-				newStack: targetStackIndex,
-			},
+			payload: {},
 		})
 	}
 
 	return (
 		<div
-			className={`relative rounded-lg border border-gray-200 p-4 ${
+			className={`relative rounded-lg border border-gray-200 p-2 ${
 				isDragged ? 'opacity-50' : ''
-			} ${page.isGrayedOut ? 'bg-gray-100 opacity-50' : ''}`}
+			} ${page.ignored ? 'bg-gray-100 opacity-50' : ''}`}
 			draggable
-			onDragStart={() => handleDragStart(page.columnIndex, page.stackIndex)}
-			onDragOver={(e) => handleDragOver(e, page.columnIndex, page.stackIndex)}
+			onDragStart={handleDragStart}
+			onDragOver={handleDragOver}
 			onDragLeave={handleDragLeave}
-			onDrop={(e) => handleDrop(e, page.columnIndex, page.stackIndex)}
+			onDrop={handleDrop}
 		>
 			{isDropTarget && (
 				<div className="pointer-events-none absolute inset-0 z-10 bg-black bg-opacity-20" />
 			)}
 			<div className="mb-2 flex justify-between">
-				<div className="flex items-end justify-end">
-					<Button
-						className="h-auto bg-transparent p-0 text-black"
-						onClick={() => handleRotate(page, 90)}
-					>
-						<RotateCw size={15} />
-						90°
-					</Button>
-					<Button
-						className="h-auto bg-transparent p-0 text-black"
-						onClick={() => handleRotate(page, 180)}
-					>
-						<RotateCw size={15} />
-						180°
-					</Button>
+				<div className="absolute bottom-4 left-0 right-0 z-40 flex justify-center">
+					<div className="flex rounded bg-white bg-opacity-50">
+						<Button
+							className="h-auto bg-transparent text-black"
+							onClick={() => handleRotate(-90)}
+						>
+							<Icon name="rotate-left" size="xl" />
+						</Button>
+						<Button
+							className="h-auto bg-transparent text-black"
+							onClick={() => handleRotate(180)}
+						>
+							<Icon name="rotate-upside-down" size="xl" />
+						</Button>
+						<Button
+							className="h-auto bg-transparent text-black"
+							onClick={() => handleRotate(90)}
+						>
+							<Icon name="rotate-right" size="xl" />
+						</Button>
+					</div>
 				</div>
-				<Button
-					className={`h-auto bg-transparent p-0 ${
-						page.isGrayedOut ? 'text-gray-400' : 'text-gray-600'
-					}`}
-					onClick={() => toggleGrayOut(page.columnIndex, page.stackIndex)}
-				>
-					{page.isGrayedOut ? <Plus size={15} /> : <Minus size={15} />}
-					{page.isGrayedOut ? 'Include' : 'Ignore'}
-				</Button>
+				<div className={'flex w-full justify-between'}>
+					<Button
+						className={`h-auto bg-transparent p-0 ${
+							page.ignored ? 'text-gray-400' : 'text-gray-600'
+						}`}
+						onClick={() => toggleGrayOut()}
+					>
+						{page.ignored ? <Plus size={15} /> : <Minus size={15} />}
+						{page.ignored ? 'Inkludieren' : 'Ignorieren'}
+					</Button>
+					{document.pages.length > 1 && (
+						<Button
+							className={`h-auto bg-transparent p-0 text-gray-600`}
+							onClick={() => newDocumentFromPage()}
+						>
+							Neues Dokument
+						</Button>
+					)}
+				</div>
 			</div>
 
 			<div className="flex flex-col gap-4">
@@ -144,9 +168,9 @@ export function DocumentPage({ page }: PageComponentProps) {
 					}}
 				>
 					<img
-						onClick={() => openPreviewModal(page)}
+						onClick={openPreviewModal}
 						src={page.imageUrl}
-						alt={`Page ${page.pageNumber}`}
+						alt={`Page ${pageIndex + 1}`}
 						className={`object-contain ${
 							page.rotation % 180 !== 0
 								? 'max-h-[70%] max-w-[70%]'

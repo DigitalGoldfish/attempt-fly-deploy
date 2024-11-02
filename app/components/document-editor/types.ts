@@ -6,30 +6,24 @@ export interface Document {
 }
 
 export interface Page {
+	fileName: string
 	imageUrl: string
 	originalDocumentId: string
 	originalDocumentType: DocumentType
 	originalDocumentPageNumber: number
-	rotation: 0 | 90 | 180 | 270
+	rotation: number
 	ignored: boolean
 }
 
-export interface PDFPageData {
-	imageUrl: string
-	pdfUrl?: string
-	pageNumber: number
-	columnIndex: number
-	stackIndex: number
-	rotation: number
-	stackedBelow?: PDFPageData
-	isGrayedOut: boolean
+export type PageID = {
+	documentIndex: number
+	pageIndex: number
 }
 
 export interface State {
 	documents: Document[]
-	pages: PDFPageData[]
-	draggedPage: { columnIndex: number; stackIndex: number } | null
-	dropTarget: { columnIndex: number; stackIndex: number } | null
+	draggedPage: { documentIndex: number; pageIndex: number } | null
+	dropTarget: { documentIndex: number; pageIndex: number } | null
 }
 
 export interface ModalState {
@@ -39,8 +33,13 @@ export interface ModalState {
 }
 
 export type Action =
-	| { type: 'SET_PAGES'; payload: PDFPageData[] }
-	| { type: 'SET_DOCUMENTS'; payload: Document[] }
+	| {
+			type: 'NEW_DOCUMENT_FROM_PAGE'
+			payload: {
+				documentIndex: number
+				pageIndex: number
+			}
+	  }
 	| {
 			type: 'TOGGLE_IGNORE'
 			payload: {
@@ -58,21 +57,13 @@ export type Action =
 	  }
 	| {
 			type: 'SET_DRAGGED_PAGE'
-			payload: { columnIndex: number; stackIndex: number } | null
+			payload: { documentIndex: number; pageIndex: number } | null
 	  }
 	| {
 			type: 'SET_DROP_TARGET'
-			payload: { columnIndex: number; stackIndex: number } | null
+			payload: { documentIndex: number; pageIndex: number } | null
 	  }
-	| { type: 'UPDATE_PAGES_AFTER_COMBINE'; payload: { newPages: PDFPageData[] } }
 	| {
 			type: 'HANDLE_DROP'
-			payload: {
-				newColumn: number
-				newStack: number
-			}
-	  }
-	| {
-			type: 'HANDLE_DROP2'
 			payload: {}
 	  }

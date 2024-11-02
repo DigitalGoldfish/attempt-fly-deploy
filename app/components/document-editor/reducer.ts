@@ -1,13 +1,11 @@
 import {
-	Action,
-	Document,
-	Page,
-	PDFPageData,
-	State,
-} from '#app/const/PdfTypes.ts'
+	type Action,
+	type Document,
+	type PageID,
+	type State,
+} from '#app/components/document-editor/types.ts'
 
 export const initialState: State = {
-	pages: [],
 	documents: [],
 	draggedPage: null,
 	dropTarget: null,
@@ -28,12 +26,8 @@ function getPage(
 
 export function reducer(state: State, action: Action): State {
 	switch (action.type) {
-		case 'SET_PAGES':
-			return { ...state, pages: action.payload }
 		case 'SET_DRAGGED_PAGE':
 			return { ...state, draggedPage: action.payload }
-		case 'UPDATE_PAGES_AFTER_COMBINE':
-			return { ...state, pages: action.payload.newPages }
 		case 'SET_DROP_TARGET':
 			return { ...state, dropTarget: action.payload }
 		case 'TOGGLE_IGNORE': {
@@ -52,134 +46,68 @@ export function reducer(state: State, action: Action): State {
 			const page = getPage(documents, documentIndex, pageIndex)
 
 			if (page) {
-				const newRotation = (360 + page.rotation + rotation) % 360
+				const newRotation = page.rotation + rotation
 				page.rotation = newRotation as 90 | 180 | 270
 				return { ...state }
 			}
 			return state
-		case 'HANDLE_DROP2':
-			const newState = movePage(state)
-			return { ...newState, dropTarget: null, draggedPage: null }
 		case 'HANDLE_DROP':
-			const { pages, draggedPage } = state
-			if (!draggedPage) {
-				return state
+			const { draggedPage, dropTarget } = state
+			if (draggedPage && dropTarget) {
+				const newState = movePageNew(state, draggedPage, dropTarget)
+				return { ...newState, dropTarget: null, draggedPage: null }
 			}
-			if (
-				draggedPage.columnIndex === action.payload.newColumn &&
-				draggedPage.stackIndex === action.payload.newStack
-			)
-				return state
-			const modifiedPages = movePageToNewPosition(
-				pages,
-				draggedPage.columnIndex,
-				draggedPage.stackIndex,
-				action.payload.newColumn,
-				action.payload.newStack,
-			)
-			return {
-				...state,
-				pages: modifiedPages,
-				dropTarget: null,
-				draggedPage: null,
-			}
+			return state
+		case 'NEW_DOCUMENT_FROM_PAGE': {
+			const { documents } = state
+			return movePageNew(state, action.payload, {
+				documentIndex: documents.length - 1,
+				pageIndex: 0,
+			})
+		}
 		default:
 			return state
 	}
 }
 
-export const movePage = (state: State) => {
-	const { documents, draggedPage, dropTarget } = state
-	if (draggedPage && dropTarget) {
-		const { columnIndex, stackIndex } = draggedPage
-		const { columnIndex: targetColumnIndex, stackIndex: targetStackIndex } =
-			dropTarget
-		// remove the page from old document
-		// @ts-ignore
-		const [removedPage] = documents[columnIndex].pages.splice(stackIndex, 1)
+export const movePageNew = (state: State, from: PageID, to: PageID) => {
+	const { documents } = state
+	const fromDocument = documents[from.documentIndex]
+	const toDocument = documents[to.documentIndex]
 
-		if (removedPage) {
-			// @ts-ignore
-			if (documents[targetColumnIndex].pages.length === 0) {
-				// @ts-ignore
-				documents[targetColumnIndex].name = removedPage.imageUrl
+	if (fromDocument && toDocument) {
+		const [page] = fromDocument.pages.splice(from.pageIndex, 1)
+
+		if (page) {
+			// if the document was previously empty, we give the document the name of the file
+			if (toDocument.pages.length === 0) {
+				toDocument.name = page.fileName
 			}
 
-			// @ts-ignore
-			documents[targetColumnIndex].pages.splice(
-				targetStackIndex,
-				0,
-				removedPage,
-			)
-		}
+			// add the page
+			toDocument.pages.splice(to.pageIndex, 0, page)
 
-		return {
-			...state,
-			documents: [
-				...documents.filter((document) => document.pages.length > 0),
-				{ name: '', pages: [] },
-			],
+			return {
+				...state,
+				documents: prepareDocumentsForModifier(documents),
+			}
 		}
 	}
 	return state
 }
 
-export const movePageToNewPosition = (
-	pages: PDFPageData[],
-	sourceColumnIndex: number,
-	sourceStackIndex: number,
-	targetColumnIndex: number,
-	targetStackIndex: number,
-): PDFPageData[] => {
-	const newPages = [...pages]
+export const filterEmptyDocuments = (documents: Document[]) => {
+	return documents.filter((document) => document.pages.length > 0)
+}
 
-	const sourcePage = newPages.find(
-		(p) =>
-			p.columnIndex === sourceColumnIndex && p.stackIndex === sourceStackIndex,
-	)
-	const targetPage = newPages.find(
-		(p) =>
-			p.columnIndex === targetColumnIndex && p.stackIndex === targetStackIndex,
+export const prepareDocumentsForModifier = (documents: Document[]) => {
+	// if there is at least one document with more than one page we add an additional "empty" document
+	const multiPageDocumentsExist = documents.some(
+		(document) => document.pages.length > 1,
 	)
 
-	if (!sourcePage) return newPages
-
-	if (sourceColumnIndex === targetColumnIndex) {
-		newPages.forEach((page) => {
-			if (page === sourcePage) {
-				page.stackIndex = targetStackIndex
-			} else if (targetPage && page === targetPage) {
-				page.stackIndex = sourceStackIndex
-			}
-		})
-	} else {
-		sourcePage.columnIndex = targetColumnIndex
-		sourcePage.stackIndex = targetStackIndex
-
-		newPages.forEach((page) => {
-			if (
-				page.columnIndex === targetColumnIndex &&
-				page.stackIndex >= targetStackIndex &&
-				page !== sourcePage
-			) {
-				page.stackIndex++
-			}
-		})
-
-		const sourceIndex = newPages.findIndex((p) => p === sourcePage)
-		if (sourceIndex !== -1) {
-			newPages.splice(sourceIndex, 1)
-		}
-
-		newPages.push(sourcePage)
+	if (multiPageDocumentsExist) {
+		return [...filterEmptyDocuments(documents), { name: '', pages: [] }]
 	}
-
-	newPages.sort((a, b) => {
-		if (a.columnIndex === b.columnIndex) {
-			return a.stackIndex - b.stackIndex
-		}
-		return a.columnIndex - b.columnIndex
-	})
-
-	return newPages
+	return [...filterEmptyDocuments(documents)]
 }
