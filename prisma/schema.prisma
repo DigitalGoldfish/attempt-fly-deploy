@@ -29,6 +29,7 @@ model User {
   sessions    Session[]
   connections Connection[]
   bereich     Bereich[]
+  Issues      Issues[]
 }
 
 model Bereich {
@@ -292,8 +293,11 @@ model Incoming {
   mailId           String?
   formSubmissionId String?
 }
-model Issues{
-  id             String          @id @default(cuid())
-  note           String
-  link           String
+
+model Issues {
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  note   String
+  link   String
 }

@@ -20,8 +20,10 @@ import { prisma } from '#app/utils/db.server.ts'
 
 import { toast } from 'sonner'
 import { sendEmail } from '#app/utils/email.server.ts'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import { requireUserId } from '#app/utils/auth.server.ts'
 export const ReportSchema = z.object({
-	id: z.string(),
+	incomingId: z.string(),
 	note: z
 		.string()
 		.min(10, 'Report must be at least 10 characters long')
@@ -31,9 +33,14 @@ export const ReportSchema = z.object({
 type ReportFormData = z.infer<typeof ReportSchema>
 
 const resolver = zodResolver(ReportSchema)
-const createIssue = async (validatedData: { id: string; report: string }) => {
+const createIssue = async (validatedData: {
+	id: string
+	report: string
+	userId: string
+}) => {
 	const data = await prisma.issues.create({
 		data: {
+			userId: validatedData.userId,
 			link: `http://localhost:3000/details/${validatedData.id.replace(/['"]+/g, '')}`,
 			note: validatedData.report,
 		},
@@ -41,25 +48,27 @@ const createIssue = async (validatedData: { id: string; report: string }) => {
 	return data
 }
 export async function action({ request }: ActionFunctionArgs) {
+	const userId = await requireUserId(request)
 	const formData = await request.formData()
 	const reportData = Object.fromEntries(formData)
 	const validatedData = ReportSchema.parse(reportData)
 
 	try {
 		const result = await createIssue({
-			id: validatedData.id,
+			id: validatedData.incomingId,
+			userId: userId,
 			report: validatedData.note,
 		})
 		if (result) {
 			await sendEmail({
-				to: 'recipient@example.com',
-				subject: 'New Issue Report',
+				to: 'technik@digital-city.solutions',
+				subject: 'Publicare Issue Report',
 				html: `
           <h1>New Issue Reported</h1>
-          <p>ID: ${validatedData.id}</p>
+          <p>ID: ${validatedData.incomingId}</p>
           <p>Report: ${result.note}</p>
         `,
-				text: `New Issue Reported\n\nID: ${validatedData.id}\nReport: ${result?.note}\n\nLink:${result.link}`,
+				text: `New Issue Reported\n\nID: ${validatedData.incomingId}\nReport: ${result?.note}\n\nLink:${result.link}`,
 			})
 			return json({ success: true })
 		}
@@ -89,7 +98,7 @@ export function ReportIssue({ id }: { id: string }) {
 		resolver,
 		fetcher,
 		defaultValues: {
-			id: id,
+			incomingId: id,
 			note: '',
 		},
 		submitConfig: {
@@ -99,27 +108,31 @@ export function ReportIssue({ id }: { id: string }) {
 		},
 	})
 	const isSubmitting = navigation.state === 'submitting'
+	const { reset } = methods
 	useEffect(() => {
+		console.log('reexecute success')
 		if (fetcher.data?.success) {
 			setIsOpen(false)
-			methods.reset()
+			reset()
 			toast['success']('Issues', {
-				description: 'Issues submitted successfully!',
+				description: 'Issue submitted successfully!',
 			})
 		}
-	}, [fetcher.data])
+	}, [fetcher.data?.success, reset])
 
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			<DialogTrigger asChild>
-				<Button>Report Issue</Button>
+				<Button>Problem melden</Button>
 			</DialogTrigger>
 			<DialogContent className="max-w-lg">
 				<DialogHeader>
-					<DialogTitle>Report an Issue</DialogTitle>
-					<DialogDescription>
-						Please provide details about the issue
-					</DialogDescription>
+					<DialogTitle>Problem melden</DialogTitle>
+					<VisuallyHidden>
+						<DialogDescription>
+							Please provide details about the issue
+						</DialogDescription>
+					</VisuallyHidden>
 				</DialogHeader>
 
 				<Form<ReportFormData>
@@ -131,11 +144,11 @@ export function ReportIssue({ id }: { id: string }) {
 				>
 					<div className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="description">Note</Label>
+							<Label htmlFor="description">Problembeschreibung</Label>
 							<Textarea
 								id="note"
 								{...methods.register('note')}
-								placeholder="Provide detailed information about the issue..."
+								placeholder="Beschreiben sie das aufgetretene Problem ..."
 								className="h-32"
 							/>
 							{methods.formState.errors.note && (
@@ -153,13 +166,13 @@ export function ReportIssue({ id }: { id: string }) {
 							onClick={() => setIsOpen(false)}
 							disabled={isSubmitting}
 						>
-							Cancel
+							Abbrechen
 						</Button>
 						<Button
 							type="submit"
 							disabled={isSubmitting || !methods.formState.isValid}
 						>
-							{isSubmitting ? 'Submitting...' : 'Submit Report'}
+							{isSubmitting ? 'Melde...' : 'Problem melden'}
 						</Button>
 					</div>
 				</Form>
