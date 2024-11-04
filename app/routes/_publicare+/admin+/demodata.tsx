@@ -339,7 +339,7 @@ const DemoDataPage = () => {
 				<SeedTile type={Bereich.Wund} count={10} color="smalltext">
 					Import 10 Wundvers.
 				</SeedTile>
-				<SeedTile type="specialdata">Import special data</SeedTile>
+				<SeedTile type="specialdata">Import test cases</SeedTile>
 			</div>
 		</DefaultLayout>
 	)
