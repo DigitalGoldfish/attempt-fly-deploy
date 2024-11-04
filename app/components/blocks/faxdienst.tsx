@@ -32,8 +32,8 @@ export function SelectButtons({
 						type={'button'}
 						className={clsx(
 							selected
-								? 'bg-teal-600 text-white hover:bg-teal-200'
-								: 'border border-gray-700 bg-white text-black hover:bg-teal-200',
+								? 'bg-teal-600 leading-none text-white hover:bg-teal-200'
+								: 'border border-gray-700 bg-white leading-none text-black hover:bg-teal-200',
 						)}
 						onClick={() => {
 							if (multiple) {
@@ -129,10 +129,7 @@ export function FaxdienstBlock({
 					<SelectButtons
 						fieldName="attribute"
 						multiple
-						options={[
-							{ label: 'Ohne Verordnung', value: 'Ohne Verordnung' },
-							{ label: 'Benötigt KV', value: 'Benötigt KV' },
-						]}
+						options={[{ label: 'Ohne Verordnung', value: 'Ohne Verordnung' }]}
 					/>
 				</div>
 			</div>

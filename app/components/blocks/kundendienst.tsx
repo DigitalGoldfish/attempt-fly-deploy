@@ -34,12 +34,6 @@ export function KundendienstBlock({ data }: { data: IncomingFormType }) {
 	return (
 		<div className="mb-8 flex flex-col gap-4">
 			<h3 className={'text-h5'}>Kundendienst</h3>
-			<div className={'flex h-12 items-baseline gap-4'}>
-				<span>KndNr:</span>
-				<Field inputProps={{}} labelProps={{ children: '' }} />
-				<span>BestellNr:</span>
-				<Field inputProps={{}} labelProps={{ children: '' }} />
-			</div>
 			<div className="flex gap-4">
 				<Button variant="destructive" onClick={() => {}}>
 					Kostenvoranschlag hochladen
@@ -52,7 +46,7 @@ export function KundendienstBlock({ data }: { data: IncomingFormType }) {
 					options={[
 						{ value: 'kvnotwendig', label: 'Kostenvoranschlag gesendet' },
 						{ value: 'kvbest', label: 'KV Bestätigung erhalten' },
-						{ value: 'produkt_fehlt', label: 'Produkt fehlt' },
+						{ value: 'produktanlage', label: 'Warten auf Produktanlage' },
 						{ value: 'nachfrage', label: 'Nachfrage' },
 						{ value: 'sonstiges', label: 'Sonstiges' },
 					]}
@@ -64,10 +58,11 @@ export function KundendienstBlock({ data }: { data: IncomingFormType }) {
 					<SelectButtons
 						fieldName="wiedervorlage"
 						options={[
+							{ value: '2', label: '2 h' },
+							{ value: '4', label: '4 h' },
 							{ value: '24', label: '1 Tag' },
 							{ value: '48', label: '2 Tage' },
 							{ value: '72', label: '3 Tage' },
-							{ value: '120', label: '5 Tage' },
 							{ value: '168', label: '7 Tage' },
 						]}
 					/>

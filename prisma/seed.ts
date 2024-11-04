@@ -80,15 +80,20 @@ async function seed() {
 			{
 				id: 'cm2gdeb51000009l79df33l01',
 				name: Bereich.StoMa,
-				label: 'StoMa/Inko',
+				label: 'StoMa',
 			},
 			{
 				id: 'cm2gdeb51000009l79df33l02',
+				name: Bereich.Inko,
+				label: 'Inko',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33l03',
 				name: Bereich.Wund,
 				label: 'Wundversorgung',
 			},
 			{
-				id: 'cm2gdeb51000009l79df33l03',
+				id: 'cm2gdeb51000009l79df33l04',
 				name: Bereich.Sonstige,
 				label: 'Sonstige',
 			},
@@ -139,10 +144,52 @@ async function seed() {
 				bereichId: 'cm2gdeb51000009l79df33l01',
 			},
 			{
-				id: 'cm2gdeb51000009l79df43l07',
+				id: 'cm2gdeb51000009l79df43l11',
+				label: 'MB1',
+				type: 'User',
+				bereichId: 'cm2gdeb51000009l79df33l02',
+			},
+			{
+				id: 'cm2gdeb51000009l79df43l12',
+				label: 'MB2',
+				type: 'User',
+				bereichId: 'cm2gdeb51000009l79df33l02',
+			},
+			{
+				id: 'cm2gdeb51000009l79df43l13',
+				label: 'MB3',
+				type: 'User',
+				bereichId: 'cm2gdeb51000009l79df33l02',
+			},
+			{
+				id: 'cm2gdeb51000009l79df43l14',
+				label: 'MB4',
+				type: 'User',
+				bereichId: 'cm2gdeb51000009l79df33l02',
+			},
+			{
+				id: 'cm2gdeb51000009l79df43l15',
+				label: 'MB5',
+				type: 'User',
+				bereichId: 'cm2gdeb51000009l79df33l02',
+			},
+			{
+				id: 'cm2gdeb51000009l79df43l16',
+				label: 'MB6',
+				type: 'User',
+				bereichId: 'cm2gdeb51000009l79df33l02',
+			},
+			{
+				id: 'cm2gdeb51000009l79df43l21',
 				label: 'SM',
 				type: 'User',
 				bereichId: 'cm2gdeb51000009l79df33l01',
+			},
+			{
+				id: 'cm2gdeb51000009l79df43l22',
+				label: 'IN',
+				type: 'User',
+				bereichId: 'cm2gdeb51000009l79df33l02',
 			},
 		],
 	})
@@ -212,7 +259,21 @@ async function seed() {
 			password: { create: createPassword('stoma') },
 			roles: { connect: [{ name: 'kundendienst' }] },
 			bereich: { connect: { id: 'cm2gdeb51000009l79df33l01' } },
-			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l07' } },
+			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l21' } },
+		},
+	})
+
+	await prisma.user.create({
+		select: { id: true },
+		data: {
+			email: 'inko@example.org',
+			username: 'inko',
+			name: 'Inko',
+			kuerzel: 'IN',
+			password: { create: createPassword('inko') },
+			roles: { connect: [{ name: 'kundendienst' }] },
+			bereich: { connect: { id: 'cm2gdeb51000009l79df33l02' } },
+			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l22' } },
 		},
 	})
 
@@ -228,6 +289,22 @@ async function seed() {
 				roles: { connect: [{ name: 'kundendienst' }] },
 				bereich: { connect: { id: 'cm2gdeb51000009l79df33l01' } },
 				defaultTags: { connect: { id: `cm2gdeb51000009l79df43l0${i}` } },
+			},
+		})
+	}
+
+	for (let i = 1; i <= 6; i++) {
+		await prisma.user.create({
+			select: { id: true },
+			data: {
+				email: `mb${i}@example.org`,
+				username: `mb${i}`,
+				name: `Mitarbeiter ${i}`,
+				kuerzel: `MB${i}`,
+				password: { create: createPassword(`mb${i}`) },
+				roles: { connect: [{ name: 'kundendienst' }] },
+				bereich: { connect: { id: 'cm2gdeb51000009l79df33l02' } },
+				defaultTags: { connect: { id: `cm2gdeb51000009l79df43l1${i}` } },
 			},
 		})
 	}

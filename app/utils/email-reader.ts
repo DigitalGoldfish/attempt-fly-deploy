@@ -99,10 +99,16 @@ export async function countAttachment(
 	let totalAttachments = 0
 
 	async function processDirectory(currentPath: string) {
+		console.log('processing directory', currentPath)
 		try {
 			const files = await fs.readdir(currentPath, { withFileTypes: true })
 
+			let count = 0
 			for (const file of files) {
+				count++
+				if (count % 100 === 0) {
+					console.log('processed', count, 'files')
+				}
 				const fullPath = path.join(currentPath, file.name)
 
 				if (file.isDirectory()) {
