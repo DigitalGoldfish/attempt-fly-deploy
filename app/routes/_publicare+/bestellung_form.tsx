@@ -23,6 +23,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { HistoryDrawer } from '#app/routes/_publicare+/drawer.tsx'
 import { stampAndPrint } from '#app/utils/pdf-stamper.tsx'
 import { DeletedBlock } from '#app/components/blocks/geloescht.tsx'
+import { ReportIssue } from './report-issue'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -246,7 +247,7 @@ export default function BestellungsForm({
 								</Button>
 							)}
 							<ClientOnly fallback={null}>{() => <HistoryDrawer />}</ClientOnly>
-
+							<ReportIssue id={data.id} />
 							<div className="flex-1"></div>
 							{!isDeleted && (
 								<Button

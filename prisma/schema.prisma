@@ -292,3 +292,8 @@ model Incoming {
   mailId           String?
   formSubmissionId String?
 }
+model Issues{
+  id             String          @id @default(cuid())
+  note           String
+  link           String
+}
