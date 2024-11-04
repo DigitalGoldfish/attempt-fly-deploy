@@ -2,6 +2,7 @@ import { simpleParser, AddressObject } from 'mailparser'
 import JSZip from 'jszip'
 import fs from 'fs/promises'
 import path from 'path'
+import { Stats } from 'fs'
 
 export interface ParsedEmail {
 	subject: string
@@ -15,15 +16,46 @@ export interface ParsedEmail {
 	}[]
 	filename?: string
 }
+
+interface AttachmentInfo {
+	count: number
+	samples: string[]
+}
+
+interface AttachmentTypeInfo {
+	type: string
+	info: AttachmentInfo
+}
+
+interface AttachmentCountInfo {
+	attachmentCount: number
+	info: AttachmentInfo
+}
+
 interface AttachmentAnalysis {
 	totalEmlFiles: number
-	attachmentGroupCounts: string[]
-	attachmentTypesCounts: Record<string, number>
+	attachmentByCounts: AttachmentCountInfo[]
+	attachmentsByType: AttachmentTypeInfo[]
 	totalAttachments: number
+	copiedToSpecialFolder: number
 }
-function getAddressText(
+
+const ALLOWED_EXTENSIONS = new Set([
+	'JPG',
+	'JPEG',
+	'PNG',
+	'GIF',
+	'BMP',
+	'WEBP',
+	'PDF',
+	'TIF',
+])
+const SPECIAL_CASE_PATH = './public/demodata/specialcase'
+const MAX_SPECIAL_COPIES = 2
+
+const getAddressText = (
 	address: AddressObject | AddressObject[] | undefined,
-): string {
+): string => {
 	if (!address) return ''
 	if (Array.isArray(address)) {
 		return address.map((addr) => addr.text).join(', ')
@@ -31,11 +63,18 @@ function getAddressText(
 	return address.text || ''
 }
 
-export async function parseEMLFile(file: File): Promise<ParsedEmail> {
+const fileExists = async (filePath: string): Promise<boolean> => {
 	try {
-		const arrayBuffer = await file.arrayBuffer()
-		const buffer = Buffer.from(arrayBuffer)
+		await fs.access(filePath)
+		return true
+	} catch {
+		return false
+	}
+}
 
+export const parseEMLFile = async (file: File): Promise<ParsedEmail> => {
+	try {
+		const buffer = Buffer.from(await file.arrayBuffer())
 		const parsed = await simpleParser(buffer)
 
 		const attachments = parsed.attachments.map((attachment) => ({
@@ -58,174 +97,269 @@ export async function parseEMLFile(file: File): Promise<ParsedEmail> {
 	}
 }
 
-export async function parseEMLFromZip(zipFile: File): Promise<ParsedEmail[]> {
+export const parseEMLFromZip = async (
+	zipFile: File,
+): Promise<ParsedEmail[]> => {
 	try {
-		const zipData = await zipFile.arrayBuffer()
-		const zip = await JSZip.loadAsync(zipData)
-		const parsedEmails: ParsedEmail[] = []
-
+		const zip = await JSZip.loadAsync(await zipFile.arrayBuffer())
 		const emlFiles = Object.values(zip.files).filter(
 			(file) => !file.dir && file.name.toLowerCase().endsWith('.eml'),
 		)
 
-		for (const emlFile of emlFiles) {
-			try {
-				const content = await emlFile.async('arraybuffer')
-				const file = new File([content], emlFile.name, {
-					type: 'message/rfc822',
-				})
-				const parsedEmail = await parseEMLFile(file)
-				parsedEmails.push(parsedEmail)
-			} catch (error) {
-				console.error(`Error processing ${emlFile.name}:`, error)
-			}
-		}
-
-		return parsedEmails.sort((a, b) =>
-			(a.filename || '').localeCompare(b.filename || ''),
+		const parsedEmails = await Promise.all(
+			emlFiles.map(async (emlFile) => {
+				try {
+					const content = await emlFile.async('arraybuffer')
+					const file = new File([content], emlFile.name, {
+						type: 'message/rfc822',
+					})
+					return await parseEMLFile(file)
+				} catch (error) {
+					console.error(`Error processing ${emlFile.name}:`, error)
+					return null
+				}
+			}),
 		)
+
+		return parsedEmails
+			.filter((email): email is ParsedEmail => email !== null)
+			.sort((a, b) => (a.filename || '').localeCompare(b.filename || ''))
 	} catch (error) {
 		console.error('Error processing ZIP file:', error)
 		throw new Error('Failed to process ZIP file')
 	}
 }
 
-export async function countAttachment(
+let specialCasesCopied = 0
+
+const copyEMLWithSpecialAttachments = async (
+	emlPath: string,
+	attachmentTypes: string[],
+	specialFolderPath: string,
+): Promise<void> => {
+	if (specialCasesCopied >= MAX_SPECIAL_COPIES) {
+		return
+	}
+
+	try {
+		await fs.mkdir(specialFolderPath, { recursive: true })
+		const fileName = path.basename(emlPath)
+		const destPath = path.join(specialFolderPath, fileName)
+
+		if (await fileExists(destPath)) {
+			console.log(
+				`File ${fileName} already exists in special folder, skipping copy`,
+			)
+			return
+		}
+
+		await fs.copyFile(emlPath, destPath)
+		specialCasesCopied++
+		console.log(
+			`Copied ${emlPath} to ${destPath} due to attachment types: ${attachmentTypes.join(', ')}`,
+		)
+	} catch (error) {
+		console.error(`Error copying EML file ${emlPath}:`, error)
+	}
+}
+
+export const countAttachment = async (
 	directoryPath: string,
-): Promise<AttachmentAnalysis> {
-	const attachmentTypesCounts: Record<string, number> = {}
-	const attachmentGroupCounts: Record<number, number> = {}
+): Promise<AttachmentAnalysis> => {
+	const attachmentsByType = new Map<string, AttachmentInfo>()
+	const attachmentByCounts = new Map<number, AttachmentInfo>()
+	const emlFilesByType = new Map<string, Set<string>>()
+	const emlFilesByGroupCount = new Map<number, Set<string>>()
 	let totalEmlFiles = 0
 	let totalAttachments = 0
+	let copiedToSpecialFolder = 0
+	specialCasesCopied = 0
 
 	async function processDirectory(currentPath: string) {
-		console.log('processing directory', currentPath)
-		try {
-			const files = await fs.readdir(currentPath, { withFileTypes: true })
+        console.log('processing directory', currentPath)
 
-			let count = 0
-			for (const file of files) {
-				count++
-				if (count % 100 === 0) {
-					console.log('processed', count, 'files')
-				}
-				const fullPath = path.join(currentPath, file.name)
+        const files = await fs.readdir(currentPath, { withFileTypes: true })
 
-				if (file.isDirectory()) {
-					await processDirectory(fullPath)
-				} else if (path.extname(file.name).toLowerCase() === '.eml') {
-					totalEmlFiles++
+        let count = 0
+        for (const file of files) {
+            count++
+            if (count % 100 === 0) {
+                console.log('processed', count, 'files')
+            }
+            const fullPath = path.join(currentPath, file.name)
 
-					try {
-						const fileContent = await fs.readFile(fullPath)
-						const fileObj = new File([fileContent], file.name, {
-							type: 'message/rfc822',
-						})
-						const parsedEmail = await parseEMLFile(fileObj)
+			if (fullPath.startsWith(SPECIAL_CASE_PATH)) continue
 
-						const attachmentCount = parsedEmail.attachments.length
-						attachmentGroupCounts[attachmentCount] =
-							(attachmentGroupCounts[attachmentCount] || 0) + 1
+			if (file.isDirectory()) {
+				await processDirectory(fullPath)
+			} else if (path.extname(file.name).toLowerCase() === '.eml') {
+				totalEmlFiles++
 
-						for (const attachment of parsedEmail.attachments) {
-							const fileExtension =
-								path.extname(attachment.filename).toUpperCase().slice(1) ||
-								'UNKNOWN'
-							attachmentTypesCounts[fileExtension] =
-								(attachmentTypesCounts[fileExtension] || 0) + 1
+				try {
+					const fileContent = await fs.readFile(fullPath)
+					const fileObj = new File([fileContent], file.name, {
+						type: 'message/rfc822',
+					})
+					const parsedEmail = await parseEMLFile(fileObj)
 
-							totalAttachments++
-						}
-					} catch (parseError) {
-						console.error(`Error parsing EML file ${fullPath}:`, parseError)
+					const attachmentCount = parsedEmail.attachments.length
+					const specialAttachmentTypes: string[] = []
+
+					if (!attachmentByCounts.has(attachmentCount)) {
+						attachmentByCounts.set(attachmentCount, { count: 0, samples: [] })
+						emlFilesByGroupCount.set(attachmentCount, new Set())
 					}
+
+					const countInfo = attachmentByCounts.get(attachmentCount)!
+					countInfo.count++
+					emlFilesByGroupCount.get(attachmentCount)!.add(fullPath)
+
+					for (const attachment of parsedEmail.attachments) {
+						const fileExtension =
+							path.extname(attachment.filename).toUpperCase().slice(1) ||
+							'UNKNOWN'
+
+						if (!ALLOWED_EXTENSIONS.has(fileExtension)) {
+							specialAttachmentTypes.push(fileExtension)
+						}
+
+						if (!attachmentsByType.has(fileExtension)) {
+							attachmentsByType.set(fileExtension, { count: 0, samples: [] })
+							emlFilesByType.set(fileExtension, new Set())
+						}
+
+						const typeInfo = attachmentsByType.get(fileExtension)!
+						typeInfo.count++
+						emlFilesByType.get(fileExtension)!.add(fullPath)
+						totalAttachments++
+					}
+
+					if (
+						specialAttachmentTypes.length > 0 &&
+						specialCasesCopied < MAX_SPECIAL_COPIES
+					) {
+						copiedToSpecialFolder++
+						await copyEMLWithSpecialAttachments(
+							fullPath,
+							specialAttachmentTypes,
+							SPECIAL_CASE_PATH,
+						)
+					}
+				} catch (parseError) {
+					console.error(`Error parsing EML file ${fullPath}:`, parseError)
 				}
 			}
-		} catch (error) {
-			console.error(`Error processing directory ${currentPath}:`, error)
 		}
 	}
 
 	await processDirectory(directoryPath)
 
-	const formattedAttachmentGroupCounts = Object.entries(attachmentGroupCounts)
-		.map(([count, emails]) => `${count} attachment: ${emails}`)
-		.sort((a, b) => {
-			const countA = parseInt(a.split(' ')[0] as string)
-			const countB = parseInt(b.split(' ')[0] as string)
-			return countA - countB
-		})
+	const attachmentsByTypeArray: AttachmentTypeInfo[] = Array.from(
+		attachmentsByType.entries(),
+	).map(([type, info]) => ({
+		type,
+		info: {
+			count: info.count,
+			samples: Array.from(emlFilesByType.get(type) || []).slice(0, 2),
+		},
+	}))
+
+	const attachmentByCountsArray: AttachmentCountInfo[] = Array.from(
+		attachmentByCounts.entries(),
+	).map(([count, info]) => ({
+		attachmentCount: count,
+		info: {
+			count: info.count,
+			samples: Array.from(emlFilesByGroupCount.get(count) || []).slice(0, 2),
+		},
+	}))
 
 	return {
 		totalEmlFiles,
 		totalAttachments,
-		attachmentGroupCounts: formattedAttachmentGroupCounts,
-		attachmentTypesCounts,
+		attachmentByCounts: attachmentByCountsArray,
+		attachmentsByType: attachmentsByTypeArray,
+		copiedToSpecialFolder,
 	}
 }
 
-export async function readTenEMLFiles(
+export const readEMLFiles = async (
 	directoryPath: string,
-): Promise<ParsedEmail[]> {
-	try {
-		const files = await fs.readdir(directoryPath)
-		const emlFiles = files
-			.filter((file) => path.extname(file).toLowerCase() === '.eml')
-			.slice(0, 10)
+	amount?: number,
+): Promise<{ parsedEmails: ParsedEmail[]; processedPaths: string[] }> => {
+	const emlFiles: { path: string; stats: Stats }[] = []
+	const processedPaths: string[] = []
 
-		const fileStats = await Promise.all(
-			emlFiles.map(async (file) => {
-				const filePath = path.join(directoryPath, file)
-				const stats = await fs.stat(filePath)
-				return { file, stats }
-			}),
-		)
+	const processDirectory = async (currentPath: string) => {
+		const files = await fs.readdir(currentPath, { withFileTypes: true })
 
-		const sortedFiles = fileStats.sort(
-			(a, b) => b.stats.mtime.getTime() - a.stats.mtime.getTime(),
-		)
+		for (const file of files) {
+			const fullPath = path.join(currentPath, file.name)
 
-		const parsedEmails: ParsedEmail[] = []
-		for (const { file } of sortedFiles) {
-			const filePath = path.join(directoryPath, file)
-			const fileContent = await fs.readFile(filePath)
-			const fileObj = new File([fileContent], file, { type: 'message/rfc822' })
-			const parsedEmail = await parseEMLFile(fileObj)
-			parsedEmails.push(parsedEmail)
+			if (file.isDirectory()) {
+				await processDirectory(fullPath)
+			} else if (path.extname(file.name).toLowerCase() === '.eml') {
+				const stats = await fs.stat(fullPath)
+				emlFiles.push({ path: fullPath, stats })
+			}
 		}
+	}
 
-		return parsedEmails
-	} catch (error) {
-		console.error('Error reading recent EML files:', error)
-		throw new Error('Failed to read recent EML files')
+	await processDirectory(directoryPath)
+
+	const sortedFiles = emlFiles.sort(
+		(a, b) => b.stats.mtime.getTime() - a.stats.mtime.getTime(),
+	)
+	const filesToProcess = amount ? sortedFiles.slice(0, amount) : sortedFiles
+
+	const parsedEmails = await Promise.all(
+		filesToProcess.map(async ({ path: filePath }) => {
+			try {
+				const fileContent = await fs.readFile(filePath)
+				const fileName = path.basename(filePath)
+				const fileObj = new File([fileContent], fileName, {
+					type: 'message/rfc822',
+				})
+				const parsedEmail = await parseEMLFile(fileObj)
+				processedPaths.push(filePath)
+				return parsedEmail
+			} catch (parseError) {
+				console.error(`Error parsing EML file ${filePath}:`, parseError)
+				return null
+			}
+		}),
+	)
+
+	return {
+		parsedEmails: parsedEmails.filter(
+			(email): email is ParsedEmail => email !== null,
+		),
+		processedPaths,
 	}
 }
 
-export async function moveProcessedEMLFiles(
+export const moveProcessedEMLFiles = async (
 	directoryPath: string,
 	processedFiles: string[],
-): Promise<string[]> {
+): Promise<string[]> => {
 	const processedDir = path.join(process.env.EMAILS_PATH, 'used')
 	const movedFiles: string[] = []
 
-	try {
-		await fs.mkdir(processedDir, { recursive: true })
+	await fs.mkdir(processedDir, { recursive: true })
 
-		for (const file of processedFiles) {
-			const sourcePath = path.join(directoryPath, file)
-			const destPath = path.join(processedDir, file)
+	for (const filePath of processedFiles) {
+		const relativePath = path.relative(directoryPath, filePath)
+		const destPath = path.join(processedDir, relativePath)
+		const destDir = path.dirname(destPath)
 
-			try {
-				await fs.rename(sourcePath, destPath)
-				movedFiles.push(file)
-			} catch (error) {
-				console.error(`Error moving file ${file}:`, error)
-			}
+		try {
+			await fs.mkdir(destDir, { recursive: true })
+			await fs.rename(filePath, destPath)
+			movedFiles.push(processedDir)
+		} catch (error) {
+			console.error(`Error moving file ${filePath}:`, error)
 		}
-
-		return movedFiles
-	} catch (error) {
-		console.error('Error moving processed EML files:', error)
-		throw new Error('Failed to move processed EML files')
 	}
+
+	return movedFiles
 }

@@ -5,7 +5,6 @@ export const loader: LoaderFunction = async () => {
 	const directoryPath = process.env.EMAILS_PATH
 	const attachmentCounts = await countAttachment(directoryPath)
 	return json({
-		msg: 'Done',
 		attachmentCounts,
 	})
 }

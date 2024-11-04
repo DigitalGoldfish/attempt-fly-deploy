@@ -6,8 +6,10 @@ import { Source } from '#app/const/Source.ts'
 import { Types } from '#app/const/Types.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import fs from 'node:fs'
+import path from 'path'
 import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
 import { ParsedEmail } from './email-reader'
+import { redirectWithToast } from './toast.server'
 
 class RandomPicker {
 	prefixSums: number[]
@@ -480,7 +482,10 @@ export async function createIncomingFax(forceFaxdienst: boolean) {
 		data,
 	})
 }
-export async function importMailData(parsedEmails: ParsedEmail[]) {
+export async function importMailData(
+	parsedEmails: ParsedEmail[],
+	bereich?: string,
+) {
 	const results = {
 		success: 0,
 		failed: 0,
@@ -566,13 +571,17 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 							: undefined,
 				},
 			})
-
-			let status: IncomingStatus =
-				Math.random() < 0.3
-					? IncomingStatus.Faxdienst
-					: Object.values(IncomingStatus)[
-							Math.floor(Math.random() * Object.values(IncomingStatus).length)
-						] || IncomingStatus.Faxdienst
+			let status: IncomingStatus
+			if (bereich) {
+				status = IncomingStatus.Kundendienst
+			} else {
+				status =
+					Math.random() < 0.3
+						? IncomingStatus.Faxdienst
+						: Object.values(IncomingStatus)[
+								Math.floor(Math.random() * Object.values(IncomingStatus).length)
+							] || IncomingStatus.Faxdienst
+			}
 
 			const data: Prisma.IncomingCreateInput = {
 				mail: { connect: { id: email.id } },
@@ -581,13 +590,9 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 				printed: false,
 			}
 
-			if (
-				![
-					IncomingStatus.Faxdienst,
-					IncomingStatus.Weitergeleitet,
-					IncomingStatus.Geloescht,
-				].includes(status)
-			) {
+			if (bereich && Object.values(Bereich).includes(bereich)) {
+				data.bereich = bereich
+			} else {
 				data.bereich =
 					Object.values(Types)[
 						Math.floor(Math.random() * Object.values(Types).length)
@@ -600,14 +605,15 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 			) {
 				data.type = Types.Sonstiges
 			} else if (status !== IncomingStatus.Faxdienst) {
-				data.type =
-					Object.values(Types)[
-						Math.floor(Math.random() * Object.values(Types).length)
-					] || Types.Sonstiges
+				const excludedType = Types.KVBestaetigung
+				const filteredTypes = Object.values(Types).filter(
+					(type) => type !== excludedType,
+				)
+				const randomType =
+					filteredTypes[Math.floor(Math.random() * filteredTypes.length)] ||
+					Types.Sonstiges
 
-				if (data.type === Types.KVBestaetigung) {
-					data.status = 'Erledigt'
-				}
+				data.type = randomType
 
 				if (Math.random() < 0.2) {
 					data.neuanlage = true
@@ -619,7 +625,6 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 			await prisma.incoming.create({
 				data,
 			})
-
 			results.success++
 			console.log(`✓ Successfully processed email from ${emailData.from}`)
 		} catch (error) {
@@ -654,6 +659,19 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 	}
 
 	return results
+}
+
+export async function clearData() {
+	const folderPath = `${process.env.FILESYSTEM_PATH}`
+	await prisma.mail.deleteMany({})
+	await prisma.mailAttachment.deleteMany({})
+	await prisma.incoming.deleteMany({})
+	const files = await fs.promises.readdir(folderPath)
+
+	const deletePromises = files.map((file) =>
+		fs.promises.unlink(path.join(folderPath, file)),
+	)
+	await Promise.all(deletePromises)
 }
 type Weighted = {
 	weight: number
