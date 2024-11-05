@@ -12,6 +12,7 @@ import {
 	type ParsedEmail,
 	parseEMLFromZip,
 	readEMLFiles,
+	restoreUsedEMLFiles,
 } from './email-reader'
 import path from 'path'
 
@@ -143,16 +144,17 @@ export async function clearData() {
 	await prisma.formSubmission.deleteMany({})
 	await prisma.incoming.deleteMany({})
 
-	// const folderPath = `${process.env.FILESYSTEM_PATH}`
-	// const files = await fs.promises.readdir(folderPath)
+	const folderPath = path.join(
+		process.env.FILESYSTEM_PATH,
+		process.env.PREVIEW_IMAGE_FOLDER,
+	)
+	const files = await fs.promises.readdir(folderPath)
 
-	// const deletePromises = files.map((file) =>
-	//	fs.promises.unlink(path.join(folderPath, file)),
-	//)
-	//await Promise.all(deletePromises)
-	// TODO:
-	//   - delete generated preview images
-	//   - move used emails back into the unused folder
+	const deletePromises = files.map((file) =>
+		fs.promises.unlink(path.join(folderPath, file)),
+	)
+	await Promise.all(deletePromises)
+	await restoreUsedEMLFiles()
 }
 
 export async function createIncoming(forceFaxdienst: boolean) {
@@ -164,7 +166,10 @@ export async function createIncoming(forceFaxdienst: boolean) {
 }
 
 export async function processSpecialData(): Promise<ProcessResult> {
-	const directoryPath = './public/demodata/specialcase'
+	const directoryPath = path.join(
+		process.env.FILESYSTEM_PATH,
+		process.env.SPECIALCASE_DEMODATA_FOLDER,
+	)
 	const { parsedEmails } = await readEMLFiles(directoryPath)
 
 	await importMailData(parsedEmails)

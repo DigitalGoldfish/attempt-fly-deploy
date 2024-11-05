@@ -16,7 +16,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function Admin() {
 	return (
 		<DefaultLayout pageTitle="Admin">
-			<div className="grid grid-cols-5 gap-4">
+			<div className="grid w-full grid-cols-5 gap-4">
 				<DashboardTile to={'/admin/benutzer'}>Benutzer</DashboardTile>
 				<DashboardTile to={'/admin/rollen'}>Rollen</DashboardTile>
 				<DashboardTile to={'/admin/tags'}>Tags</DashboardTile>

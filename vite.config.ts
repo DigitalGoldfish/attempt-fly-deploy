@@ -1,5 +1,6 @@
 import { vitePlugin as remix } from '@remix-run/dev'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+import topLevelAwait from 'vite-plugin-top-level-await'
 import { glob } from 'glob'
 import { flatRoutes } from 'remix-flat-routes'
 import { defineConfig } from 'vite'
@@ -36,6 +37,12 @@ export default defineConfig({
 	},
 	plugins: [
 		envOnlyMacros(),
+		topLevelAwait({
+			// The export name of top-level await promise for each chunk module
+			promiseExportName: '__tla',
+			// The function to generate import names of top-level await promise in each chunk module
+			promiseImportName: (i: number) => `__tla_${i}`,
+		}),
 		// it would be really nice to have this enabled in tests, but we'll have to
 		// wait until https://github.com/remix-run/remix/issues/9871 is fixed
 		process.env.NODE_ENV === 'test'

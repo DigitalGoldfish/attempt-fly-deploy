@@ -254,7 +254,7 @@ const DemoDataPage = () => {
 					</SeedTile>
 				</div>
 
-				<h2 className="text-h3">Random data</h2>
+				<h2 className="pt-6 text-h3">Random data</h2>
 				<p>
 					Randomly generated demo data not based on emails. Will have a random
 					state and random tag assignments. Useful only for testing the
@@ -273,10 +273,11 @@ const DemoDataPage = () => {
 					</SeedTile>
 				</div>
 
-				<h2 className="text-h3">Special cases</h2>
-				<p></p>
+				<h2 className="pt-6 text-h3">Special cases</h2>
+				<p>Helpful for development</p>
 				<div className="grid grid-cols-4 gap-4">
 					<SeedTile type="specialcases">Import special test cases</SeedTile>
+
 					<FileUploadButton />
 				</div>
 			</div>

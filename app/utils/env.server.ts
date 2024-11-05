@@ -7,6 +7,7 @@ const schema = z.object({
 	PREVIEW_IMAGE_FOLDER: z.string(),
 	DEMODATA_FOLDER: z.string(),
 	USED_DEMODATA_FOLDER: z.string(),
+	SPECIALCASE_DEMODATA_FOLDER: z.string(),
 	STOMA_DEMODATA_FOLDER: z.string(),
 	INKO_DEMODATA_FOLDER: z.string(),
 	WUND_DEMODATA_FOLDER: z.string(),

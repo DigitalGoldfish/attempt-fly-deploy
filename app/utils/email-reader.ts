@@ -310,7 +310,18 @@ export const readEMLFiles = async (
 	const sortedFiles = emlFiles.sort(
 		(a, b) => b.stats.mtime.getTime() - a.stats.mtime.getTime(),
 	)
-	const filesToProcess = amount ? sortedFiles.slice(0, amount) : sortedFiles
+
+	const filesToProcess = amount ? [] : sortedFiles
+
+	if (amount) {
+		for (let i = 0; i < amount; i++) {
+			const rand = Math.floor(Math.random() * sortedFiles.length)
+			const removedFiles = sortedFiles.splice(rand, 1)[0]
+			if (removedFiles) {
+				filesToProcess.push(removedFiles)
+			}
+		}
+	}
 
 	const parsedEmails = await Promise.all(
 		filesToProcess.map(async ({ path: filePath }) => {
@@ -362,4 +373,49 @@ export const moveProcessedEMLFiles = async (processedFiles: string[]) => {
 			console.error(`Error moving file ${filePath}:`, error)
 		}
 	}
+}
+
+export const restoreUsedEMLFiles = async () => {
+	const unusedEmailsPath = path.join(
+		process.env.FILESYSTEM_PATH,
+		process.env.DEMODATA_FOLDER,
+	)
+	const usedEmailsPath = path.join(
+		process.env.FILESYSTEM_PATH,
+		process.env.USED_DEMODATA_FOLDER,
+	)
+
+	const files = await readEMLFilesFromDirectory(usedEmailsPath)
+
+	for (const filePath of files) {
+		const relativePath = path.relative(usedEmailsPath, filePath.path)
+		const destPath = path.join(unusedEmailsPath, relativePath)
+		const destDir = path.dirname(destPath)
+
+		try {
+			await fs.mkdir(destDir, { recursive: true })
+			await fs.rename(filePath.path, destPath)
+		} catch (error) {
+			console.error(`Error moving file ${filePath}:`, error)
+		}
+	}
+}
+
+const readEMLFilesFromDirectory = async (currentPath: string) => {
+	const files = await fs.readdir(currentPath, { withFileTypes: true })
+
+	let emlFiles = [] as { path: string; stats: Stats }[]
+	for (const file of files) {
+		const fullPath = path.join(currentPath, file.name)
+
+		if (file.isDirectory()) {
+			const files = await readEMLFilesFromDirectory(fullPath)
+			emlFiles = [...emlFiles, ...files]
+		} else if (path.extname(file.name).toLowerCase() === '.eml') {
+			const stats = await fs.stat(fullPath)
+			emlFiles.push({ path: fullPath, stats })
+		}
+	}
+
+	return emlFiles
 }
