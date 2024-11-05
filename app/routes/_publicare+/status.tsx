@@ -5,15 +5,30 @@ import { Visualisation } from '#app/components/blocks/visualisation.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { useRevalidateOnInterval } from '#app/utils/hooks/useRevalidate.ts'
+import { Bereich, Tag } from '@prisma/client'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Dashboard' }]
-export type FormattedTags = {
-	Inko: Record<string, number>
-	StoMa: Record<string, number>
+export type TagCount = {
+	tag: {
+		id: string
+		label: string
+	}
+	bereich: { id: string; name: string; label: string } | null
+	count: number
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-	const userId = await requireUserId(request)
+	await requireUserId(request)
+
+	const rawCounts = (await prisma.$queryRaw`
+		select count(*) as count, it.B from Incoming i
+		inner join _IncomingToTag it on (i.id = it.A)
+		where i.status = 'Kundendienst'
+		group by it.B`) as { B: string; count: number }[]
+
+	const xy = rawCounts.map((a) => ({ tagId: a.B, count: Number(a.count) }))
+
+	console.log('raw query sql', xy)
 
 	const counts = await prisma.incoming.groupBy({
 		by: ['bereich', 'status'],
@@ -25,26 +40,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		select: {
 			id: true,
 			label: true,
-			Incoming: {
-				select: {
-					bereich: true,
-				},
-			},
+			bereich: true,
 		},
 	})
 
-	const formattedTags = {
-		Inko: {},
-		StoMa: {},
-	} as FormattedTags
+	const tagCounts: TagCount[] = []
 
 	tags.forEach((tag) => {
-		formattedTags.Inko[tag.label] = tag.Incoming.filter(
-			(inc) => inc.bereich === 'Inko',
-		).length
-		formattedTags.StoMa[tag.label] = tag.Incoming.filter(
-			(inc) => inc.bereich === 'StoMa',
-		).length
+		const count = xy.find((a) => a.tagId === tag.id)
+		tagCounts.push({
+			tag: tag,
+			bereich: tag.bereich,
+			count: count ? count.count : 0,
+		})
 	})
 
 	return json({
@@ -53,7 +61,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			bereich: count.bereich,
 			status: count.status,
 		})),
-		formattedTags,
+		tagCounts,
 	})
 }
 
@@ -62,10 +70,10 @@ export default function Dashboard() {
 		enabled: true,
 		interval: 60 * 1000,
 	})
-	const { counts, formattedTags } = useLoaderData<typeof loader>()
+	const { counts, tagCounts } = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout pageTitle="Aktueller Status">
-			<Visualisation counts={counts} tags={formattedTags} />
+			<Visualisation counts={counts} tagCounts={tagCounts} />
 		</DefaultLayout>
 	)
 }

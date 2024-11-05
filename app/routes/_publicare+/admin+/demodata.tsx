@@ -9,7 +9,7 @@ import React, { useRef } from 'react'
 import { toast as showToast } from 'sonner'
 import { DefaultLayout } from '#app/components/layout/default'
 import { Button } from '#app/components/ui/button.tsx'
-import { Bereich } from '#app/const/Bereich.ts'
+import { BereichEnum } from '#app/const/BereichEnum.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { cn } from '#app/utils/misc'
 import {
@@ -31,7 +31,8 @@ export async function action({ request }: ActionFunctionArgs) {
 		| 'zip'
 		| 'specialcases'
 		| 'clear'
-	const bereich = Bereich[formData.get('bereich') as keyof typeof Bereich]
+	const bereich =
+		BereichEnum[formData.get('bereich') as keyof typeof BereichEnum]
 	const count = Number(formData.get('count')) || 1
 
 	try {
@@ -83,7 +84,7 @@ const SeedTile = ({
 	type: 'import' | 'random' | 'zip' | 'specialcases'
 	count?: number
 	color?: 'teal' | 'green' | 'blue' | 'smalltext'
-	bereich?: Bereich
+	bereich?: BereichEnum
 	children: React.ReactNode
 }) => {
 	const fetcher = useFetcher()
@@ -231,25 +232,25 @@ const DemoDataPage = () => {
 					<SeedTile type="import" count={10}>
 						Import 10 random E-Mails
 					</SeedTile>
-					<SeedTile bereich={Bereich.Stoma} type="import" count={10}>
+					<SeedTile bereich={BereichEnum.Stoma} type="import" count={10}>
 						Import 10 random E-Mails from Stoma folder
 					</SeedTile>
-					<SeedTile bereich={Bereich.Inko} type="import" count={10}>
+					<SeedTile bereich={BereichEnum.Inko} type="import" count={10}>
 						Import 10 random E-Mails from Inko folder
 					</SeedTile>
-					<SeedTile bereich={Bereich.Wund} type="import" count={10}>
+					<SeedTile bereich={BereichEnum.Wund} type="import" count={10}>
 						Import 10 random E-Mails from Wundversorgung folder
 					</SeedTile>
 					<SeedTile type="import" count={50}>
 						Import 50 random E-Mails
 					</SeedTile>
-					<SeedTile bereich={Bereich.Stoma} type="import" count={50}>
+					<SeedTile bereich={BereichEnum.Stoma} type="import" count={50}>
 						Import 50 random E-Mails from Stoma folder
 					</SeedTile>
-					<SeedTile bereich={Bereich.Inko} type="import" count={50}>
+					<SeedTile bereich={BereichEnum.Inko} type="import" count={50}>
 						Import 50 random E-Mails from Inko folder
 					</SeedTile>
-					<SeedTile bereich={Bereich.Wund} type="import" count={50}>
+					<SeedTile bereich={BereichEnum.Wund} type="import" count={50}>
 						Import 50 random E-Mails from Wundversorgung folder
 					</SeedTile>
 				</div>

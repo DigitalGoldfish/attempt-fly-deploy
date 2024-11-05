@@ -1,7 +1,7 @@
 import { promiseHash } from 'remix-utils/promise'
 import { prisma } from '#app/utils/db.server.ts'
 import { createPassword, img } from '#tests/db-utils.ts'
-import { Bereich } from '#app/const/Bereich.ts'
+import { BereichEnum } from '#app/const/BereichEnum.ts'
 
 async function seed() {
 	console.log('🌱 Seeding...')
@@ -79,22 +79,22 @@ async function seed() {
 		data: [
 			{
 				id: 'cm2gdeb51000009l79df33l01',
-				name: Bereich.Stoma,
+				name: BereichEnum.Stoma,
 				label: 'StoMa',
 			},
 			{
 				id: 'cm2gdeb51000009l79df33l02',
-				name: Bereich.Inko,
+				name: BereichEnum.Inko,
 				label: 'Inko',
 			},
 			{
 				id: 'cm2gdeb51000009l79df33l03',
-				name: Bereich.Wund,
+				name: BereichEnum.Wund,
 				label: 'Wundversorgung',
 			},
 			{
 				id: 'cm2gdeb51000009l79df33l04',
-				name: Bereich.Sonstige,
+				name: BereichEnum.Sonstige,
 				label: 'Sonstige',
 			},
 		],

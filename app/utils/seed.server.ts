@@ -1,7 +1,9 @@
 import fs from 'node:fs'
+import path from 'path'
+import { invariant } from '@epic-web/invariant'
 import { faker } from '@faker-js/faker'
-import { type Prisma } from '@prisma/client'
-import { Bereich } from '#app/const/Bereich.ts'
+import { type Bereich, type Prisma, type Tag } from '@prisma/client'
+import { BereichEnum } from '#app/const/BereichEnum.ts'
 import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 import { Source } from '#app/const/Source.ts'
 import { Types } from '#app/const/Types.ts'
@@ -14,7 +16,6 @@ import {
 	readEMLFiles,
 	restoreUsedEMLFiles,
 } from './email-reader'
-import path from 'path'
 
 class RandomPicker {
 	prefixSums: number[]
@@ -122,8 +123,8 @@ const statusProbability = [
 ]
 
 const bereichProbability = [
-	{ name: 'Stoma/Inko', bereich: Bereich.Stoma, weight: 100 },
-	{ name: 'Wundversorgung', bereich: Bereich.Wund, weight: 100 },
+	{ name: 'Stoma/Inko', bereich: BereichEnum.Stoma, weight: 100 },
+	{ name: 'Wundversorgung', bereich: BereichEnum.Wund, weight: 100 },
 ]
 
 const typeProbability = [
@@ -196,17 +197,17 @@ export interface ProcessResult {
 
 export async function importEmails(
 	count: number,
-	bereich?: Bereich,
+	bereich?: BereichEnum,
 ): Promise<ProcessResult> {
 	let folderPath = ''
 	switch (bereich) {
-		case Bereich.Inko:
+		case BereichEnum.Inko:
 			folderPath = process.env.INKO_DEMODATA_FOLDER
 			break
-		case Bereich.Stoma:
+		case BereichEnum.Stoma:
 			folderPath = process.env.STOMA_DEMODATA_FOLDER
 			break
-		case Bereich.Wund:
+		case BereichEnum.Wund:
 			folderPath = process.env.WUND_DEMODATA_FOLDER
 			break
 	}
@@ -233,6 +234,9 @@ export async function importEmails(
 export async function createRandom(count: number) {
 	for (let i = 0; i < count; i++) {
 		await createIncoming(false)
+		if (i % 10 === 0) {
+			console.log('Created', i, 'random emails')
+		}
 	}
 	return {
 		success: true,
@@ -519,10 +523,9 @@ export async function createIncomingFax(forceFaxdienst: boolean) {
 	const status = forceFaxdienst
 		? statusProbability[0]
 		: statusProbability[statusPicker.pickIndex()]
-	const bereich = bereichProbability[bereichPicker.pickIndex()]
 	const type = typeProbability[typePicker.pickIndex()]
 
-	if (!status || !bereich || !type) {
+	if (!status || !type) {
 		return
 	}
 
@@ -560,7 +563,11 @@ export async function createIncomingFax(forceFaxdienst: boolean) {
 			IncomingStatus.Geloescht,
 		].includes(data.status)
 	) {
-		data.bereich = bereich.bereich
+		const [bereich, tag] = await getBereichAndTag()
+		data.bereich = bereich.name
+		if (bereich.name !== 'Wund' && tag) {
+			data.tags = { connect: { id: tag.id } }
+		}
 	}
 
 	if (data.status === IncomingStatus.Weitergeleitet) {
@@ -720,4 +727,24 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 
 type Weighted = {
 	weight: number
+}
+
+async function getBereichAndTag(): Promise<[Bereich, Tag | null]> {
+	const bereiche = await prisma.bereich.findMany({})
+	const randomBereichIndex = Math.floor(Math.random() * bereiche.length)
+	const bereich = bereiche[randomBereichIndex]
+	invariant(bereich, 'Bereich needs to be defined')
+
+	const tags = await prisma.tag.findMany({
+		where: {
+			bereichId: bereich.id,
+		},
+	})
+	if (tags.length === 0) {
+		return [bereich, null]
+	}
+	const randomTagIndex = Math.floor(Math.random() * tags.length)
+	const tag = tags[randomTagIndex]
+	invariant(tag, 'Tag needs to be defined')
+	return [bereich, tag]
 }

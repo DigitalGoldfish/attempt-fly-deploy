@@ -1,4 +1,4 @@
-export enum Bereich {
+export enum BereichEnum {
 	Stoma = 'Stoma',
 	Inko = 'Inko',
 	Wund = 'Wund',

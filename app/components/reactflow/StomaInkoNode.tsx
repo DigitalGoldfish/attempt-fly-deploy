@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { Link, useFetcher } from '@remix-run/react'
 import { Handle, Position } from '@xyflow/react'
 import { cva } from 'class-variance-authority'
+import { useEffect } from 'react'
+import { type TagCount } from '#app/routes/_publicare+/status.tsx'
 import { cn } from '#app/utils/misc.tsx'
-import { Link, useFetcher } from '@remix-run/react'
 
 const nodeVariants = cva('rounded border-2 px-4 py-2 text-right text-white', {
 	variants: {
@@ -39,7 +40,7 @@ export function StomaInkoNode({
 		size: 'default' | 'sm' | 'md' | 'lg' | 'xl'
 		href?: string
 		label: string
-		tag: Record<string, number>
+		tags: TagCount[]
 	}
 }) {
 	return (
@@ -79,10 +80,10 @@ export function StomaInkoNode({
 						{data.count || 0}
 					</span>
 					<div className="order-3 mt-2 grid grid-cols-2 gap-x-4 text-left">
-						{Object.entries(data.tag).map(([key, value]) => (
-							<div key={key} className="flex justify-between">
-								<span>{key}</span>
-								<span>{value}</span>
+						{data.tags.map((tagCount) => (
+							<div key={tagCount.tag.id} className="flex justify-between">
+								<span>{tagCount.tag.label}</span>
+								<span>{tagCount.count}</span>
 							</div>
 						))}
 					</div>

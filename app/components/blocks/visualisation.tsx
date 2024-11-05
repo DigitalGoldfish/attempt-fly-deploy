@@ -1,17 +1,11 @@
-import {
-	ReactFlow,
-	Background,
-	Controls,
-	Position,
-	Edge,
-	Node,
-} from '@xyflow/react'
+import { ReactFlow, Position, Node } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import CustomEdge from '#app/components/reactflow/ CustomEdge.tsx'
 import { NumberNode } from '#app/components/reactflow/CustomNode.tsx'
 import { Forward, Trash2 } from 'lucide-react'
 import { StomaInkoNode } from '#app/components/reactflow/StomaInkoNode.tsx'
-import { FormattedTags } from '#app/routes/_publicare+/status.tsx'
+import { TagCount } from '#app/routes/_publicare+/status.tsx'
+import { Tag } from '@prisma/client'
 interface Count {
 	count: number
 	bereich: string | null
@@ -236,7 +230,7 @@ function createDepartmentNode(
 	bereich: string,
 	x: number,
 	counts: Count[],
-	tags: FormattedTags,
+	tags: TagCount[],
 ): FlowNode {
 	return {
 		id: bereich.toLowerCase(),
@@ -246,7 +240,7 @@ function createDepartmentNode(
 			count: findCount(counts, 'Kundendienst', bereich),
 			variant: 'blue',
 			href: `/liste?status=Kundendienst&bereich=${bereich}`,
-			tag: bereich === 'Inko' ? tags.Inko : tags.StoMa,
+			tags: tags,
 		},
 		sourcePosition: Position.Top,
 		targetPosition: Position.Bottom,
@@ -332,17 +326,17 @@ function createStatusNodes(
 }
 export function Visualisation({
 	counts,
-	tags,
+	tagCounts,
 }: {
 	counts: {
 		count: number
 		bereich: string | null
 		status: string
 	}[]
-	tags: FormattedTags
+	tagCounts: TagCount[]
 }) {
 	const departments = [
-		{ bereich: 'StoMa', x: 50 },
+		{ bereich: 'Stoma', x: 50 },
 		{ bereich: 'Inko', x: 500 },
 		{ bereich: 'Wund', x: 950 },
 	]
@@ -354,7 +348,7 @@ export function Visualisation({
 				bereich,
 				bereich === 'Wund' ? x + 25 : x,
 				counts,
-				tags,
+				tagCounts.filter((tag) => tag.bereich?.name === bereich),
 			),
 		),
 		...departments.flatMap(({ bereich, x }) =>
