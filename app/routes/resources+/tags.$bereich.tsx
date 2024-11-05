@@ -14,17 +14,15 @@ export async function loader({ params }: LoaderFunctionArgs) {
 			status: 'Kundendienst',
 		},
 		include: {
-			mail: {
-				include: {
-					_count: {
-						select: {
-							attachments: true,
-						},
-					},
+			tags: {
+				select: {
+					label: true,
+					id: true,
 				},
 			},
 		},
 	})
+
 	const result: Record<ResultKey, number> = {
 		MA1: 0,
 		MA2: 0,
@@ -35,13 +33,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	}
 
 	incomings.forEach((incoming) => {
-		const attachmentCount = incoming.mail?._count?.attachments || 0
-		if (attachmentCount >= 1 && attachmentCount <= 6) {
-			const key = `MA${attachmentCount}` as ResultKey
-			if (key in result) {
-				result[key]++
+		const tags = incoming.tags || []
+		tags.forEach((tag) => {
+			if (tag.label in result) {
+				result[tag.label as ResultKey]++
 			}
-		}
+		})
 	})
 
 	return json(result)

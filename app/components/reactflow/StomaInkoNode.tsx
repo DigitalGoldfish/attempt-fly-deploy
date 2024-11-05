@@ -1,9 +1,8 @@
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { cva } from 'class-variance-authority'
 import { cn } from '#app/utils/misc.tsx'
 import { Link, useFetcher } from '@remix-run/react'
-import { useRevalidateOnInterval } from '#app/utils/hooks/useRevalidate.ts'
 
 const nodeVariants = cva('rounded border-2 px-4 py-2 text-right text-white', {
 	variants: {
@@ -45,7 +44,8 @@ export function StomaInkoNode({
 	const fetcher = useFetcher<Record<string, number>>()
 
 	useEffect(() => {
-		fetcher.load(`/resources/attachment-numbers/${data.label}`)
+		fetcher.load(`/resources/tags/${data.label}`)
+		console.log('Loaded')
 	}, [data.label, data.count])
 
 	return (
