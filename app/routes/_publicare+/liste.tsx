@@ -1,14 +1,12 @@
-import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
+import { type Prisma } from '@prisma/client'
+import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link, Outlet, useLoaderData, useSearchParams } from '@remix-run/react'
-import Liste from '../../components/liste/liste.tsx'
-import { DefaultLayout } from '#app/components/layout/default.tsx'
-import { prisma } from '#app/utils/db.server.ts'
-import { z } from 'zod'
-import { IncomingWhereInput } from '.prisma/client'
-import { Prisma } from '@prisma/client'
-import { Button } from '#app/components/ui/button.tsx'
-import { Plus } from 'lucide-react'
 import React from 'react'
+import { z } from 'zod'
+import { DefaultLayout } from '#app/components/layout/default.tsx'
+import { Button } from '#app/components/ui/button.tsx'
+import { prisma } from '#app/utils/db.server.ts'
+import Liste from '../../components/liste/liste.tsx'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Liste' }]
 

@@ -22,7 +22,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	return {
 		tag: {
 			...tag,
-			bereich: bereich.id,
+			bereich: bereich?.id,
 		},
 	}
 }

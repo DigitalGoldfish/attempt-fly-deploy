@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { faker } from '@faker-js/faker'
 import { type Prisma } from '@prisma/client'
 import { Bereich } from '#app/const/Bereich.ts'
@@ -5,11 +6,14 @@ import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 import { Source } from '#app/const/Source.ts'
 import { Types } from '#app/const/Types.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import fs from 'node:fs'
-import path from 'path'
 import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
-import { ParsedEmail } from './email-reader'
-import { redirectWithToast } from './toast.server'
+import {
+	moveProcessedEMLFiles,
+	type ParsedEmail,
+	parseEMLFromZip,
+	readEMLFiles,
+} from './email-reader'
+import path from 'path'
 
 class RandomPicker {
 	prefixSums: number[]
@@ -132,11 +136,89 @@ const messageTypePicker = new RandomPicker(messageTypeProbability)
 const statusPicker = new RandomPicker(statusProbability)
 const typePicker = new RandomPicker(typeProbability)
 
+export async function clearData() {
+	await prisma.issues.deleteMany({})
+	await prisma.mailAttachment.deleteMany({})
+	await prisma.mail.deleteMany({})
+	await prisma.formSubmission.deleteMany({})
+	await prisma.incoming.deleteMany({})
+
+	// const folderPath = `${process.env.FILESYSTEM_PATH}`
+	// const files = await fs.promises.readdir(folderPath)
+
+	// const deletePromises = files.map((file) =>
+	//	fs.promises.unlink(path.join(folderPath, file)),
+	//)
+	//await Promise.all(deletePromises)
+	// TODO:
+	//   - delete generated preview images
+	//   - move used emails back into the unused folder
+}
+
 export async function createIncoming(forceFaxdienst: boolean) {
 	const messageType = messageTypeProbability[messageTypePicker.pickIndex()]
 
 	if (messageType) {
 		await messageType.fn(forceFaxdienst)
+	}
+}
+
+export async function processSpecialData(): Promise<ProcessResult> {
+	const directoryPath = './public/demodata/specialcase'
+	const { parsedEmails } = await readEMLFiles(directoryPath)
+
+	await importMailData(parsedEmails)
+
+	return {
+		success: true,
+		message: `Special data is imported successfully!`,
+	}
+}
+
+export async function processEmailZip(zipFile: File): Promise<ProcessResult> {
+	const parsedEmails = await parseEMLFromZip(zipFile)
+	await importMailData(parsedEmails)
+	return {
+		success: true,
+		message: 'Emails from the zip is imported successfully!',
+	}
+}
+
+export interface ProcessResult {
+	success: boolean
+	message: string
+}
+
+export async function importEmails(
+	count: number,
+	bereich?: Bereich,
+): Promise<ProcessResult> {
+	// TODO: import emails
+	const emailPath = path.join(
+		process.env.FILESYSTEM_PATH,
+		process.env.DEMODATA_FOLDER,
+	)
+
+	const { parsedEmails, processedPaths } = await readEMLFiles(emailPath, count)
+	const res = await importMailData(parsedEmails)
+
+	if (res.errors.length === 0) {
+		await moveProcessedEMLFiles(processedPaths)
+	}
+
+	return {
+		success: true,
+		message: `${count} email imported successfully!`,
+	}
+}
+
+export async function createRandom(count: number) {
+	for (let i = 0; i < count; i++) {
+		await createIncoming(false)
+	}
+	return {
+		success: true,
+		message: `Successfully created ${count} random order emails`,
 	}
 }
 
@@ -286,7 +368,9 @@ async function getMailAttachmentData(forceIndex: number | boolean = false) {
 	]
 
 	const randomIndex = Math.floor(demoData.length * Math.random())
-	const selectedFiles = demoData[forceIndex ? forceIndex : randomIndex]
+
+	const index = typeof forceIndex === 'number' ? forceIndex : randomIndex
+	const selectedFiles = demoData[index]
 
 	if (selectedFiles) {
 		const files = await Promise.all(
@@ -482,10 +566,7 @@ export async function createIncomingFax(forceFaxdienst: boolean) {
 		data,
 	})
 }
-export async function importMailData(
-	parsedEmails: ParsedEmail[],
-	bereich?: string,
-) {
+export async function importMailData(parsedEmails: ParsedEmail[]) {
 	const results = {
 		success: 0,
 		failed: 0,
@@ -571,55 +652,12 @@ export async function importMailData(
 							: undefined,
 				},
 			})
-			let status: IncomingStatus
-			if (bereich) {
-				status = IncomingStatus.Kundendienst
-			} else {
-				status =
-					Math.random() < 0.3
-						? IncomingStatus.Faxdienst
-						: Object.values(IncomingStatus)[
-								Math.floor(Math.random() * Object.values(IncomingStatus).length)
-							] || IncomingStatus.Faxdienst
-			}
 
 			const data: Prisma.IncomingCreateInput = {
 				mail: { connect: { id: email.id } },
 				source: Source.Email,
-				status: status,
+				status: IncomingStatus.Faxdienst,
 				printed: false,
-			}
-
-			if (bereich && Object.values(Bereich).includes(bereich)) {
-				data.bereich = bereich
-			} else {
-				data.bereich =
-					Object.values(Types)[
-						Math.floor(Math.random() * Object.values(Types).length)
-					]
-			}
-
-			if (
-				status === IncomingStatus.Weitergeleitet ||
-				status === IncomingStatus.Geloescht
-			) {
-				data.type = Types.Sonstiges
-			} else if (status !== IncomingStatus.Faxdienst) {
-				const excludedType = Types.KVBestaetigung
-				const filteredTypes = Object.values(Types).filter(
-					(type) => type !== excludedType,
-				)
-				const randomType =
-					filteredTypes[Math.floor(Math.random() * filteredTypes.length)] ||
-					Types.Sonstiges
-
-				data.type = randomType
-
-				if (Math.random() < 0.2) {
-					data.neuanlage = true
-				} else {
-					data.kundennr = faker.finance.accountNumber()
-				}
 			}
 
 			await prisma.incoming.create({
@@ -661,18 +699,6 @@ export async function importMailData(
 	return results
 }
 
-export async function clearData() {
-	const folderPath = `${process.env.FILESYSTEM_PATH}`
-	await prisma.mail.deleteMany({})
-	await prisma.mailAttachment.deleteMany({})
-	await prisma.incoming.deleteMany({})
-	const files = await fs.promises.readdir(folderPath)
-
-	const deletePromises = files.map((file) =>
-		fs.promises.unlink(path.join(folderPath, file)),
-	)
-	await Promise.all(deletePromises)
-}
 type Weighted = {
 	weight: number
 }

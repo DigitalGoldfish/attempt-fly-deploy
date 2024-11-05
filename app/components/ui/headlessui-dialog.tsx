@@ -3,12 +3,12 @@ import {
 	Dialog as HeadlessUIDialog,
 	DialogPanel as HeadlessUIDialogPanel,
 	DialogTitle as HeadlessUIDialogTitle,
-} from '@headlessui/react';
-import * as React from 'react';
+} from '@headlessui/react'
+import * as React from 'react'
 
-import { Button } from '#app/components/ui/button.tsx';
-import { Icon } from '#app/components/ui/icon.tsx';
-import { cn } from '#app/utils/misc.tsx';
+import { Button } from '#app/components/ui/button.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
+import { cn } from '#app/utils/misc.tsx'
 
 const Dialog = React.forwardRef<
 	React.ElementRef<typeof HeadlessUIDialog>,
@@ -19,16 +19,16 @@ const Dialog = React.forwardRef<
 		className={cn('relative z-50', className)}
 		{...props}
 	/>
-));
+))
 
-Dialog.displayName = HeadlessUIDialog.displayName;
+Dialog.displayName = HeadlessUIDialog.displayName
 
 const DialogOverlay = ({
 	className,
 	...props
 }: {
-	className?: string;
-	children: React.ReactNode;
+	className?: string
+	children: React.ReactNode
 }) => (
 	<div
 		className={cn(
@@ -37,7 +37,7 @@ const DialogOverlay = ({
 		)}
 		{...props}
 	/>
-);
+)
 
 const DialogPanel = React.forwardRef<
 	React.ElementRef<typeof HeadlessUIDialogPanel>,
@@ -53,9 +53,9 @@ const DialogPanel = React.forwardRef<
 			{...props}
 		/>
 	</DialogOverlay>
-));
+))
 
-DialogPanel.displayName = HeadlessUIDialogPanel.displayName;
+DialogPanel.displayName = HeadlessUIDialogPanel.displayName
 
 const DialogTitle = React.forwardRef<
 	React.ElementRef<typeof HeadlessUIDialogDescription>,
@@ -69,8 +69,8 @@ const DialogTitle = React.forwardRef<
 		)}
 		{...props}
 	/>
-));
-DialogTitle.displayName = HeadlessUIDialogTitle.displayName;
+))
+DialogTitle.displayName = HeadlessUIDialogTitle.displayName
 
 const DialogDescription = React.forwardRef<
 	React.ElementRef<typeof HeadlessUIDialogDescription>,
@@ -81,8 +81,8 @@ const DialogDescription = React.forwardRef<
 		className={cn('text-sm text-muted-foreground', className)}
 		{...props}
 	/>
-));
-DialogDescription.displayName = HeadlessUIDialogDescription.displayName;
+))
+DialogDescription.displayName = HeadlessUIDialogDescription.displayName
 
 const DialogFooter = ({
 	className,
@@ -95,13 +95,12 @@ const DialogFooter = ({
 		)}
 		{...props}
 	/>
-);
-DialogFooter.displayName = 'DialogFooter';
+)
+DialogFooter.displayName = 'DialogFooter'
 
 const DialogClose = ({ onClose }: { onClose: () => void }) => {
 	return (
 		<Button
-			variant="muted"
 			size="icon"
 			className="absolute right-4 top-4 rounded-sm bg-transparent opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
 			onClick={onClose}
@@ -113,8 +112,8 @@ const DialogClose = ({ onClose }: { onClose: () => void }) => {
 				<span className="sr-only">Close</span>
 			</>
 		</Button>
-	);
-};
+	)
+}
 
 export {
 	Dialog,
@@ -124,4 +123,4 @@ export {
 	DialogTitle,
 	DialogDescription,
 	DialogFooter,
-};
+}

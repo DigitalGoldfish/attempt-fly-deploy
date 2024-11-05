@@ -16,7 +16,7 @@ const TagFormSchema = z.object({
 	id: z.string().optional(),
 	label: z.string(),
 	type: z.string(),
-	bereich: z.string(),
+	bereich: z.string().optional(),
 })
 type TagFormData = z.infer<typeof TagFormSchema>
 

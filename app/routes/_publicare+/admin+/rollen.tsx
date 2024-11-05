@@ -17,6 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			id: true,
 			name: true,
 			label: true,
+			description: true,
 			createdAt: true,
 			updatedAt: true,
 			_count: {

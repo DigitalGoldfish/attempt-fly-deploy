@@ -176,17 +176,17 @@ export const countAttachment = async (
 	specialCasesCopied = 0
 
 	async function processDirectory(currentPath: string) {
-        console.log('processing directory', currentPath)
+		console.log('processing directory', currentPath)
 
-        const files = await fs.readdir(currentPath, { withFileTypes: true })
+		const files = await fs.readdir(currentPath, { withFileTypes: true })
 
-        let count = 0
-        for (const file of files) {
-            count++
-            if (count % 100 === 0) {
-                console.log('processed', count, 'files')
-            }
-            const fullPath = path.join(currentPath, file.name)
+		let count = 0
+		for (const file of files) {
+			count++
+			if (count % 100 === 0) {
+				console.log('processed', count, 'files')
+			}
+			const fullPath = path.join(currentPath, file.name)
 
 			if (fullPath.startsWith(SPECIAL_CASE_PATH)) continue
 
@@ -338,28 +338,28 @@ export const readEMLFiles = async (
 	}
 }
 
-export const moveProcessedEMLFiles = async (
-	directoryPath: string,
-	processedFiles: string[],
-): Promise<string[]> => {
-	const processedDir = path.join(process.env.EMAILS_PATH, 'used')
-	const movedFiles: string[] = []
+export const moveProcessedEMLFiles = async (processedFiles: string[]) => {
+	const emailsPath = path.join(
+		process.env.FILESYSTEM_PATH,
+		process.env.DEMODATA_FOLDER,
+	)
+	const usedEmailsPath = path.join(
+		process.env.FILESYSTEM_PATH,
+		process.env.USED_DEMODATA_FOLDER,
+	)
 
-	await fs.mkdir(processedDir, { recursive: true })
+	await fs.mkdir(usedEmailsPath, { recursive: true })
 
 	for (const filePath of processedFiles) {
-		const relativePath = path.relative(directoryPath, filePath)
-		const destPath = path.join(processedDir, relativePath)
+		const relativePath = path.relative(emailsPath, filePath)
+		const destPath = path.join(usedEmailsPath, relativePath)
 		const destDir = path.dirname(destPath)
 
 		try {
 			await fs.mkdir(destDir, { recursive: true })
 			await fs.rename(filePath, destPath)
-			movedFiles.push(processedDir)
 		} catch (error) {
 			console.error(`Error moving file ${filePath}:`, error)
 		}
 	}
-
-	return movedFiles
 }

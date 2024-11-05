@@ -43,7 +43,7 @@ export type UserTableModel = {
 	username: string
 	name: string | null
 	kuerzel: string
-	status: UserStatus
+	status: string
 	roles: string[]
 	bereich: string[]
 	tags: string[]
@@ -124,7 +124,10 @@ const columns = [
 	}),
 	columnHelper.accessor('status', {
 		header: 'Status',
-		cell: (info) => UserStatusBadge[info.getValue()],
+		cell: (info) => {
+			const status = UserStatus[info.getValue() as keyof typeof UserStatus]
+			return UserStatusBadge[status]
+		},
 		meta: {
 			align: 'right',
 		},
