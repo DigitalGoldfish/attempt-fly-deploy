@@ -7,6 +7,10 @@ import { prisma } from '#app/utils/db.server.ts'
 import { useRevalidateOnInterval } from '#app/utils/hooks/useRevalidate.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Dashboard' }]
+export type FormattedTags = {
+	Inko: Record<string, number>
+	StoMa: Record<string, number>
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -17,12 +21,39 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			_all: true,
 		},
 	})
+	const tags = await prisma.tag.findMany({
+		select: {
+			id: true,
+			label: true,
+			Incoming: {
+				select: {
+					bereich: true,
+				},
+			},
+		},
+	})
+
+	const formattedTags = {
+		Inko: {},
+		StoMa: {},
+	} as FormattedTags
+
+	tags.forEach((tag) => {
+		formattedTags.Inko[tag.label] = tag.Incoming.filter(
+			(inc) => inc.bereich === 'Inko',
+		).length
+		formattedTags.StoMa[tag.label] = tag.Incoming.filter(
+			(inc) => inc.bereich === 'StoMa',
+		).length
+	})
+
 	return json({
 		counts: counts.map((count) => ({
 			count: count._count._all,
 			bereich: count.bereich,
 			status: count.status,
 		})),
+		formattedTags,
 	})
 }
 
@@ -31,10 +62,10 @@ export default function Dashboard() {
 		enabled: true,
 		interval: 60 * 1000,
 	})
-	const { counts } = useLoaderData<typeof loader>()
+	const { counts, formattedTags } = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout pageTitle="Aktueller Status">
-			<Visualisation counts={counts} />
+			<Visualisation counts={counts} tags={formattedTags} />
 		</DefaultLayout>
 	)
 }

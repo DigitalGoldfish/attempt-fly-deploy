@@ -39,15 +39,9 @@ export function StomaInkoNode({
 		size: 'default' | 'sm' | 'md' | 'lg' | 'xl'
 		href?: string
 		label: string
+		tag: Record<string, number>
 	}
 }) {
-	const fetcher = useFetcher<Record<string, number>>()
-
-	useEffect(() => {
-		fetcher.load(`/resources/tags/${data.label}`)
-		console.log('Loaded')
-	}, [data.label, data.count])
-
 	return (
 		<Link to={data.href || '#'}>
 			<div
@@ -85,19 +79,12 @@ export function StomaInkoNode({
 						{data.count || 0}
 					</span>
 					<div className="order-3 mt-2 grid grid-cols-2 gap-x-4 text-left">
-						{fetcher.data &&
-							Object.entries(fetcher.data).map(([key, value]) => (
-								<div key={key} className="flex justify-between">
-									<span>{key}</span>
-									<span>
-										{fetcher.state === 'loading' ? (
-											<span className="animate-pulse">...</span>
-										) : (
-											value
-										)}
-									</span>
-								</div>
-							))}
+						{Object.entries(data.tag).map(([key, value]) => (
+							<div key={key} className="flex justify-between">
+								<span>{key}</span>
+								<span>{value}</span>
+							</div>
+						))}
 					</div>
 				</div>
 				<Handle

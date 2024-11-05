@@ -11,6 +11,7 @@ import CustomEdge from '#app/components/reactflow/ CustomEdge.tsx'
 import { NumberNode } from '#app/components/reactflow/CustomNode.tsx'
 import { Forward, Trash2 } from 'lucide-react'
 import { StomaInkoNode } from '#app/components/reactflow/StomaInkoNode.tsx'
+import { FormattedTags } from '#app/routes/_publicare+/status.tsx'
 interface Count {
 	count: number
 	bereich: string | null
@@ -235,6 +236,7 @@ function createDepartmentNode(
 	bereich: string,
 	x: number,
 	counts: Count[],
+	tags: FormattedTags,
 ): FlowNode {
 	return {
 		id: bereich.toLowerCase(),
@@ -244,6 +246,7 @@ function createDepartmentNode(
 			count: findCount(counts, 'Kundendienst', bereich),
 			variant: 'blue',
 			href: `/liste?status=Kundendienst&bereich=${bereich}`,
+			tag: bereich === 'Inko' ? tags.Inko : tags.StoMa,
 		},
 		sourcePosition: Position.Top,
 		targetPosition: Position.Bottom,
@@ -257,22 +260,22 @@ function createStatusNodes(
 	counts: Count[],
 ): FlowNode[] {
 	const statuses = [
-		{ id: 'nachfrage', label: 'Nachfrage', y: 300, status: 'Nachfrage' },
+		{ id: 'nachfrage', label: 'Nachfrage', y: 320, status: 'Nachfrage' },
 		{
 			id: 'missing',
 			label: 'Produkt fehlt',
-			y: 400,
+			y: 420,
 			status: 'FehlendesProdukt',
 		},
-		{ id: 'kv', label: 'KV erstellt', y: 500, status: 'KVbenoetigt' },
-		{ id: 'kvbest', label: 'KV bestätigt', y: 600, status: 'KVbestaetigt' },
+		{ id: 'kv', label: 'KV erstellt', y: 520, status: 'KVbenoetigt' },
+		{ id: 'kvbest', label: 'KV bestätigt', y: 620, status: 'KVbestaetigt' },
 	]
 
 	const finalStatuses = [
 		{
 			id: 'storniert',
 			label: 'Storniert',
-			y: 700,
+			y: 720,
 			status: 'Storniert',
 			variant: 'deleted',
 			x: baseX - 125,
@@ -286,7 +289,7 @@ function createStatusNodes(
 		{
 			id: 'done',
 			label: 'Erledigt',
-			y: 700,
+			y: 720,
 			status: 'Erledigt',
 			variant: 'green',
 			x: baseX + 125,
@@ -329,12 +332,14 @@ function createStatusNodes(
 }
 export function Visualisation({
 	counts,
+	tags,
 }: {
 	counts: {
 		count: number
 		bereich: string | null
 		status: string
 	}[]
+	tags: FormattedTags
 }) {
 	const departments = [
 		{ bereich: 'StoMa', x: 50 },
@@ -345,7 +350,12 @@ export function Visualisation({
 	const nodes: Node[] = [
 		...createTopLevelNodes(counts),
 		...departments.map(({ bereich, x }) =>
-			createDepartmentNode(bereich, bereich === 'Wund' ? x + 25 : x, counts),
+			createDepartmentNode(
+				bereich,
+				bereich === 'Wund' ? x + 25 : x,
+				counts,
+				tags,
+			),
 		),
 		...departments.flatMap(({ bereich, x }) =>
 			createStatusNodes(bereich, x + 25, counts),
