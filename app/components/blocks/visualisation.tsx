@@ -1,219 +1,332 @@
-import { ReactFlow, Background, Controls, Position, Edge } from '@xyflow/react'
+import {
+	ReactFlow,
+	Background,
+	Controls,
+	Position,
+	Edge,
+	Node,
+} from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import CustomEdge from '#app/components/reactflow/ CustomEdge.tsx'
 import { NumberNode } from '#app/components/reactflow/CustomNode.tsx'
 import { Forward, Trash2 } from 'lucide-react'
-import { StomaNode } from '#app/components/reactflow/StomaNode.tsx'
+import { StomaInkoNode } from '#app/components/reactflow/StomaInkoNode.tsx'
+interface Count {
+	count: number
+	bereich: string | null
+	status: string
+}
 
-const edges: Edge[] = [
-	{
-		id: 'fax-wund',
-		source: 'fax',
-		target: 'wund',
-		sourceHandle: 'right',
-		type: 'custom',
-	},
-	{
-		id: 'fax-stoma',
-		sourceHandle: 'top',
-		source: 'fax',
-		target: 'stoma',
-		type: 'custom',
-	},
-	{
-		id: 'fax-forwarded',
-		source: 'fax',
-		target: 'forwarded',
-		type: 'custom',
-		sourceHandle: 'bottom',
-	},
-	{
-		id: 'fax-deleted',
-		source: 'fax',
-		target: 'deleted',
-		sourceHandle: 'bottom',
-		type: 'custom',
-	},
-	{
-		id: 'stoma_missing-stoma_done',
-		source: 'stoma_missing',
-		target: 'stoma_done',
-		sourceHandle: 'right',
-		data: {
-			label: '100',
-			variant: 'curve',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'stoma_nachfrage-stoma_done',
-		source: 'stoma_nachfrage',
-		target: 'stoma_done',
-		sourceHandle: 'right',
-		data: {
-			label: '',
-			variant: 'curve',
-		},
-		type: 'custom',
-	},
+interface NodeData extends Record<string, unknown> {
+	label: string
+	count: number
+	variant?: string
+	href?: string
+	icon?: React.ReactNode
+	size?: string
+}
+interface EdgeConfig {
+	id: string
+	source: string
+	target: string
+	sourceHandle?: string
+	targetHandle?: string
+	type: string
+	data?: {
+		label?: string
+		variant?: string
+	}
+}
+type FlowNode = Node<NodeData>
+function findCount(counts: Count[], status: string, bereich?: string): number {
+	return (
+		counts.find(
+			(count) =>
+				count.status === status && (!bereich || count.bereich === bereich),
+		)?.count || 0
+	)
+}
 
-	// wund
-	{
-		id: 'wund-wund_done',
-		source: 'wund',
-		target: 'wund_done',
-		sourceHandle: 'right',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'wund-wund_kv',
-		source: 'wund',
-		target: 'wund_kv',
-		sourceHandle: 'right',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'wund_kv-wund_kvbest',
-		source: 'wund_kv',
-		sourceHandle: 'right',
-		target: 'wund_kvbest',
-		targetHandle: 'left',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'wund_kvbest-wund_done',
-		source: 'wund_kvbest',
-		target: 'wund_done',
-		sourceHandle: 'right',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'wund_missing-wund_done',
-		source: 'wund_missing',
-		target: 'wund_done',
-		sourceHandle: 'right',
-		data: {
-			label: '',
-			variant: 'curve',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'wund_nachfrage-wund_done',
-		source: 'wund_nachfrage',
-		target: 'wund_done',
-		sourceHandle: 'right',
-		data: {
-			label: '',
-			variant: 'curve',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'wund-wund_nachfrage',
-		source: 'wund',
-		sourceHandle: 'right',
-		target: 'wund_nachfrage',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'wund-wund_missing',
-		source: 'wund',
-		sourceHandle: 'right',
-		target: 'wund_missing',
-		type: 'custom',
-	},
-	{
-		id: 'wund-wund_storniert',
-		source: 'wund',
-		sourceHandle: 'bottom',
-		target: 'wund_storniert',
-		targetHandle: 'top',
-		type: 'custom',
-	},
-	// stoma
-	{
-		id: 'stoma-stoma_done',
-		source: 'stoma',
-		sourceHandle: 'right',
-		target: 'stoma_done',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'stoma-stoma_kv',
-		source: 'stoma',
-		sourceHandle: 'right',
-		target: 'stoma_kv',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'stoma-stoma_kvbest',
-		source: 'stoma_kv',
-		sourceHandle: 'right',
-		target: 'stoma_kvbest',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'stoma_kvbest-stoma_done',
-		source: 'stoma_kvbest',
-		sourceHandle: 'right',
-		target: 'stoma_done',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'stoma-stoma_nachfrage',
-		source: 'stoma',
-		sourceHandle: 'right',
-		target: 'stoma_nachfrage',
-		data: {
-			label: '',
-		},
-		type: 'custom',
-	},
-	{
-		id: 'stoma-stoma_missing',
-		source: 'stoma',
-		sourceHandle: 'right',
-		target: 'stoma_missing',
-		type: 'custom',
-	},
-	{
-		id: 'stoma-wund_storniert',
-		source: 'stoma',
-		sourceHandle: 'bottom',
-		target: 'stoma_storniert',
-		targetHandle: 'top',
-		type: 'custom',
-	},
-]
+function generateEdges(): EdgeConfig[] {
+	const edges: EdgeConfig[] = []
 
+	const branches = ['wund', 'stoma', 'inko']
+
+	branches.forEach((branch) => {
+		edges.push({
+			id: `fax-${branch}`,
+			source: 'fax',
+			target: branch,
+			sourceHandle: 'bottom',
+			targetHandle: 'top',
+			type: 'custom',
+		})
+	})
+
+	edges.push(
+		{
+			id: 'fax-forwarded',
+			source: 'fax',
+			target: 'forwarded',
+			type: 'custom',
+			sourceHandle: 'right',
+			targetHandle: 'left',
+		},
+		{
+			id: 'fax-deleted',
+			source: 'fax',
+			target: 'deleted',
+			sourceHandle: 'right',
+			targetHandle: 'right',
+			type: 'custom',
+		},
+	)
+
+	branches.forEach((branch) => {
+		edges.push({
+			id: `${branch}-${branch}_done`,
+			source: branch,
+			target: `${branch}_done`,
+			sourceHandle: 'right',
+			targetHandle: 'top',
+			type: 'custom',
+			data: { label: '' },
+		})
+
+		edges.push(
+			{
+				id: `${branch}-${branch}_kv`,
+				source: branch,
+				target: `${branch}_kv`,
+				sourceHandle: 'bottom',
+				targetHandle: 'top',
+				type: 'custom',
+				data: { label: '', variant: 'curve' },
+			},
+			{
+				id: `${branch}-${branch}_kvbest`,
+				source: `${branch}_kv`,
+				target: `${branch}_kvbest`,
+				sourceHandle: 'bottom',
+				targetHandle: 'top',
+				type: 'custom',
+				data: { label: '', variant: 'curve' },
+			},
+			{
+				id: `${branch}_kvbest-${branch}_done`,
+				source: `${branch}_kvbest`,
+				target: `${branch}_done`,
+				sourceHandle: 'right',
+				targetHandle: 'top',
+				type: 'custom',
+				data: { label: '' },
+			},
+		)
+
+		edges.push(
+			{
+				id: `${branch}-${branch}_nachfrage`,
+				source: branch,
+				target: `${branch}_nachfrage`,
+				sourceHandle: 'bottom',
+				targetHandle: 'top',
+				type: 'custom',
+				data: { label: '' },
+			},
+			{
+				id: `${branch}_nachfrage-${branch}_done`,
+				source: `${branch}_nachfrage`,
+				target: `${branch}_done`,
+				sourceHandle: 'right',
+				targetHandle: 'top',
+				type: 'custom',
+				data: { label: '' },
+			},
+		)
+
+		edges.push(
+			{
+				id: `${branch}-${branch}_missing`,
+				source: branch,
+				target: `${branch}_missing`,
+				sourceHandle: 'bottom',
+				targetHandle: 'top',
+				type: 'custom',
+			},
+			{
+				id: `${branch}_missing-${branch}_done`,
+				source: `${branch}_missing`,
+				target: `${branch}_done`,
+				sourceHandle: 'right',
+				targetHandle: 'top',
+				type: 'custom',
+				data: { label: '' },
+			},
+		)
+
+		edges.push({
+			id: `${branch}-${branch}_storniert`,
+			source: branch,
+			target: `${branch}_storniert`,
+			sourceHandle: 'left',
+			targetHandle: 'top',
+			type: 'custom',
+		})
+	})
+
+	return edges
+}
+function createTopLevelNodes(counts: Count[]): FlowNode[] {
+	return [
+		{
+			id: 'fax',
+			position: { x: 550, y: 0 },
+			data: {
+				label: 'Faxdienst',
+				count: findCount(counts, 'Faxdienst'),
+				variant: 'blue',
+				size: 'sm',
+				href: '/liste?status=Faxdienst',
+			},
+			type: 'number',
+			targetPosition: Position.Bottom,
+		},
+		{
+			id: 'forwarded',
+			position: { x: 800, y: 0 },
+			data: {
+				label: 'Weitergeleitet',
+				href: '/liste?status=Weitergeleitet',
+				count: findCount(counts, 'Weitergeleitet'),
+				icon: (
+					<Forward
+						className="absolute left-0 top-[-10px] h-full leading-none text-white opacity-50"
+						size={60}
+					/>
+				),
+			},
+			sourcePosition: Position.Right,
+			targetPosition: Position.Right,
+			type: 'number',
+		},
+		{
+			id: 'deleted',
+			position: { x: 250, y: 0 },
+			data: {
+				label: 'Gelöscht',
+				href: '/liste?status=Geloescht',
+				variant: 'deleted',
+				count: findCount(counts, 'Geloescht'),
+				icon: (
+					<Trash2
+						className="absolute bottom-0 left-0 h-full text-white opacity-50"
+						size={60}
+					/>
+				),
+			},
+			sourcePosition: Position.Right,
+			targetPosition: Position.Right,
+			type: 'number',
+		},
+	]
+}
+
+function createDepartmentNode(
+	bereich: string,
+	x: number,
+	counts: Count[],
+): FlowNode {
+	return {
+		id: bereich.toLowerCase(),
+		position: { x, y: 120 },
+		data: {
+			label: bereich,
+			count: findCount(counts, 'Kundendienst', bereich),
+			variant: 'blue',
+			href: `/liste?status=Kundendienst&bereich=${bereich}`,
+		},
+		sourcePosition: Position.Top,
+		targetPosition: Position.Bottom,
+		type: bereich === 'Wund' ? 'number' : 'stomaInko',
+	}
+}
+
+function createStatusNodes(
+	bereich: string,
+	baseX: number,
+	counts: Count[],
+): FlowNode[] {
+	const statuses = [
+		{ id: 'nachfrage', label: 'Nachfrage', y: 300, status: 'Nachfrage' },
+		{
+			id: 'missing',
+			label: 'Produkt fehlt',
+			y: 400,
+			status: 'FehlendesProdukt',
+		},
+		{ id: 'kv', label: 'KV erstellt', y: 500, status: 'KVbenoetigt' },
+		{ id: 'kvbest', label: 'KV bestätigt', y: 600, status: 'KVbestaetigt' },
+	]
+
+	const finalStatuses = [
+		{
+			id: 'storniert',
+			label: 'Storniert',
+			y: 700,
+			status: 'Storniert',
+			variant: 'deleted',
+			x: baseX - 125,
+			icon: (
+				<Trash2
+					className="absolute bottom-0 left-0 h-full text-white opacity-50"
+					size={60}
+				/>
+			),
+		},
+		{
+			id: 'done',
+			label: 'Erledigt',
+			y: 700,
+			status: 'Erledigt',
+			variant: 'green',
+			x: baseX + 125,
+		},
+	]
+
+	const statusNodes = statuses.map(({ id, label, y, status }) => ({
+		id: `${bereich.toLowerCase()}_${id}`,
+		position: { x: baseX, y },
+		data: {
+			label,
+			variant: 'teal',
+			href: `/liste?bereich=${bereich}&status=${status}`,
+			count: findCount(counts, status, bereich),
+		},
+		sourcePosition: Position.Top,
+		targetPosition: Position.Bottom,
+		type: 'number',
+	}))
+
+	const finalNodes = finalStatuses.map(
+		({ id, label, y, status, variant, x, icon }) => ({
+			id: `${bereich.toLowerCase()}_${id}`,
+			position: { x, y },
+			data: {
+				label,
+				variant,
+				href: `/liste?bereich=${bereich}&status=${status}`,
+				count: findCount(counts, status, bereich),
+				...(icon && { icon }),
+			},
+			sourcePosition: Position.Top,
+			targetPosition: Position.Bottom,
+			type: 'number',
+			...(id === 'storniert' && { sourceHandle: 'top' }),
+		}),
+	)
+
+	return [...statusNodes, ...finalNodes]
+}
 export function Visualisation({
 	counts,
 }: {
@@ -223,311 +336,23 @@ export function Visualisation({
 		status: string
 	}[]
 }) {
-	const nodes = [
-		{
-			id: 'fax', // required
-			position: { x: 0, y: 400 },
-			data: {
-				label: 'Faxdienst',
-				count:
-					counts.find((count) => count.status === 'Faxdienst')?.count || -1,
-				variant: 'blue',
-				size: 'sm',
-				href: '/liste?status=Faxdienst',
-			},
-			type: 'number',
-			targetPosition: Position.Right,
-		},
-		{
-			id: 'stoma', // required
-			position: { x: 175, y: 25 }, // required
-			data: {
-				label: 'StoMa/Inko',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'Kundendienst' && count.bereich === 'StoMa',
-					)?.count || 0,
-				variant: 'blue',
-				href: '/liste?status=Kundendienst&bereich=StoMa',
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'stoma',
-		},
-		{
-			id: 'wund', // required
-			position: { x: 200, y: 400 }, // required
-			data: {
-				label: 'Wundversorgung',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'Kundendienst' && count.bereich === 'Wund',
-					)?.count || 0,
-				variant: 'blue',
-				href: '/liste?status=Kundendienst&bereich=Wundversorgung',
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'forwarded', // required
-			position: { x: 200, y: 650 }, // required
-			data: {
-				label: 'Weitergeleitet',
-				href: '/liste?status=Weitergeleitet',
-				count:
-					counts.find((count) => count.status === 'Weitergeleitet')?.count || 0,
-				icon: (
-					<Forward
-						className="absolute left-0 top-[-10px] h-full leading-none text-white opacity-50"
-						size={60}
-					/>
-				),
-			}, // required
-			sourcePosition: Position.Left,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'deleted', // required
-			position: { x: 200, y: 735 }, // required
-			data: {
-				label: 'Gelöscht',
-				href: '/liste?status=Geloescht',
-				variant: 'deleted',
-				count: counts.find((count) => count.status === 'Geloescht')?.count || 0,
-				icon: (
-					<Trash2
-						className="absolute bottom-0 left-0 h-full text-white opacity-50"
-						size={60}
-					/>
-				),
-			}, // required
-			sourcePosition: Position.Left,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'stoma_kv', // required
-			position: { x: 500, y: 115 }, // required
-			data: {
-				label: 'KV erstellt',
-				variant: 'teal',
-				href: '/liste?bereich=StoMa&status=KVbenoetigt',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'KVbenoetigt' && count.bereich === 'StoMa',
-					)?.count || 0,
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'stoma_kvbest', // required
-			position: { x: 775, y: 115 }, // required
-			data: {
-				label: 'KV bestätigt',
-				variant: 'teal',
-				href: '/liste?bereich=StoMa&status=KVbestaetigt',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'KVbestaetigt' && count.bereich === 'StoMa',
-					)?.count || 0,
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'stoma_missing', // required
-			position: { x: 500, y: 200 }, // required
-			data: {
-				label: 'Produkt fehlt',
-				variant: 'teal',
-				href: '/liste?bereich=StoMa&status=FehlendesProdukt',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'FehlendesProdukt' && count.bereich === 'StoMa',
-					)?.count || 0,
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'stoma_nachfrage', // required
-			position: { x: 500, y: 285 }, // required
-			data: {
-				label: 'Nachfrage',
-				variant: 'teal',
-				href: '/liste?bereich=StoMa&status=Nachfrage',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'Nachfrage' && count.bereich === 'StoMa',
-					)?.count || 0,
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'stoma_storniert', // required
-			position: { x: 200, y: 220 }, // required
-			data: {
-				label: 'Storniert',
-				variant: 'deleted',
-				href: '/liste?bereich=StoMa&status=Storniert',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'Storniert' && count.bereich === 'StoMa',
-					)?.count || 0,
-				icon: (
-					<Trash2
-						className="absolute bottom-0 left-0 h-full text-white opacity-50"
-						size={60}
-					/>
-				),
-			}, // required
-			sourcePosition: Position.Top,
-			targetPosition: Position.Top,
-			sourceHandle: 'top',
-			type: 'number',
-		},
-		{
-			id: 'stoma_done', // required
-			position: { x: 1050, y: 65 }, // required
-			data: {
-				label: 'Erledigt',
-				variant: 'green',
-				href: '/liste?bereich=StoMa&status=Erledigt',
-				count:
-					counts.find(
-						(count) => count.status === 'Erledigt' && count.bereich === 'StoMa',
-					)?.count || 0,
-			}, // required
-			sourcePosition: Position.Left,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-
-		{
-			id: 'wund_kv', // required
-			position: { x: 500, y: 450 }, // required
-			data: {
-				label: 'KV erstellt',
-				variant: 'teal',
-				href: '/liste?bereich=Wund&status=KVbenoetigt',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'KVbenoetigt' && count.bereich === 'Wund',
-					)?.count || 0,
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'wund_kvbest', // required
-			position: { x: 775, y: 450 }, // required
-			data: {
-				label: 'KV bestätigt',
-				variant: 'teal',
-				href: '/liste?bereich=Wund&status=KVbestaetigt',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'KVbestaetigt' && count.bereich === 'Wund',
-					)?.count || 0,
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'wund_missing', // required
-			position: { x: 500, y: 535 }, // required
-			data: {
-				label: 'Produkt fehlt',
-				variant: 'teal',
-				href: '/liste?bereich=Wund&status=FehlendesProdukt',
-				count:
-					counts.find(
-						(count) =>
-							count.status === 'FehlendesProdukt' && count.bereich === 'Wund',
-					)?.count || 0,
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-		{
-			id: 'wund_nachfrage', // required
-			position: { x: 500, y: 620 }, // required
-			data: {
-				label: 'Nachfrage',
-				variant: 'teal',
-				count:
-					counts.find(
-						(count) => count.status === 'Nachfrage' && count.bereich === 'Wund',
-					)?.count || 0,
-				href: '/liste?bereich=Wund&status=Nachfrage',
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-
-		{
-			id: 'wund_storniert', // required
-			position: { x: 200, y: 520 }, // required
-			data: {
-				label: 'Storniert',
-				count:
-					counts.find(
-						(count) => count.status === 'Storniert' && count.bereich === 'Wund',
-					)?.count || 0,
-				variant: 'deleted',
-				href: '/liste?bereich=Wund&status=Storniert',
-				icon: (
-					<Trash2
-						className="absolute bottom-0 left-0 h-full text-white opacity-50"
-						size={60}
-					/>
-				),
-			}, // required
-			sourcePosition: Position.Right,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
-
-		{
-			id: 'wund_done', // required
-			position: { x: 1050, y: 400 }, // required
-			data: {
-				label: 'Erledigt',
-				variant: 'green',
-				count:
-					counts.find(
-						(count) => count.status === 'Erledigt' && count.bereich === 'Wund',
-					)?.count || 0,
-				href: '/liste?bereich=Wund&status=Erledigt',
-			}, // required
-			sourcePosition: Position.Left,
-			targetPosition: Position.Left,
-			type: 'number',
-		},
+	const departments = [
+		{ bereich: 'StoMa', x: 50 },
+		{ bereich: 'Inko', x: 500 },
+		{ bereich: 'Wund', x: 950 },
 	]
 
+	const nodes: Node[] = [
+		...createTopLevelNodes(counts),
+		...departments.map(({ bereich, x }) =>
+			createDepartmentNode(bereich, bereich === 'Wund' ? x + 25 : x, counts),
+		),
+		...departments.flatMap(({ bereich, x }) =>
+			createStatusNodes(bereich, x + 25, counts),
+		),
+	]
+
+	const edges = generateEdges()
 	return (
 		<div className="relative h-[900px] w-full">
 			<ReactFlow
@@ -536,7 +361,7 @@ export function Visualisation({
 				nodes={nodes}
 				edges={edges.map((edge) => ({ ...edge, animated: true }))}
 				edgeTypes={{ custom: CustomEdge }}
-				nodeTypes={{ number: NumberNode, stoma: StomaNode }}
+				nodeTypes={{ number: NumberNode, stomaInko: StomaInkoNode }}
 				panOnDrag={false}
 				preventScrolling={false}
 				nodesDraggable={false}

@@ -1,9 +1,9 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { cva } from 'class-variance-authority'
 import { cn } from '#app/utils/misc.tsx'
-import { Trash, Trash2 } from 'lucide-react'
-import { Link } from '@remix-run/react'
+import { Link, useFetcher } from '@remix-run/react'
+import { useRevalidateOnInterval } from '#app/utils/hooks/useRevalidate.ts'
 
 const nodeVariants = cva('rounded border-2 px-4 py-2 text-right text-white', {
 	variants: {
@@ -26,11 +26,11 @@ const nodeVariants = cva('rounded border-2 px-4 py-2 text-right text-white', {
 	},
 	defaultVariants: {
 		variant: 'secondary',
-		size: 'default',
+		size: 'lg',
 	},
 })
 
-export function NumberNode({
+export function StomaInkoNode({
 	data,
 }: {
 	data: {
@@ -42,6 +42,12 @@ export function NumberNode({
 		label: string
 	}
 }) {
+	const fetcher = useFetcher<Record<string, number>>()
+
+	useEffect(() => {
+		fetcher.load(`/resources/attachment-numbers/${data.label}`)
+	}, [data.label, data.count])
+
 	return (
 		<Link to={data.href || '#'}>
 			<div
@@ -63,21 +69,36 @@ export function NumberNode({
 				<Handle
 					type="target"
 					position={Position.Right}
-					id="right"
+					id="left"
 					className="!border-transparent !bg-transparent"
 				/>
 				<Handle
 					type="target"
 					position={Position.Bottom}
-					id="bottom"
+					id="top"
 					className="!border-transparent !bg-transparent"
 				/>
-				<div className="flex flex-col-reverse">
+				<div className="flex flex-col">
 					{data.icon}
-					<span className="uppervase text-sm">{data.label}</span>
-					<span className="text-body-2xl font-bold leading-none">
+					<span className="uppervase order-2 text-sm">{data.label}</span>
+					<span className="order-1 text-body-2xl font-bold leading-none">
 						{data.count || 0}
 					</span>
+					<div className="order-3 mt-2 grid grid-cols-2 gap-x-4 text-left">
+						{fetcher.data &&
+							Object.entries(fetcher.data).map(([key, value]) => (
+								<div key={key} className="flex justify-between">
+									<span>{key}</span>
+									<span>
+										{fetcher.state === 'loading' ? (
+											<span className="animate-pulse">...</span>
+										) : (
+											value
+										)}
+									</span>
+								</div>
+							))}
+					</div>
 				</div>
 				<Handle
 					type="source"

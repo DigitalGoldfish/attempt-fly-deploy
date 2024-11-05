@@ -4,6 +4,7 @@ import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Visualisation } from '#app/components/blocks/visualisation.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import { useRevalidateOnInterval } from '#app/utils/hooks/useRevalidate.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Dashboard' }]
 
@@ -26,6 +27,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Dashboard() {
+	useRevalidateOnInterval({
+		enabled: true,
+		interval: 60 * 1000,
+	})
 	const { counts } = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout pageTitle="Aktueller Status">
