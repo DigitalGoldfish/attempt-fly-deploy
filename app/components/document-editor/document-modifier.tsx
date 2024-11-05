@@ -5,7 +5,7 @@ import DocumentEditorContext, {
 import { DocumentPage } from '#app/components/document-editor/document-page.tsx'
 import {
 	type ModalState,
-	type Document,
+	type EditorDocument,
 } from '#app/components/document-editor/types.ts'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -24,8 +24,8 @@ import {
 } from './reducer'
 
 interface DocumentModifierProps {
-	data: Document[]
-	onSave: (documents: Document[]) => void
+	data: EditorDocument[]
+	onSave: (documents: EditorDocument[]) => void
 	onCancel: () => void
 	source?: string
 }
@@ -107,7 +107,7 @@ const Column = ({
 	document,
 	documentIndex,
 }: {
-	document: Document
+	document: EditorDocument
 	documentIndex: number
 }) => {
 	const { state } = useDocumentEditorContext()

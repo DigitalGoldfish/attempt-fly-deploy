@@ -1,6 +1,6 @@
 import {
 	type Action,
-	type Document,
+	type EditorDocument,
 	type PageID,
 	type State,
 } from '#app/components/document-editor/types.ts'
@@ -12,7 +12,7 @@ export const initialState: State = {
 }
 
 function getPage(
-	documents: Document[],
+	documents: EditorDocument[],
 	documentIndex: number,
 	pageIndex: number,
 ) {
@@ -96,11 +96,11 @@ export const movePageNew = (state: State, from: PageID, to: PageID) => {
 	return state
 }
 
-export const filterEmptyDocuments = (documents: Document[]) => {
+export const filterEmptyDocuments = (documents: EditorDocument[]) => {
 	return documents.filter((document) => document.pages.length > 0)
 }
 
-export const prepareDocumentsForModifier = (documents: Document[]) => {
+export const prepareDocumentsForModifier = (documents: EditorDocument[]) => {
 	// if there is at least one document with more than one page we add an additional "empty" document
 	const multiPageDocumentsExist = documents.some(
 		(document) => document.pages.length > 1,

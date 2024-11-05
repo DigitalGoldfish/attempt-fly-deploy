@@ -1,11 +1,11 @@
 type DocumentType = 'pdf' | 'image'
 
-export interface Document {
+export interface EditorDocument {
 	name: string
-	pages: Page[]
+	pages: EditorPage[]
 }
 
-export interface Page {
+export interface EditorPage {
 	fileName: string
 	imageUrl: string
 	originalDocumentId: string
@@ -21,7 +21,7 @@ export type PageID = {
 }
 
 export interface State {
-	documents: Document[]
+	documents: EditorDocument[]
 	draggedPage: { documentIndex: number; pageIndex: number } | null
 	dropTarget: { documentIndex: number; pageIndex: number } | null
 }

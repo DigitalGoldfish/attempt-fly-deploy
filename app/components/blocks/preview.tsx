@@ -1,5 +1,9 @@
-import { type MailAttachment } from '@prisma/client'
+import { type Document } from '@prisma/client'
 import { useEffect, useState } from 'react'
+import {
+	type EditorDocument,
+	type EditorPage,
+} from '#app/components/document-editor/types.ts'
 import { Button } from '#app/components/ui/button.tsx'
 
 import {
@@ -8,10 +12,6 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
-import {
-	type Document,
-	type Page,
-} from '#app/components/document-editor/types.ts'
 import { type IncomingFormType } from '#app/routes/_publicare+/bestellung_form.tsx'
 import DocumentModifier from '../document-editor/document-modifier.tsx'
 
@@ -32,11 +32,11 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 		return <div>No Attachments</div>
 	}
 
-	const documents: Document[] = []
+	const documents: EditorDocument[] = []
 	attachments.forEach((attachment) => {
 		const document = {
 			name: attachment.fileName,
-			pages: [] as Page[],
+			pages: [] as EditorPage[],
 		}
 
 		if (attachment.contentType.includes('pdf')) {
@@ -120,8 +120,15 @@ export function FilePreview({
 	attachment,
 }: {
 	attachment: Omit<
-		MailAttachment,
-		'blob' | 'createdAt' | 'updatedAt' | 'mailId'
+		Document,
+		| 'blob'
+		| 'createdAt'
+		| 'updatedAt'
+		| 'mailId'
+		| 'incomingId'
+		| 'formSubmissionId'
+		| 'width'
+		| 'height'
 	>
 }) {
 	return (

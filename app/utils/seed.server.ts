@@ -139,7 +139,7 @@ const typePicker = new RandomPicker(typeProbability)
 
 export async function clearData() {
 	await prisma.issues.deleteMany({})
-	await prisma.mailAttachment.deleteMany({})
+	await prisma.document.deleteMany({})
 	await prisma.mail.deleteMany({})
 	await prisma.formSubmission.deleteMany({})
 	await prisma.incoming.deleteMany({})
@@ -466,9 +466,10 @@ export async function createIncomingFormSubmission(forceFaxdienst: boolean) {
 			message: 'Dringend! Bitte sofort bearbeiten',
 			document: {
 				create: {
-					type: 'Unknown',
 					contentType: 'application/pdf',
 					blob: Buffer.from(''),
+					fileName: 'form-upload.pdf',
+					size: 0,
 				},
 			},
 		},

@@ -4,7 +4,7 @@ import { prisma } from '#app/utils/db.server.ts'
 
 export async function loader({ params }: LoaderFunctionArgs) {
 	invariantResponse(params.id, 'ID is required', { status: 400 })
-	const attachment = await prisma.mailAttachment.findUnique({
+	const attachment = await prisma.document.findUnique({
 		where: { id: params.id },
 		select: { contentType: true, blob: true },
 	})

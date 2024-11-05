@@ -1,8 +1,8 @@
 import { Minus, Plus } from 'lucide-react'
 import { useDocumentEditorContext } from '#app/components/document-editor/context.tsx'
 import {
-	type Page,
-	type Document,
+	type EditorPage,
+	type EditorDocument,
 } from '#app/components/document-editor/types.ts'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
@@ -13,8 +13,8 @@ export function DocumentPage({
 	documentIndex,
 	pageIndex,
 }: {
-	document: Document
-	page: Page
+	document: EditorDocument
+	page: EditorPage
 	documentIndex: number
 	pageIndex: number
 }) {

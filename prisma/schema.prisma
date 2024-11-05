@@ -200,24 +200,6 @@ model Connection {
   @@unique([providerName, providerId])
 }
 
-model MailAttachment {
-  id            String  @id @default(cuid())
-  contentType   String
-  fileName      String
-  size          Int
-  blob          Bytes
-  previewImages String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  mail   Mail   @relation(fields: [mailId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  mailId String
-
-  // non-unique foreign key
-  @@index([mailId])
-}
-
 model Mail {
   id        String @id @default(cuid())
   sender    String
@@ -225,7 +207,7 @@ model Mail {
 
   subject     String
   message     String
-  attachments MailAttachment[]
+  attachments Document[]
 
   type       String
   receivedAt DateTime @default(now())
@@ -244,28 +226,11 @@ model FormSubmission {
   receivedAt DateTime   @default(now())
 }
 
-model Document {
-  id          String @id @default(cuid())
-  type        String // Unknown, Vorschreibung, KV, KV-Bestätigung
-  contentType String
-  blob        Bytes
-
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  referencedIn Incoming[] @relation("additionalDocuments")
-  incoming     Incoming?  @relation("default")
-
-  formSubmission   FormSubmission @relation(fields: [formSubmissionId], references: [id])
-  formSubmissionId String         @unique
-}
-
 model Incoming {
   id             String          @id @default(cuid())
   source         String
   mail           Mail?           @relation(fields: [mailId], references: [id])
   formSubmission FormSubmission? @relation(fields: [formSubmissionId], references: [id])
-  document       Document?       @relation("default", fields: [documentId], references: [id])
-  documentId     String?         @unique
 
   // faxdienst
   type           String  @default("Unknown")
@@ -279,7 +244,7 @@ model Incoming {
   tags Tag[]
 
   // kundendienst
-  documents Document[] @relation("additionalDocuments")
+  documents Document[]
   orderNr   String?
 
   status  String
@@ -292,6 +257,29 @@ model Incoming {
   updatedAt        DateTime @updatedAt
   mailId           String?
   formSubmissionId String?
+}
+
+model Document {
+  id            String  @id @default(cuid())
+  contentType   String
+  fileName      String
+  size          Int
+  height        Int?
+  width         Int?
+  blob          Bytes
+  previewImages String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  incoming   Incoming? @relation(fields: [incomingId], references: [id])
+  incomingId String?
+
+  formSubmission   FormSubmission? @relation(fields: [formSubmissionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  formSubmissionId String?         @unique
+
+  mail   Mail?   @relation(fields: [mailId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  mailId String?
 }
 
 model Issues {
