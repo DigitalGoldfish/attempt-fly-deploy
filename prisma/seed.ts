@@ -79,7 +79,7 @@ async function seed() {
 		data: [
 			{
 				id: 'cm2gdeb51000009l79df33l01',
-				name: Bereich.StoMa,
+				name: Bereich.Stoma,
 				label: 'StoMa',
 			},
 			{

@@ -231,7 +231,7 @@ const DemoDataPage = () => {
 					<SeedTile type="import" count={10}>
 						Import 10 random E-Mails
 					</SeedTile>
-					<SeedTile bereich={Bereich.StoMa} type="import" count={10}>
+					<SeedTile bereich={Bereich.Stoma} type="import" count={10}>
 						Import 10 random E-Mails from Stoma folder
 					</SeedTile>
 					<SeedTile bereich={Bereich.Inko} type="import" count={10}>
@@ -243,7 +243,7 @@ const DemoDataPage = () => {
 					<SeedTile type="import" count={50}>
 						Import 50 random E-Mails
 					</SeedTile>
-					<SeedTile bereich={Bereich.StoMa} type="import" count={50}>
+					<SeedTile bereich={Bereich.Stoma} type="import" count={50}>
 						Import 50 random E-Mails from Stoma folder
 					</SeedTile>
 					<SeedTile bereich={Bereich.Inko} type="import" count={50}>

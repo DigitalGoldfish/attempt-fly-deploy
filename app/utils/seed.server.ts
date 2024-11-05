@@ -122,7 +122,7 @@ const statusProbability = [
 ]
 
 const bereichProbability = [
-	{ name: 'Stoma/Inko', bereich: Bereich.StoMa, weight: 100 },
+	{ name: 'Stoma/Inko', bereich: Bereich.Stoma, weight: 100 },
 	{ name: 'Wundversorgung', bereich: Bereich.Wund, weight: 100 },
 ]
 
@@ -198,10 +198,23 @@ export async function importEmails(
 	count: number,
 	bereich?: Bereich,
 ): Promise<ProcessResult> {
-	// TODO: import emails
+	let folderPath = ''
+	switch (bereich) {
+		case Bereich.Inko:
+			folderPath = process.env.INKO_DEMODATA_FOLDER
+			break
+		case Bereich.Stoma:
+			folderPath = process.env.STOMA_DEMODATA_FOLDER
+			break
+		case Bereich.Wund:
+			folderPath = process.env.WUND_DEMODATA_FOLDER
+			break
+	}
+
 	const emailPath = path.join(
 		process.env.FILESYSTEM_PATH,
 		process.env.DEMODATA_FOLDER,
+		folderPath,
 	)
 
 	const { parsedEmails, processedPaths } = await readEMLFiles(emailPath, count)

@@ -1,5 +1,5 @@
 export enum Bereich {
-	StoMa = 'StoMa',
+	Stoma = 'Stoma',
 	Inko = 'Inko',
 	Wund = 'Wund',
 	Sonstige = 'Sonstige',
