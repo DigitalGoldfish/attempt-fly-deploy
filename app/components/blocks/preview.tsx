@@ -16,7 +16,7 @@ import { type IncomingFormType } from '#app/routes/_publicare+/bestellung_form.t
 import DocumentModifier from '../document-editor/document-modifier.tsx'
 
 export function PreviewBlock({ data }: { data: IncomingFormType }) {
-	const { mail } = data
+	const { mail, documents: docs } = data
 	const [displayedFile, setDisplayedFile] = useState(0)
 	const [editFiles, setEditFiles] = useState(false)
 
@@ -71,13 +71,14 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 	})
 
 	const selectedAttachment = attachments[displayedFile]
+	const displayAttachment = docs && docs.length > 0 ? docs : attachments
 	if (selectedAttachment) {
 		return (
 			<>
 				<div className="flex max-w-[800px] flex-col gap-4">
 					<Tabs defaultValue="file1" className="m-r-[100px] w-full">
 						<TabsList className="relative flex w-full justify-start overflow-x-auto">
-							{attachments.map((attachment, index) => (
+							{displayAttachment.map((attachment, index) => (
 								<TabsTrigger value={`file${index + 1}`} key={attachment.id}>
 									<div className={'max-w-24 overflow-hidden overflow-ellipsis'}>
 										{attachment.fileName}
@@ -93,7 +94,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 								Edit Files
 							</Button>
 						</TabsList>
-						{attachments.map((attachment, index) => (
+						{displayAttachment.map((attachment, index) => (
 							<TabsContent value={`file${index + 1}`} key={attachment.id}>
 								<FilePreview attachment={attachment} />
 							</TabsContent>
@@ -103,11 +104,11 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 				{editFiles && (
 					<DocumentModifier
 						data={documents}
-						onSave={(documents) => {
+						onSave={() => {
 							setEditFiles(false)
-							console.log('save documents', documents)
 						}}
 						onCancel={() => setEditFiles(false)}
+						incomingId={data.id}
 					/>
 				)}
 			</>
