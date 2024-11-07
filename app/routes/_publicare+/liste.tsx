@@ -86,10 +86,10 @@ export default function Bestellungsliste() {
 	const [searchParams] = useSearchParams()
 	let link = ''
 	let label = ''
-	if (searchParams.get('bereich') === 'StoMa') {
+	if (searchParams.get('bereich') === 'Stoma') {
 		link = '/stoma'
 		label = 'Zum Kundendienst'
-	} else if (searchParams.get('bereich') === 'StoMa') {
+	} else if (searchParams.get('bereich') === 'Stoma') {
 		link = '/wundversorgung'
 		label = 'Zum Kundendienst'
 	} else if (searchParams.get('status') === 'Faxdienst') {

@@ -247,6 +247,9 @@ model Incoming {
   documents Document[]
   orderNr   String?
 
+  svtraeger   SVTraeger? @relation(fields: [svTraegerId], references: [id])
+  svTraegerId String?
+
   status  String
   comment String?
 
@@ -288,4 +291,12 @@ model Issues {
   userId String
   note   String
   link   String
+}
+
+model SVTraeger {
+  id       String     @id @default(cuid())
+  name     String
+  email    String
+  fax      String
+  Incoming Incoming[]
 }

@@ -20,7 +20,7 @@ export function SelectButtons({
 	const currentValue = (value as string[]) || ([] as string[])
 
 	return (
-		<div className="col-span-4 flex gap-4">
+		<div className="col-span-4 flex flex-wrap gap-4">
 			{options.map((option) => {
 				const selected = multiple
 					? currentValue.includes(option.value)
@@ -81,7 +81,6 @@ export function FaxdienstBlock({
 		label: bereich.label,
 	}))
 
-	console.log('errors', errors)
 	return (
 		<div>
 			<h3 className={'mb-2 text-h5'}>Faxdienst</h3>
@@ -97,24 +96,12 @@ export function FaxdienstBlock({
 					]}
 				/>
 			</div>
-			{type === 'KVBestaetigung' && (
-				<div className={'grid grid-cols-5'}>
-					<span>Bestellung:</span>
-					<Button type="button" variant={'outline'}>
-						Verknüpfe mit Bestellung
-					</Button>
-				</div>
-			)}
-			{type !== 'KVBestaetigung' && (
-				<>
-					<div className={'grid grid-cols-5'}>
-						<span>Bereich:</span>
-						<SelectButtons fieldName="bereich" options={bereichOptions} />
-					</div>
-				</>
-			)}
-			{assignableTo.length > 0 && (
-				<div className={'my-4 grid grid-cols-5'}>
+			<div className={'grid grid-cols-5'}>
+				<span>Bereich:</span>
+				<SelectButtons fieldName="bereich" options={bereichOptions} />
+			</div>
+			{assignableTo.length > 0 && bereich !== 'Wund' && (
+				<div className={'my-4 grid w-full grid-cols-5'}>
 					<span>Tags:</span>
 					<SelectButtons
 						fieldName="tags"
@@ -123,16 +110,18 @@ export function FaxdienstBlock({
 					/>
 				</div>
 			)}
-			<div className={'my-4 grid grid-cols-5'}>
-				<span>Attribute:</span>
-				<div className="col-span-4 flex gap-4">
-					<SelectButtons
-						fieldName="attribute"
-						multiple
-						options={[{ label: 'Ohne Verordnung', value: 'Ohne Verordnung' }]}
-					/>
+			{false && (
+				<div className={'my-4 grid grid-cols-5'}>
+					<span>Attribute:</span>
+					<div className="col-span-4 flex gap-4">
+						<SelectButtons
+							fieldName="attribute"
+							multiple
+							options={[{ label: 'Ohne Verordnung', value: 'Ohne Verordnung' }]}
+						/>
+					</div>
 				</div>
-			</div>
+			)}
 
 			<div className={'my-4 grid grid-cols-5'}>
 				<span>Kunde:</span>

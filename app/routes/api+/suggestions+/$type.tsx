@@ -2,7 +2,13 @@ import { type LoaderFunctionArgs } from '@remix-run/node'
 import { type Selectable } from '#app/components/forms/multiselect-field.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 
-const ALL_SUGGESTION_TYPES = ['orders', 'bereich', 'roles', 'tags'] as const
+const ALL_SUGGESTION_TYPES = [
+	'orders',
+	'bereich',
+	'roles',
+	'tags',
+	'svtraeger',
+] as const
 type SuggestionTypeTuple = typeof ALL_SUGGESTION_TYPES
 export type SuggestionType = SuggestionTypeTuple[number]
 
@@ -31,6 +37,9 @@ const suggestionFns: Record<SuggestionType, () => Promise<Selectable[]>> = {
 		return [] as Selectable[]
 	},
 	tags: async () => {
+		return [] as Selectable[]
+	},
+	svtraeger: async () => {
 		return [] as Selectable[]
 	},
 }

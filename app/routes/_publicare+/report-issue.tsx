@@ -123,16 +123,16 @@ export function ReportIssue({ id }: { id: string }) {
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			<DialogTrigger asChild>
-				<Button>Problem melden</Button>
+				<Button>Für Entwickler markieren</Button>
 			</DialogTrigger>
 			<DialogContent className="max-w-lg">
 				<DialogHeader>
-					<DialogTitle>Problem melden</DialogTitle>
-					<VisuallyHidden>
-						<DialogDescription>
-							Please provide details about the issue
-						</DialogDescription>
-					</VisuallyHidden>
+					<DialogTitle>Für Entwickler markieren</DialogTitle>
+					<DialogDescription>
+						Falls es bei der Bearbeitung zu Problemen/Einschränkungen etc. kommt
+						wird mit dieser Funktion der Eintrag markiert sodass die Entwickler
+						ihn leicht wiederfinden können.
+					</DialogDescription>
 				</DialogHeader>
 
 				<Form<ReportFormData>

@@ -1,7 +1,13 @@
 import { promiseHash } from 'remix-utils/promise'
+import { BereichEnum } from '#app/const/BereichEnum.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { createPassword, img } from '#tests/db-utils.ts'
-import { BereichEnum } from '#app/const/BereichEnum.ts'
+
+const BereichsIds = {
+	[BereichEnum.Stoma]: 'cm2gdeb51000009l79df33l01',
+	[BereichEnum.Inko]: 'cm2gdeb51000009l79df33l02',
+	[BereichEnum.Wund]: 'cm2gdeb51000009l79df33l03',
+}
 
 async function seed() {
 	console.log('🌱 Seeding...')
@@ -78,118 +84,108 @@ async function seed() {
 	await prisma.bereich.createMany({
 		data: [
 			{
-				id: 'cm2gdeb51000009l79df33l01',
+				id: BereichsIds[BereichEnum.Stoma],
 				name: BereichEnum.Stoma,
-				label: 'StoMa',
+				label: 'Stoma',
 			},
 			{
-				id: 'cm2gdeb51000009l79df33l02',
+				id: BereichsIds[BereichEnum.Inko],
 				name: BereichEnum.Inko,
 				label: 'Inko',
 			},
 			{
-				id: 'cm2gdeb51000009l79df33l03',
+				id: BereichsIds[BereichEnum.Wund],
 				name: BereichEnum.Wund,
 				label: 'Wundversorgung',
-			},
-			{
-				id: 'cm2gdeb51000009l79df33l04',
-				name: BereichEnum.Sonstige,
-				label: 'Sonstige',
 			},
 		],
 	})
 
 	console.timeEnd(`👤 Created bereich...`)
 
+	console.time(`👤 Created SVTraeger...`)
+	await prisma.sVTraeger.deleteMany({})
+
+	await prisma.sVTraeger.createMany({
+		data: [
+			{
+				id: 'cm2gdeb51000009l79df33101',
+				name: 'SVS-LW',
+				email: 'svslw@example.com',
+				fax: '',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33102',
+				name: 'SVS-GW',
+				email: 'svsgw@example.com',
+				fax: '',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33103',
+				name: 'SVS-BVA',
+				email: 'svsbva@example.com',
+				fax: '',
+			},
+		],
+	})
+
+	console.timeEnd(`👤 Created SVTraeger...`)
+
 	console.time(`👤 Created tags...`)
 	await prisma.tag.deleteMany({})
+
+	for (let i = 1; i <= 6; i++) {
+		await prisma.tag.create({
+			data: {
+				id: `cm2gdeb51000009l79df43l0${i}`,
+				label: `ST${i}`,
+				type: 'User',
+				bereichId: BereichsIds[BereichEnum.Stoma],
+			},
+		})
+	}
+
+	for (let i = 1; i <= 6; i++) {
+		await prisma.tag.create({
+			data: {
+				id: `cm2gdeb51000009l79df43l1${i}`,
+				label: `IN${i}`,
+				type: 'User',
+				bereichId: BereichsIds[BereichEnum.Inko],
+			},
+		})
+	}
+
+	for (let i = 1; i <= 8; i++) {
+		await prisma.tag.create({
+			data: {
+				id: `cm2gdeb51000009l79df43l2${i}`,
+				label: `WND${i}`,
+				type: 'User',
+				bereichId: BereichsIds[BereichEnum.Wund],
+			},
+		})
+	}
 
 	await prisma.tag.createMany({
 		data: [
 			{
-				id: 'cm2gdeb51000009l79df43l01',
-				label: 'MA1',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l01',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l02',
-				label: 'MA2',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l01',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l03',
-				label: 'MA3',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l01',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l04',
-				label: 'MA4',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l01',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l05',
-				label: 'MA5',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l01',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l06',
-				label: 'MA6',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l01',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l11',
-				label: 'MB1',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l02',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l12',
-				label: 'MB2',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l02',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l13',
-				label: 'MB3',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l02',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l14',
-				label: 'MB4',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l02',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l15',
-				label: 'MB5',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l02',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l16',
-				label: 'MB6',
-				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l02',
-			},
-			{
-				id: 'cm2gdeb51000009l79df43l21',
+				id: 'cm2gdeb51000009l79df43l00',
 				label: 'SM',
 				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l01',
+				bereichId: BereichsIds[BereichEnum.Stoma],
 			},
 			{
-				id: 'cm2gdeb51000009l79df43l22',
+				id: 'cm2gdeb51000009l79df43l10',
 				label: 'IN',
 				type: 'User',
-				bereichId: 'cm2gdeb51000009l79df33l02',
+				bereichId: BereichsIds[BereichEnum.Inko],
+			},
+			{
+				id: 'cm2gdeb51000009l79df43l20',
+				label: 'WND',
+				type: 'User',
+				bereichId: BereichsIds[BereichEnum.Wund],
 			},
 		],
 	})
@@ -239,27 +235,14 @@ async function seed() {
 	await prisma.user.create({
 		select: { id: true },
 		data: {
-			email: 'kundendienst@example.org',
-			username: 'kundendienst',
-			name: 'Kundendienst',
-			kuerzel: 'KD',
-			image: { create: kodyImages.kodyUser },
-			password: { create: createPassword('kundendienst') },
-			roles: { connect: [{ name: 'kundendienst' }] },
-		},
-	})
-
-	await prisma.user.create({
-		select: { id: true },
-		data: {
 			email: 'stoma@example.org',
 			username: 'stoma',
-			name: 'StoMa',
+			name: 'Stoma',
 			kuerzel: 'SM',
 			password: { create: createPassword('stoma') },
 			roles: { connect: [{ name: 'kundendienst' }] },
-			bereich: { connect: { id: 'cm2gdeb51000009l79df33l01' } },
-			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l21' } },
+			bereich: { connect: { id: BereichsIds[BereichEnum.Stoma] } },
+			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l00' } },
 		},
 	})
 
@@ -272,8 +255,22 @@ async function seed() {
 			kuerzel: 'IN',
 			password: { create: createPassword('inko') },
 			roles: { connect: [{ name: 'kundendienst' }] },
-			bereich: { connect: { id: 'cm2gdeb51000009l79df33l02' } },
-			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l22' } },
+			bereich: { connect: { id: BereichsIds[BereichEnum.Inko] } },
+			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l10' } },
+		},
+	})
+
+	await prisma.user.create({
+		select: { id: true },
+		data: {
+			email: 'wundversorgung@example.org',
+			username: 'wundversorgung',
+			name: 'Wundversorgung',
+			kuerzel: 'WND',
+			password: { create: createPassword('wund') },
+			roles: { connect: [{ name: 'kundendienst' }] },
+			bereich: { connect: { id: BereichsIds[BereichEnum.Wund] } },
+			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l20' } },
 		},
 	})
 
@@ -281,13 +278,13 @@ async function seed() {
 		await prisma.user.create({
 			select: { id: true },
 			data: {
-				email: `ma${i}@example.org`,
-				username: `ma${i}`,
-				name: `Mitarbeiter ${i}`,
-				kuerzel: `MA${i}`,
-				password: { create: createPassword(`ma${i}`) },
+				email: `st${i}@example.org`,
+				username: `st${i}`,
+				name: `Stoma ${i}`,
+				kuerzel: `ST${i}`,
+				password: { create: createPassword(`st${i}`) },
 				roles: { connect: [{ name: 'kundendienst' }] },
-				bereich: { connect: { id: 'cm2gdeb51000009l79df33l01' } },
+				bereich: { connect: { id: BereichsIds[BereichEnum.Stoma] } },
 				defaultTags: { connect: { id: `cm2gdeb51000009l79df43l0${i}` } },
 			},
 		})
@@ -297,30 +294,33 @@ async function seed() {
 		await prisma.user.create({
 			select: { id: true },
 			data: {
-				email: `mb${i}@example.org`,
-				username: `mb${i}`,
-				name: `Mitarbeiter ${i}`,
-				kuerzel: `MB${i}`,
-				password: { create: createPassword(`mb${i}`) },
+				email: `in${i}@example.org`,
+				username: `in${i}`,
+				name: `Inko ${i}`,
+				kuerzel: `IN${i}`,
+				password: { create: createPassword(`in${i}`) },
 				roles: { connect: [{ name: 'kundendienst' }] },
-				bereich: { connect: { id: 'cm2gdeb51000009l79df33l02' } },
+				bereich: { connect: { id: BereichsIds[BereichEnum.Inko] } },
 				defaultTags: { connect: { id: `cm2gdeb51000009l79df43l1${i}` } },
 			},
 		})
 	}
 
-	await prisma.user.create({
-		select: { id: true },
-		data: {
-			email: 'wundversorgung@example.org',
-			username: 'wundversorgung',
-			name: 'Wundversorgung',
-			kuerzel: 'WV',
-			password: { create: createPassword('wund') },
-			roles: { connect: [{ name: 'kundendienst' }] },
-			bereich: { connect: { id: 'cm2gdeb51000009l79df33l02' } },
-		},
-	})
+	for (let i = 1; i <= 8; i++) {
+		await prisma.user.create({
+			select: { id: true },
+			data: {
+				email: `wnd${i}@example.org`,
+				username: `wnd${i}`,
+				name: `Wundversorgung ${i}`,
+				kuerzel: `WND${i}`,
+				password: { create: createPassword(`wnd${i}`) },
+				roles: { connect: [{ name: 'kundendienst' }] },
+				bereich: { connect: { id: BereichsIds[BereichEnum.Wund] } },
+				defaultTags: { connect: { id: `cm2gdeb51000009l79df43l2${i}` } },
+			},
+		})
+	}
 
 	await prisma.user.create({
 		select: { id: true },

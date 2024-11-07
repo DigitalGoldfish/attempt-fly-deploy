@@ -52,6 +52,7 @@ export const IncomingFormSchema = z.object({
 	tags: z.array(z.string()).optional(),
 	neukunde: z.string(),
 	kundennr: z.string().optional(),
+	svtraeger: z.string().optional(),
 })
 const resolver = zodResolver(IncomingFormSchema)
 
@@ -183,6 +184,7 @@ export default function BestellungsForm({
 				kundennr: data.kundennr || '',
 				neukunde: !data.kundennr ? (data.neuanlage ? 'JA' : 'NEIN') : '',
 				attribute: attributes,
+				svtraeger: '',
 				tags: data.tags ? data.tags.map((tag) => tag.id) : [],
 				// TODO:
 				// tags: [],
@@ -226,10 +228,21 @@ export default function BestellungsForm({
 								<DeletedBlock setIsDeleted={setIsDeleted} />
 							) : (
 								<>
-									<FaxdienstBlock data={data} tags={tags} bereiche={bereiche} />
 									{!['Faxdienst', 'Forwarded', 'Geloescht'].includes(
 										data.status,
-									) && <KundendienstBlock data={data} />}
+									) ? (
+										<KundendienstBlock
+											data={data}
+											tags={tags}
+											bereiche={bereiche}
+										/>
+									) : (
+										<FaxdienstBlock
+											data={data}
+											tags={tags}
+											bereiche={bereiche}
+										/>
+									)}
 								</>
 							)}
 						</div>
@@ -237,6 +250,13 @@ export default function BestellungsForm({
 							<Button variant={'pcblue'} type={'submit'}>
 								Speichern
 							</Button>
+							{data.status === 'Kundendienst' && (
+								<div className="flex justify-end">
+									<Button variant="secondary" size="sm" type="button">
+										Zurücklegen
+									</Button>
+								</div>
+							)}
 							{!isDeleted && (
 								<Button
 									variant={'default'}
@@ -246,7 +266,6 @@ export default function BestellungsForm({
 									Drucken
 								</Button>
 							)}
-							<ClientOnly fallback={null}>{() => <HistoryDrawer />}</ClientOnly>
 							<ReportIssue id={data.id} />
 							<div className="flex-1"></div>
 							{!isDeleted && (

@@ -48,30 +48,10 @@ export default function Dashboard() {
 				>
 					Faxdienst
 				</DashboardTile>
-				<DashboardTile
-					to={'/stoma'}
-					color="blue"
-					count={
-						counts.find(
-							(count) =>
-								count.status === 'Kundendienst' && count.bereich === 'StoMa',
-						)?.count || 0
-					}
-				>
-					StoMa/INKO
+				<DashboardTile to={'/liste'} color="teal">
+					Liste
 				</DashboardTile>
-				<DashboardTile
-					to={'/wundversorgung'}
-					color="blue"
-					count={
-						counts.find(
-							(count) =>
-								count.status === 'Kundendienst' && count.bereich === 'Wund',
-						)?.count || 0
-					}
-				>
-					Wundvers.
-				</DashboardTile>
+				<div></div>
 				<div className="col-span-2 row-span-2 flex h-full flex-col gap-6 rounded-2xl border border-pcblue-600 p-4">
 					<h2 className="bold text-h4">Schnellsuche</h2>
 					<div className="flex items-center gap-8">
@@ -98,8 +78,41 @@ export default function Dashboard() {
 						Suchen
 					</Button>
 				</div>
-				<DashboardTile to={'/liste'} color="teal">
-					Liste
+				<DashboardTile
+					to={'/stoma'}
+					color="blue"
+					count={
+						counts.find(
+							(count) =>
+								count.status === 'Kundendienst' && count.bereich === 'Stoma',
+						)?.count || 0
+					}
+				>
+					Stoma
+				</DashboardTile>
+				<DashboardTile
+					to={'/inko'}
+					color="blue"
+					count={
+						counts.find(
+							(count) =>
+								count.status === 'Kundendienst' && count.bereich === 'Inko',
+						)?.count || 0
+					}
+				>
+					Inko
+				</DashboardTile>
+				<DashboardTile
+					to={'/wundversorgung'}
+					color="blue"
+					count={
+						counts.find(
+							(count) =>
+								count.status === 'Kundendienst' && count.bereich === 'Wund',
+						)?.count || 0
+					}
+				>
+					Wundvers.
 				</DashboardTile>
 				<DashboardTile to={'/zuordnung'} color="teal">
 					Zuordnung
