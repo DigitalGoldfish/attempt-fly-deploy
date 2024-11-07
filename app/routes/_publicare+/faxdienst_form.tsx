@@ -158,7 +158,7 @@ export async function action({ request }: ActionFunctionArgs) {
 				neuanlage: data?.neukunde === 'JA',
 				kundennr: data?.kundennr,
 				documents: {
-					connect: data.documentIds.map((docId) => ({ id: docId })),
+					connect: data.documentIds?.map((docId) => ({ id: docId })),
 				},
 				tags:
 					tags.length > 0
