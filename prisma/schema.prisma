@@ -233,15 +233,27 @@ model Incoming {
   formSubmission FormSubmission? @relation(fields: [formSubmissionId], references: [id])
 
   // faxdienst
-  type           String  @default("Unknown")
-  bereich        String?
-  mitarbeiter    String?
-  kundennr       String?
-  neuanlage      Boolean @default(false)
-  kvnotwendig    Boolean @default(false)
-  ohneverordnung Boolean @default(false)
+  type        String  @default("Unknown")
+  bereich     String?
+  mitarbeiter String?
+  kundennr    String?
+  neuanlage   Boolean @default(false)
 
   tags Tag[]
+
+  // attribute
+  ohneverordnung Boolean   @default(false)
+  kvuploaded     Boolean   @default(false)
+  kvsent         Boolean   @default(false)
+  kvreceived     Boolean   @default(false)
+  inquiry        Boolean   @default(false)
+  produktanlage  Boolean   @default(false)
+  wiedervorlage  DateTime?
+
+  kvbestaetigung   Incoming? @relation("kvbestaetigung", fields: [kvbestaetiungsId], references: [id])
+  kvbestaetiungsId String?   @unique
+  verordnung       Incoming? @relation("verordnung", fields: [kvbestaetiungsId], references: [id])
+  verordnungsId    String?   @unique
 
   // kundendienst
   documents Document[]
@@ -256,10 +268,12 @@ model Incoming {
   printed   Boolean   @default(false)
   printedAt DateTime?
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  mailId           String?
-  formSubmissionId String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  mailId              String?
+  formSubmissionId    String?
+  verordnung_fuer     Incoming? @relation("verordnung")
+  kvbestaetigung_fuer Incoming? @relation("kvbestaetigung")
 }
 
 model Document {

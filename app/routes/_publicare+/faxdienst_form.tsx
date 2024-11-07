@@ -95,7 +95,6 @@ export async function action({ request }: ActionFunctionArgs) {
 		console.log('errors', errors)
 		return json({ errors, defaultValues })
 	}
-	console.log('Data', data)
 
 	const incoming = await prisma.incoming.findUniqueOrThrow({
 		where: { id: data.id },
@@ -116,13 +115,13 @@ export async function action({ request }: ActionFunctionArgs) {
 					tags.length > 0
 						? { connect: tags.map((tagId) => ({ id: tagId })) }
 						: undefined,
-				// TODO: Mitarbeiter, Attribute
-
 				status: 'Kundendienst',
 			},
 		})
-		console.log('persistet')
 	}
+
+	// TODO: forwarding
+	// TODO: deletion
 
 	return {
 		status: 'error',
