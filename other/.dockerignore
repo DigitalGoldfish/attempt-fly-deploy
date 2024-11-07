@@ -7,3 +7,7 @@
 /.cache
 /public/build
 /build
+
+# demo data
+/Publicare-EML
+/data

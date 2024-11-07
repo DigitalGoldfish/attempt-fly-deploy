@@ -45,7 +45,9 @@ export async function pdfToImages(
 			)
 
 			await fs.writeFile(imagePath, image)
-			imagePaths.push(`../${imagePath}`)
+			imagePaths.push(
+				`/resources/pdfpreview/${uniqueIdentifier}-page${counter}.png`,
+			)
 			counter++
 		}
 	} catch (error) {

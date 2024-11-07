@@ -1,4 +1,8 @@
-import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
+import {
+	json,
+	type LoaderFunctionArgs,
+	type MetaFunction,
+} from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { cva } from 'class-variance-authority'
 import { useState } from 'react'
@@ -48,10 +52,12 @@ export default function Dashboard() {
 				>
 					Faxdienst
 				</DashboardTile>
+				<DashboardTile to={'/status'} color="green">
+					Status
+				</DashboardTile>
 				<DashboardTile to={'/liste'} color="teal">
 					Liste
 				</DashboardTile>
-				<div></div>
 				<div className="col-span-2 row-span-2 flex h-full flex-col gap-6 rounded-2xl border border-pcblue-600 p-4">
 					<h2 className="bold text-h4">Schnellsuche</h2>
 					<div className="flex items-center gap-8">
@@ -119,9 +125,6 @@ export default function Dashboard() {
 				</DashboardTile>
 				<DashboardTile to={'/admin'} color="teal">
 					Admin
-				</DashboardTile>
-				<DashboardTile to={'/status'} color="green">
-					Status
 				</DashboardTile>
 			</div>
 		</DefaultLayout>

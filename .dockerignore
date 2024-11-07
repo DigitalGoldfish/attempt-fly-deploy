@@ -24,3 +24,6 @@ other\cache.db
 **\*.local.*
 fly.toml
 
+# demo data
+/Publicare-EML
+/data
