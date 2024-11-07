@@ -1,8 +1,8 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { invariantResponse } from '@epic-web/invariant'
 import { type LoaderFunctionArgs } from '@remix-run/node'
 import { prisma } from '#app/utils/db.server.ts'
-import fs from 'node:fs'
-import path from 'node:path'
 
 export async function loader({ params }: LoaderFunctionArgs) {
 	invariantResponse(params.id, 'ID is required', { status: 400 })

@@ -1,9 +1,9 @@
 import { Link, Outlet } from '@remix-run/react'
-import logo from '#app/assets/logo-publicare.png'
-import React from 'react'
-import { UserDropdown } from '#app/root.tsx'
-import { Button } from '#app/components/ui/button.tsx'
 import { List } from 'lucide-react'
+import React from 'react'
+import logo from '#app/assets/logo-publicare.png'
+import { Button } from '#app/components/ui/button.tsx'
+import { UserDropdown } from '#app/root.tsx'
 
 export function DefaultLayout({
 	children,

@@ -1,7 +1,7 @@
-import { cva } from 'class-variance-authority'
 import { Link } from '@remix-run/react'
-import { cn } from '#app/utils/misc.tsx'
+import { cva } from 'class-variance-authority'
 import { clsx } from 'clsx'
+import { cn } from '#app/utils/misc.tsx'
 
 const tileVariants = cva(
 	'relative grid aspect-[2/1] w-full rounded-2xl p-4 text-white transition',

@@ -1,3 +1,23 @@
+
+import { type Incoming } from '@prisma/client'
+import { type SerializeFrom } from '@remix-run/node'
+import {
+	type Column,
+	type ColumnFiltersState,
+	createColumnHelper,
+	flexRender,
+	getCoreRowModel,
+	getFilteredRowModel,
+	useReactTable,
+} from '@tanstack/react-table'
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
+import { FilterWidgetText } from '#app/components/liste/filter-widget-text.tsx'
+import {
+	FilterWidget,
+	type Selectable,
+} from '#app/components/liste/filter-widget.tsx'
+import { Badge } from '#app/components/ui/badge.tsx'
 import {
 	Table,
 	TableRow,
@@ -6,26 +26,6 @@ import {
 	TableHead,
 	TableCell,
 } from '../../components/ui/table.tsx'
-import { Badge } from '#app/components/ui/badge.tsx'
-import { useNavigate } from 'react-router'
-
-import {
-	Column,
-	ColumnFiltersState,
-	createColumnHelper,
-	flexRender,
-	getCoreRowModel,
-	getFilteredRowModel,
-	useReactTable,
-} from '@tanstack/react-table'
-import { useState } from 'react'
-import { Incoming } from '@prisma/client'
-import { SerializeFrom } from '@remix-run/node'
-import {
-	FilterWidget,
-	Selectable,
-} from '#app/components/liste/filter-widget.tsx'
-import { FilterWidgetText } from '#app/components/liste/filter-widget-text.tsx'
 
 const columnHelper = createColumnHelper<SerializeFrom<Incoming>>()
 

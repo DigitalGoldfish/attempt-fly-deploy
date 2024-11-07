@@ -1,5 +1,5 @@
+import { type Prisma } from '.prisma/client'
 import { prisma } from '#app/utils/db.server.ts'
-import { Prisma } from '.prisma/client'
 
 export async function nextIncoming(where: Prisma.IncomingWhereInput) {
 	return await prisma.incoming.findFirst({

@@ -1,10 +1,10 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
 import { cn } from '#app/utils/misc.tsx'
 
 import { Icon } from './icon.tsx'
-import { cva, VariantProps } from 'class-variance-authority'
 
 const Dialog = DialogPrimitive.Root
 

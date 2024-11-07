@@ -1,15 +1,15 @@
-import { json, LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
+import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
-import { DefaultLayout } from '#app/components/layout/default.tsx'
-import { Visualisation } from '#app/components/blocks/visualisation.tsx'
-import { Input } from '#app/components/ui/input.tsx'
-import { Button } from '#app/components/ui/button.tsx'
-import { requireUserId } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { cva } from 'class-variance-authority'
-import { DashboardTile } from '#app/components/dashboard-tile.js'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { Visualisation } from '#app/components/blocks/visualisation.tsx'
+import { DashboardTile } from '#app/components/dashboard-tile.js'
+import { DefaultLayout } from '#app/components/layout/default.tsx'
+import { Button } from '#app/components/ui/button.tsx'
+import { Input } from '#app/components/ui/input.tsx'
+import { requireUserId } from '#app/utils/auth.server.ts'
+import { prisma } from '#app/utils/db.server.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Dashboard' }]
 

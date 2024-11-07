@@ -1,8 +1,8 @@
+import { useSearchParams } from '@remix-run/react'
 import { ColumnFiltersState } from '@tanstack/react-table'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { FilterFancyBox } from '#app/components/ui/filter-fancy-box.tsx'
-import { useSearchParams } from '@remix-run/react'
 import { z } from 'zod'
+import { FilterFancyBox } from '#app/components/ui/filter-fancy-box.tsx'
 
 const FilterParamSchema = z
 	.string()

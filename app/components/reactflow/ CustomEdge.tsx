@@ -1,4 +1,3 @@
-import React, { type FC } from 'react'
 import {
 	getBezierPath,
 	getSmoothStepPath,
@@ -7,6 +6,7 @@ import {
 	type EdgeProps,
 	type Edge,
 } from '@xyflow/react'
+import React, { type FC } from 'react'
 
 // this is a little helper component to render the actual edge label
 function EdgeLabel({ transform, label }: { transform: string; label: string }) {

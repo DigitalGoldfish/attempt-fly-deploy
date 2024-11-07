@@ -1,4 +1,6 @@
+import { useFetcher } from '@remix-run/react'
 import { useReducer, useState } from 'react'
+import { toast as showToast } from 'sonner'
 import DocumentEditorContext, {
 	useDocumentEditorContext,
 } from '#app/components/document-editor/context.tsx'
@@ -8,13 +10,13 @@ import {
 	type EditorDocument,
 } from '#app/components/document-editor/types.ts'
 import { Button } from '#app/components/ui/button.tsx'
-import { toast as showToast } from 'sonner'
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from '#app/components/ui/dialog.tsx'
+import { createPdfFromImages } from '#app/utils/pdf-processor.ts'
 import { DropZone } from './drop-zones'
 import { PreviewModal } from './preview-modal'
 import {
@@ -23,8 +25,6 @@ import {
 	prepareDocumentsForModifier,
 	reducer,
 } from './reducer'
-import { createPdfFromImages } from '#app/utils/pdf-processor.ts'
-import { useFetcher } from '@remix-run/react'
 
 interface DocumentModifierProps {
 	data: EditorDocument[]

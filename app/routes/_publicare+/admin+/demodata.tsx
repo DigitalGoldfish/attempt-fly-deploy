@@ -17,7 +17,7 @@ import {
 	createRandom,
 	importEmails,
 	processEmailZip,
-	ProcessResult,
+	type ProcessResult,
 	processSpecialData,
 } from '#app/utils/seed.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'

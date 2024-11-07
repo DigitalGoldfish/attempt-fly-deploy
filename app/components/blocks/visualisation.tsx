@@ -1,10 +1,10 @@
-import { ReactFlow, Position, Node } from '@xyflow/react'
+import { ReactFlow, Position, type Node } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import { Forward, Trash2 } from 'lucide-react'
 import CustomEdge from '#app/components/reactflow/ CustomEdge.tsx'
 import { NumberNode } from '#app/components/reactflow/CustomNode.tsx'
-import { Forward, Trash2 } from 'lucide-react'
 import { StomaInkoNode } from '#app/components/reactflow/StomaInkoNode.tsx'
-import { TagCount } from '#app/routes/_publicare+/status.tsx'
+import { type TagCount } from '#app/routes/_publicare+/status.tsx'
 import { Tag } from '@prisma/client'
 interface Count {
 	count: number

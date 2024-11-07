@@ -1,10 +1,10 @@
-import { Bereich, Incoming, Tag } from '@prisma/client'
+import { type Bereich, type Incoming, type Tag } from '@prisma/client'
 import { clsx } from 'clsx'
-import { Button } from '#app/components/ui/button.tsx'
 import { useController, useFormContext, useWatch } from 'react-hook-form'
-import { Selectable } from '#app/components/liste/filter-widget.tsx'
 import { TextField } from '#app/components/forms/text-field.tsx'
 import { ErrorList } from '#app/components/forms.tsx'
+import { type Selectable } from '#app/components/liste/filter-widget.tsx'
+import { Button } from '#app/components/ui/button.tsx'
 
 export function SelectButtons({
 	fieldName,

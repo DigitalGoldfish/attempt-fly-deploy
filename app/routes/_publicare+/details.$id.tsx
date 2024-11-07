@@ -1,16 +1,16 @@
 import {
-	ActionFunctionArgs,
-	LoaderFunctionArgs,
+	type ActionFunctionArgs,
+	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
 import { json, Link, Outlet, useLoaderData } from '@remix-run/react'
-import { DefaultLayout } from '#app/components/layout/default.tsx'
-import { requireUserId } from '#app/utils/auth.server.ts'
-import BestellungsForm from '#app/routes/_publicare+/bestellung_form.tsx'
-import { Button } from '#app/components/ui/button.tsx'
 import { List } from 'lucide-react'
-import { prisma } from '#app/utils/db.server.ts'
+import { DefaultLayout } from '#app/components/layout/default.tsx'
+import { Button } from '#app/components/ui/button.tsx'
 import { nextIncoming } from '#app/db/incoming.tsx'
+import BestellungsForm from '#app/routes/_publicare+/bestellung_form.tsx'
+import { requireUserId } from '#app/utils/auth.server.ts'
+import { prisma } from '#app/utils/db.server.ts'
 
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellung Details' },

@@ -1,11 +1,11 @@
-import { LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
-import { DefaultLayout } from '#app/components/layout/default.tsx'
-import { requireUserId } from '#app/utils/auth.server.ts'
-import { Button } from '#app/components/ui/button.tsx'
+import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
 import { ArrowBigLeft, Plus } from 'lucide-react'
 import React from 'react'
+import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { AdminTagsTable } from '#app/components/tables/admin-tags.tsx'
+import { Button } from '#app/components/ui/button.tsx'
+import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare' }]

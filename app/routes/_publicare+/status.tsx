@@ -1,11 +1,11 @@
-import { json, LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
+import { Bereich, Tag } from '@prisma/client'
+import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
-import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Visualisation } from '#app/components/blocks/visualisation.tsx'
+import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { useRevalidateOnInterval } from '#app/utils/hooks/useRevalidate.ts'
-import { Bereich, Tag } from '@prisma/client'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Dashboard' }]
 export type TagCount = {

@@ -1,5 +1,5 @@
-import { EditorDocument } from '#app/components/document-editor/types.ts'
 import { degrees, PDFDocument } from 'pdf-lib'
+import { type EditorDocument } from '#app/components/document-editor/types.ts'
 
 export async function initializePdfJsLib() {
 	console.log('initialize pdf js lib')

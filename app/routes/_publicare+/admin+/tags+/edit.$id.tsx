@@ -6,8 +6,8 @@ import {
 	DialogHeader,
 	DialogContent,
 } from '#app/components/ui/dialog.tsx'
-import { prisma } from '#app/utils/db.server.ts'
 import TagForm from '#app/routes/_publicare+/admin+/tags+/tag_form.tsx'
+import { prisma } from '#app/utils/db.server.ts'
 
 export async function loader({ params }: LoaderFunctionArgs) {
 	const { id } = params

@@ -1,8 +1,8 @@
-import { simpleParser, AddressObject } from 'mailparser'
-import JSZip from 'jszip'
+import { type Stats } from 'fs'
 import fs from 'fs/promises'
 import path from 'path'
-import { Stats } from 'fs'
+import JSZip from 'jszip'
+import { simpleParser, type AddressObject } from 'mailparser'
 
 export interface ParsedEmail {
 	subject: string

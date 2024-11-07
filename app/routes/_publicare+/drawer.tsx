@@ -1,3 +1,4 @@
+import { Button } from '#app/components/ui/button.tsx'
 import {
 	Drawer,
 	DrawerClose,
@@ -8,7 +9,6 @@ import {
 	DrawerTitle,
 	DrawerTrigger,
 } from '#app/components/ui/drawer.tsx'
-import { Button } from '#app/components/ui/button.tsx'
 
 export function HistoryDrawer() {
 	return (

@@ -1,4 +1,4 @@
-import { json, TypedResponse } from '@remix-run/node'
+import { json, type TypedResponse } from '@remix-run/node'
 import { prisma } from '#app/utils/db.server.ts'
 
 export async function loader(): Promise<

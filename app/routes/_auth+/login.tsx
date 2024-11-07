@@ -22,8 +22,8 @@ import {
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
 import { PasswordSchema, UsernameSchema } from '#app/utils/user-validation.ts'
-import { handleNewSession } from './login.server.ts'
 import logo from '../../assets/logo-publicare.png'
+import { handleNewSession } from './login.server.ts'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
