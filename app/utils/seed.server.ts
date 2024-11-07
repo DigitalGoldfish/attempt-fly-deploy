@@ -669,31 +669,6 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 						attachment.contentType = 'application/pdf'
 						previewImages = await pdfToImages(processedContent, 2)
 						if (previewImages && previewImages.length > 0) {
-							// Process preview images
-							/* const processedPreviews = await Promise.all(
-								previewImages.map(async (preview) => {
-									try {
-										const previewBuffer = Buffer.from(preview, 'base64')
-										const processedPreview = await processImage(previewBuffer)
-										if (processedPreview === null) {
-											console.log(
-												'Preview image rejected - height less than 250px',
-											)
-											return null
-										}
-										return processedPreview.toString('base64')
-									} catch (error) {
-										console.error('Error processing preview image:', error)
-										return null
-									}
-								}),
-							) */
-
-							// Filter out null values and update previewImages
-							/* previewImages = processedPreviews.filter(
-								(preview): preview is string => preview !== null,
-							)  */
-
 							if (previewImages.length > 0) {
 								results.previewsGenerated++
 								console.log(

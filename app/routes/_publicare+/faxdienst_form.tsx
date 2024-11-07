@@ -157,9 +157,9 @@ export async function action({ request }: ActionFunctionArgs) {
 				bereich: data?.bereich,
 				neuanlage: data?.neukunde === 'JA',
 				kundennr: data?.kundennr,
-                /* documents: {
-                    connect: data.documentIds.map((docId) => ({ id: docId })),
-                }, */
+				documents: {
+					connect: data.documentIds.map((docId) => ({ id: docId })),
+				},
 				tags:
 					tags.length > 0
 						? { connect: tags.map((tagId) => ({ id: tagId })) }
