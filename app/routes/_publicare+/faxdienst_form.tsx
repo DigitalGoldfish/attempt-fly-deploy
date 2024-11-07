@@ -33,6 +33,8 @@ export type IncomingFormType = Incoming & {
 					fileName: string
 					size: number
 					previewImages: string | null
+					height: number | null
+					width: number | null
 				}[]
 		  })
 		| null
@@ -46,6 +48,8 @@ export type IncomingFormType = Incoming & {
 				fileName: string
 				size: number
 				previewImages: string | null
+				height: number | null
+				width: number | null
 		  }[]
 		| null
 		| undefined
@@ -56,6 +60,7 @@ const FaxdienstAttributeSchema = z.object({
 	type: z.string(),
 	bereich: z.string().min(1, 'Bereich muss angegeben werden'),
 	tags: z.array(z.string()).optional(),
+    documentIds: z.array(z.string()),
 })
 
 const NewCustomerSchema = z.object({
@@ -100,7 +105,6 @@ export async function action({ request }: ActionFunctionArgs) {
 	const incoming = await prisma.incoming.findUniqueOrThrow({
 		where: { id: data.id },
 	})
-
 	if (incoming.status === 'Faxdienst') {
 		const { tags = [] } = data
 		await prisma.incoming.update({
@@ -112,6 +116,9 @@ export async function action({ request }: ActionFunctionArgs) {
 				bereich: data?.bereich,
 				neuanlage: data?.neukunde === 'JA',
 				kundennr: data?.kundennr,
+                /* documents: {
+                    connect: data.documentIds.map((docId) => ({ id: docId })),
+                }, */
 				tags:
 					tags.length > 0
 						? { connect: tags.map((tagId) => ({ id: tagId })) }
@@ -129,7 +136,17 @@ export async function action({ request }: ActionFunctionArgs) {
 		message: 'Invalid state',
 	}
 }
-
+function getAttachmentIds(data: IncomingFormType) {
+	return (
+		data.mail?.attachments
+			.filter(
+				(attachment) =>
+					(attachment.height && attachment.height > 250) ||
+					attachment.fileName.endsWith('.pdf'),
+			)
+			.map((attachment) => attachment.id) || []
+	)
+}
 export function FaxdienstForm({
 	data,
 	tags,
@@ -191,6 +208,7 @@ export function FaxdienstForm({
 				kundennr: data.kundennr || '',
 				neukunde: !data.kundennr ? (data.neuanlage ? 'JA' : 'NEIN') : undefined,
 				tags: data.tags ? data.tags.map((tag) => tag.id) : [],
+                documentIds: getAttachmentIds(data),
 			})
 			setIsDeleted(false)
 		}

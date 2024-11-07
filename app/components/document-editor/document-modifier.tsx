@@ -36,6 +36,15 @@ interface DocumentModifierProps {
 interface FetcherResponse {
 	message?: string
 }
+function removeIgnored(documents: EditorDocument[]) {
+	const res = documents
+		.map((document) => ({
+			...document,
+			pages: document.pages.filter((page) => !page.ignored),
+		}))
+		.filter((document) => document.pages.length > 0)
+	return res
+}
 export default function DocumentModifier({
 	data,
 	onSave,
@@ -59,7 +68,7 @@ export default function DocumentModifier({
 	}
 	const handlePDF = async () => {
 		try {
-			const docs = filterEmptyDocuments(documents)
+			const docs = removeIgnored(documents)
 			if (docs.length === 0) {
 				throw new Error('No documents to process')
 			}
@@ -111,7 +120,7 @@ export default function DocumentModifier({
 						</Button>
 					</div>
 				</DialogHeader>
-				<div className="flex max-w-[1600px] flex-grow">
+				<div className="mx-auto flex max-w-[1800px] flex-grow">
 					<DocumentEditorContext.Provider
 						value={{ state: state, dispatch: dispatch, setModal }}
 					>
