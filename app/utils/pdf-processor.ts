@@ -1,8 +1,5 @@
 import { EditorDocument } from '#app/components/document-editor/types.ts'
 import { degrees, PDFDocument } from 'pdf-lib'
-import https from 'https'
-import path from 'path'
-import fs from 'fs'
 
 export async function initializePdfJsLib() {
 	console.log('initialize pdf js lib')
@@ -68,12 +65,10 @@ export async function convertImageToPdf(imageUrl: string): Promise<Uint8Array> {
 
 	return await pdfDoc.save()
 }
-
 export async function createPdfFromImages(data: EditorDocument | undefined) {
 	if (!data || !data.pages.length) {
 		return
 	}
-
 	const pdfDoc = await PDFDocument.create()
 
 	for (const pageData of data.pages) {
@@ -97,7 +92,6 @@ export async function createPdfFromImages(data: EditorDocument | undefined) {
 
 			const page = pdfDoc.addPage([pdfImage.width, pdfImage.height])
 
-			// Apply rotation
 			if (pageData.rotation) {
 				page.setRotation(degrees(pageData.rotation))
 			}
@@ -116,7 +110,6 @@ export async function createPdfFromImages(data: EditorDocument | undefined) {
 			)
 			const [copiedPage] = await pdfDoc.copyPages(embeddedPdf, [pageIndex])
 
-			// Apply rotation
 			if (pageData.rotation) {
 				copiedPage?.setRotation(degrees(pageData.rotation))
 			}
