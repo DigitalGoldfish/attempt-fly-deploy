@@ -156,18 +156,17 @@ export default function BestellungsForm({
 		setIsStamping(true)
 		try {
 			if (data) {
-				const { mail } = data
-				if (mail) {
-					const { attachments } = mail
-					const pdfAttachment = attachments.find((attachment) =>
-						attachment.contentType.includes('pdf'),
-					)
-
-					if (pdfAttachment) {
-						await stampAndPrint(
-							`https://publicare.prototype.mangomedia.at/resources/mail-attachment/${pdfAttachment.id}`,
-						)
-					}
+				const { mail, documents } = data
+				const mailAttachment = mail?.attachments.map(
+					(attachment) => attachment.id,
+				)
+				const incommingDoc = documents?.map((attachement) => attachement.id)
+				const toStamp =
+					mailAttachment && incommingDoc && incommingDoc?.length > 0
+						? incommingDoc
+						: mailAttachment
+				if (toStamp) {
+					await stampAndPrint(toStamp)
 				}
 			}
 		} catch (error) {
