@@ -665,7 +665,7 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 
 						if (previewImages && previewImages.length > 0) {
 							// Process preview images
-							const processedPreviews = await Promise.all(
+							/* const processedPreviews = await Promise.all(
 								previewImages.map(async (preview) => {
 									try {
 										const previewBuffer = Buffer.from(preview, 'base64')
@@ -682,12 +682,12 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 										return null
 									}
 								}),
-							)
+							) */
 
 							// Filter out null values and update previewImages
-							previewImages = processedPreviews.filter(
+							/* previewImages = processedPreviews.filter(
 								(preview): preview is string => preview !== null,
-							)
+							)  */
 
 							if (previewImages.length > 0) {
 								results.previewsGenerated++
