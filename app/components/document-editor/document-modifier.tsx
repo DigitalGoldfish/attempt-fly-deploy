@@ -80,6 +80,7 @@ export default function DocumentModifier({
 			fetcher.submit(formData, {
 				method: 'POST',
 				encType: 'multipart/form-data',
+				action: '/process_documents',
 			})
 		} catch (err) {
 			console.error('Document processing error:', err)

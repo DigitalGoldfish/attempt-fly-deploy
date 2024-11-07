@@ -4,6 +4,9 @@ import { prisma } from '#app/utils/db.server.ts'
 export async function nextIncoming(where: Prisma.IncomingWhereInput) {
 	return await prisma.incoming.findFirst({
 		where,
+		orderBy: {
+			createdAt: 'asc',
+		},
 		include: {
 			mail: {
 				include: {

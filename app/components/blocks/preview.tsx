@@ -33,42 +33,82 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 	}
 
 	const documents: EditorDocument[] = []
-	attachments.forEach((attachment) => {
-		const document = {
-			name: attachment.fileName,
-			pages: [] as EditorPage[],
-		}
+	if (docs && docs.length > 0) {
+		console.log('docs', docs)
+		docs.forEach((attachment) => {
+			const document = {
+				name: attachment.fileName,
+				pages: [] as EditorPage[],
+			}
 
-		if (attachment.contentType.includes('pdf')) {
-			const previewImages = attachment.previewImages
-				? (JSON.parse(attachment.previewImages) as string[])
-				: ([] as string[])
+			if (attachment.contentType.includes('pdf')) {
+				const previewImages = attachment.previewImages
+					? (JSON.parse(attachment.previewImages) as string[])
+					: ([] as string[])
 
-			previewImages.forEach((previewImage, pageIndex) => {
+				previewImages.forEach((previewImage, pageIndex) => {
+					document.pages.push({
+						fileName: attachment.fileName,
+						imageUrl: previewImage,
+						ignored: false,
+						originalDocumentId: attachment.id,
+						rotation: 0,
+						originalDocumentType: 'pdf',
+						originalDocumentPageNumber: pageIndex,
+					})
+				})
+			} else {
 				document.pages.push({
 					fileName: attachment.fileName,
-					imageUrl: previewImage,
+					imageUrl: `/resources/mail-attachment/${attachment.id}`,
 					ignored: false,
 					originalDocumentId: attachment.id,
 					rotation: 0,
-					originalDocumentType: 'pdf',
-					originalDocumentPageNumber: pageIndex,
+					originalDocumentType: 'image',
+					originalDocumentPageNumber: 0,
 				})
-			})
-		} else {
-			document.pages.push({
-				fileName: attachment.fileName,
-				imageUrl: `/resources/mail-attachment/${attachment.id}`,
-				ignored: false,
-				originalDocumentId: attachment.id,
-				rotation: 0,
-				originalDocumentType: 'image',
-				originalDocumentPageNumber: 0,
-			})
-		}
+			}
 
-		documents.push(document)
-	})
+			documents.push(document)
+		})
+	} else {
+		attachments.forEach((attachment) => {
+			const document = {
+				name: attachment.fileName,
+				pages: [] as EditorPage[],
+			}
+
+			if (attachment.contentType.includes('pdf')) {
+				const previewImages = attachment.previewImages
+					? (JSON.parse(attachment.previewImages) as string[])
+					: ([] as string[])
+
+				previewImages.forEach((previewImage, pageIndex) => {
+					document.pages.push({
+						fileName: attachment.fileName,
+						imageUrl: previewImage,
+						ignored: false,
+						originalDocumentId: attachment.id,
+						rotation: 0,
+						originalDocumentType: 'pdf',
+						originalDocumentPageNumber: pageIndex,
+					})
+				})
+			} else {
+				document.pages.push({
+					fileName: attachment.fileName,
+					imageUrl: `/resources/mail-attachment/${attachment.id}`,
+					ignored: false,
+					originalDocumentId: attachment.id,
+					rotation: 0,
+					originalDocumentType: 'image',
+					originalDocumentPageNumber: 0,
+				})
+			}
+
+			documents.push(document)
+		})
+	}
 
 	const selectedAttachment = attachments[displayedFile]
 	const displayAttachment = docs && docs.length > 0 ? docs : attachments
