@@ -40,6 +40,16 @@ export type IncomingFormType = Incoming & {
 		| undefined
 	tags?: Tag[] | null | undefined
 	formSubmission?: FormSubmission | null
+	documents?:
+		| {
+				id: string
+				contentType: string
+				fileName: string
+				size: number
+				previewImages: string | null
+		  }[]
+		| null
+		| undefined
 }
 
 export const IncomingFormSchema = z.object({

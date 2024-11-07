@@ -20,6 +20,15 @@ export async function nextIncoming(where: Prisma.IncomingWhereInput) {
 			},
 			tags: true,
 			formSubmission: true,
+			documents: {
+				select: {
+					id: true,
+					fileName: true,
+					contentType: true,
+					size: true,
+					previewImages: true,
+				},
+			},
 		},
 		skip: 0,
 	})
