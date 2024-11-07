@@ -3,12 +3,8 @@ import {
 	type LoaderFunctionArgs,
 	type MetaFunction,
 } from '@remix-run/node'
-import { json, Link, Outlet, useLoaderData } from '@remix-run/react'
-import { List } from 'lucide-react'
-import { DefaultLayout } from '#app/components/layout/default.tsx'
-import { Button } from '#app/components/ui/button.tsx'
+import { json } from '@remix-run/react'
 import { nextIncoming } from '#app/db/incoming.tsx'
-import FaxdienstForm from '#app/routes/_publicare+/faxdienst_form.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
