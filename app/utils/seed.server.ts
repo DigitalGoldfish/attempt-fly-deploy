@@ -15,6 +15,7 @@ import {
 	restoreUsedEMLFiles,
 } from './email-reader'
 import path from 'path'
+import sharp from 'sharp'
 
 class RandomPicker {
 	prefixSums: number[]
@@ -580,11 +581,11 @@ export async function createIncomingFax(forceFaxdienst: boolean) {
 			data.kundennr = faker.finance.accountNumber()
 		}
 	}
-
 	await prisma.incoming.create({
 		data,
 	})
 }
+
 export async function importMailData(parsedEmails: ParsedEmail[]) {
 	const results = {
 		success: 0,
@@ -592,6 +593,17 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 		errors: [] as string[],
 		pdfProcessed: 0,
 		previewsGenerated: 0,
+		rejectedImages: 0,
+	}
+
+	async function processImage(content: Buffer): Promise<Buffer | null> {
+		const image = sharp(content)
+		const metadata = await image.metadata()
+		if (!metadata.height || metadata.height < 250 || !metadata.width) {
+			return null
+		}
+
+		return await image.rotate().toBuffer()
 	}
 
 	for (const emailData of parsedEmails) {
@@ -606,12 +618,34 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 
 				let previewImages: string[] = []
 				const isPdf = attachment.filename?.toLowerCase().endsWith('.pdf')
+				let processedContent = attachment.content
+
+				if (attachment.contentType?.startsWith('image/')) {
+					try {
+						const processedImage = await processImage(attachment.content)
+						if (processedImage === null) {
+							console.log(
+								`Image rejected - height less than 250px: ${attachment.filename}`,
+							)
+							results.rejectedImages++
+							continue
+						}
+						processedContent = processedImage
+						console.log('Image processed successfully')
+					} catch (error) {
+						console.error('Error processing image:', error)
+						results.errors.push(
+							`Image processing failed for ${attachment.filename}`,
+						)
+						continue
+					}
+				}
 
 				if (isPdf) {
 					results.pdfProcessed++
 					console.log(`Starting PDF processing for: ${attachment.filename}`)
 
-					if (!attachment.content || attachment.content.length === 0) {
+					if (!processedContent || processedContent.length === 0) {
 						console.error('PDF content is empty or invalid')
 						results.errors.push(`Empty PDF content for ${attachment.filename}`)
 						continue
@@ -620,13 +654,44 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 					try {
 						await new Promise((resolve) => setTimeout(resolve, 100))
 						attachment.contentType = 'application/pdf'
-						previewImages = await pdfToImages(attachment.content, 2)
+						previewImages = await pdfToImages(processedContent, 2)
 
 						if (previewImages && previewImages.length > 0) {
-							results.previewsGenerated++
-							console.log(
-								`✓ Successfully generated ${previewImages.length} preview images for PDF: ${attachment.filename}`,
+							// Process preview images
+							const processedPreviews = await Promise.all(
+								previewImages.map(async (preview) => {
+									try {
+										const previewBuffer = Buffer.from(preview, 'base64')
+										const processedPreview = await processImage(previewBuffer)
+										if (processedPreview === null) {
+											console.log(
+												'Preview image rejected - height less than 250px',
+											)
+											return null
+										}
+										return processedPreview.toString('base64')
+									} catch (error) {
+										console.error('Error processing preview image:', error)
+										return null
+									}
+								}),
 							)
+
+							// Filter out null values and update previewImages
+							previewImages = processedPreviews.filter(
+								(preview): preview is string => preview !== null,
+							)
+
+							if (previewImages.length > 0) {
+								results.previewsGenerated++
+								console.log(
+									`✓ Successfully generated ${previewImages.length} preview images for PDF: ${attachment.filename}`,
+								)
+							} else {
+								console.error(
+									`× No valid preview images generated for PDF: ${attachment.filename}`,
+								)
+							}
 						} else {
 							console.error(
 								`× No preview images generated for PDF: ${attachment.filename}`,
@@ -648,8 +713,8 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 				attachmentsData.push({
 					fileName: attachment.filename || 'unnamed',
 					contentType: attachment.contentType || 'application/octet-stream',
-					size: attachment.content.length,
-					blob: attachment.content,
+					size: processedContent.length,
+					blob: processedContent,
 					previewImages: JSON.stringify(previewImages),
 				})
 			}
@@ -705,6 +770,7 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 		failed: results.failed,
 		pdfsFound: results.pdfProcessed,
 		previewsGenerated: results.previewsGenerated,
+		rejectedImages: results.rejectedImages,
 		totalErrors: results.errors.length,
 	})
 
@@ -717,7 +783,6 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 
 	return results
 }
-
 type Weighted = {
 	weight: number
 }
