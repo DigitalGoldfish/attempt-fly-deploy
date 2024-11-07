@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf'
+import { PageSizes, PDFDocument } from 'pdf-lib'
 
 const STAMP_DIMENSIONS = {
 	width: 300,
@@ -19,7 +19,15 @@ interface RegionAnalysis {
 	edgeScore: number
 	centerScore: number
 }
-
+const A4_DIMENSIONS = {
+	width: PageSizes.A4[0],
+	height: PageSizes.A4[1],
+} as const
+interface DocumentData {
+	url: string
+	contentType: string
+	blob: Blob
+}
 export async function initializePdfJsLib() {
 	const pdfjs = await import('pdfjs-dist')
 	pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -159,55 +167,126 @@ function findEmptyRegions(
 
 	return regions.sort((a, b) => b.finalScore - a.finalScore).slice(0, 5)
 }
-export async function stampAndPrint(
-	url: string | undefined,
-	minMargin: number = 10,
-): Promise<void> {
-	if (!url) return
 
-	const isImageFile = await isImage(url)
-
-	if (isImageFile) {
-		const doc = new jsPDF()
-		const img = await loadImage(url)
-
-		const pageWidth = doc.internal.pageSize.width
-		const pageHeight = doc.internal.pageSize.height
-		const imgRatio = img.width / img.height
-		const pageRatio = pageWidth / pageHeight
-
-		let imgWidth = pageWidth
-		let imgHeight = pageHeight
-
-		if (imgRatio > pageRatio) {
-			imgHeight = pageWidth / imgRatio
-		} else {
-			imgWidth = pageHeight * imgRatio
+async function fetchDocument(id: string): Promise<DocumentData> {
+	try {
+		const response = await fetch(
+			`http://localhost:3000/resources/mail-attachment/${id}`,
+		)
+		if (!response.ok) {
+			throw new Error(`Failed to fetch document ${id}: ${response.statusText}`)
 		}
+		const contentType = response.headers.get('Content-Type') || ''
+		const blob = await response.blob()
+		const url = URL.createObjectURL(blob)
+		return { url, contentType, blob }
+	} catch (error) {
+		console.error(`Error fetching document ${id}:`, error)
+		throw error
+	}
+}
 
-		const xOffset = (pageWidth - imgWidth) / 2
-		const yOffset = (pageHeight - imgHeight) / 2
+async function convertImageToPdfBytes(imageUrl: string): Promise<Uint8Array> {
+	const img = await loadImage(imageUrl)
+	const pdfDoc = await PDFDocument.create()
+	const page = pdfDoc.addPage(PageSizes.A4)
 
-		doc.addImage(url, 'PNG', xOffset, yOffset, imgWidth, imgHeight)
+	const scale = calculateScaleToFitA4(img.width, img.height)
+	const scaledWidth = img.width * scale
+	const scaledHeight = img.height * scale
 
-		const pdfBlob = doc.output('bloburl')
-		url = pdfBlob.toString()
+	const x = (A4_DIMENSIONS.width - scaledWidth) / 2
+	const y = A4_DIMENSIONS.height - scaledHeight + 40 // 20px margin from top
+
+	const canvas = document.createElement('canvas')
+	canvas.width = img.width
+	canvas.height = img.height
+	const ctx = canvas.getContext('2d')!
+	ctx.drawImage(img, 0, 0)
+
+	const pngBytes = await new Promise<Uint8Array>((resolve) => {
+		canvas.toBlob(async (blob) => {
+			if (blob) {
+				const arrayBuffer = await blob.arrayBuffer()
+				resolve(new Uint8Array(arrayBuffer))
+			}
+		}, 'image/png')
+	})
+
+	const pngImage = await pdfDoc.embedPng(pngBytes)
+	page.drawImage(pngImage, {
+		x,
+		y,
+		width: scaledWidth,
+		height: scaledHeight,
+	})
+
+	return await pdfDoc.save()
+}
+
+function calculateScaleToFitA4(width: number, height: number): number {
+	const scaleX = A4_DIMENSIONS.width / width
+	const scaleY = A4_DIMENSIONS.height / height
+	return Math.min(scaleX, scaleY, 1)
+}
+
+async function combinePdfs(pdfByteArrays: Uint8Array[]): Promise<Uint8Array> {
+	const mergedPdf = await PDFDocument.create()
+
+	for (const pdfBytes of pdfByteArrays) {
+		const sourceDoc = await PDFDocument.load(pdfBytes)
+		const pages = await mergedPdf.copyPages(
+			sourceDoc,
+			sourceDoc.getPageIndices(),
+		)
+
+		for (const page of pages) {
+			const { width, height } = page.getSize()
+
+			if (width !== A4_DIMENSIONS.width || height !== A4_DIMENSIONS.height) {
+				const scale = calculateScaleToFitA4(width, height)
+				const scaledWidth = width * scale
+				const scaledHeight = height * scale
+
+				const newPage = mergedPdf.addPage(PageSizes.A4)
+				const form = await mergedPdf.embedPage(page)
+
+				const x = (A4_DIMENSIONS.width - scaledWidth) / 2
+				const y = A4_DIMENSIONS.height - scaledHeight + 40 // 20px margin from top
+
+				newPage.drawPage(form, {
+					x,
+					y,
+					width: scaledWidth,
+					height: scaledHeight,
+				})
+			} else {
+				mergedPdf.addPage(page)
+			}
+		}
 	}
 
-	const pdfjs = await initializePdfJsLib()
-	const pdf = await pdfjs.getDocument(url).promise
-	const doc = new jsPDF()
+	return await mergedPdf.save()
+}
 
-	const processPage = async (pageNum: number) => {
-		const page = await pdf.getPage(pageNum)
+async function processAndStampPdf(
+	pdfBytes: Uint8Array,
+	minMargin: number,
+): Promise<Uint8Array> {
+	const pdfjs = await initializePdfJsLib()
+	const finalPdfDoc = await PDFDocument.create()
+	const pdf = await pdfjs.getDocument(pdfBytes).promise
+
+	for (let i = 0; i < pdf.numPages; i++) {
+		const page = await pdf.getPage(i + 1)
 		const scale = 2
 		const viewport = page.getViewport({ scale })
 
 		const canvas = document.createElement('canvas')
 		canvas.width = viewport.width
 		canvas.height = viewport.height
-
 		const ctx = canvas.getContext('2d')!
+
 		await page.render({
 			canvasContext: ctx,
 			viewport: viewport,
@@ -219,7 +298,6 @@ export async function stampAndPrint(
 			viewport.height,
 			minMargin,
 		)
-
 		if (regions.length > 0) {
 			const bestRegion = regions[0] as Region
 			await drawSvgStamp(ctx, bestRegion.x, bestRegion.y)
@@ -231,37 +309,82 @@ export async function stampAndPrint(
 			)
 		}
 
-		return {
-			pageNum,
-			imgData: canvas.toDataURL('image/png', 0.95),
-		}
-	}
-
-	const pagePromises = Array.from({ length: pdf.numPages }, (_, i) =>
-		processPage(i + 1),
-	)
-
-	const processedPages = await Promise.all(pagePromises)
-
-	processedPages
-		.sort((a, b) => a.pageNum - b.pageNum)
-		.forEach((page, index) => {
-			if (index > 0) {
-				doc.addPage()
-			}
-			const imgWidth = doc.internal.pageSize.width
-			const imgHeight = doc.internal.pageSize.height
-			doc.addImage(page.imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+		const pngBytes = await new Promise<Uint8Array>((resolve) => {
+			canvas.toBlob(async (blob) => {
+				if (blob) {
+					const arrayBuffer = await blob.arrayBuffer()
+					resolve(new Uint8Array(arrayBuffer))
+				}
+			}, 'image/png')
 		})
 
-	doc.autoPrint()
-	window.open(doc.output('bloburl'), '_blank')
-}
+		const image = await finalPdfDoc.embedPng(pngBytes)
+		const newPage = finalPdfDoc.addPage(PageSizes.A4)
 
-async function isImage(url: string): Promise<boolean> {
-	const response = await fetch(url, { method: 'HEAD' })
-	const contentType = response.headers.get('Content-Type')
-	return contentType ? contentType.startsWith('image/') : false
+		const imageScale = calculateScaleToFitA4(image.width, image.height)
+		const scaledWidth = image.width * imageScale
+		const scaledHeight = image.height * imageScale
+
+		const x = (A4_DIMENSIONS.width - scaledWidth) / 2
+		const y = A4_DIMENSIONS.height - scaledHeight
+
+		newPage.drawImage(image, {
+			x,
+			y,
+			width: scaledWidth,
+			height: scaledHeight,
+		})
+	}
+
+	return await finalPdfDoc.save()
+}
+export async function stampAndPrint(
+	documentIds: string[],
+	minMargin: number = 10,
+): Promise<void> {
+	if (!documentIds.length) return
+
+	try {
+		// 1. Fetch all documents
+		const documents = await Promise.all(documentIds.map(fetchDocument))
+
+		// 2. Convert all documents to PDF bytes
+		const pdfByteArrays = await Promise.all(
+			documents.map(async (doc) => {
+				if (doc.contentType.startsWith('image/')) {
+					return await convertImageToPdfBytes(doc.url)
+				} else if (doc.contentType === 'application/pdf') {
+					return new Uint8Array(await doc.blob.arrayBuffer())
+				} else {
+					throw new Error(`Unsupported file type: ${doc.contentType}`)
+				}
+			}),
+		)
+
+		// 3. Combine all PDFs into one
+		const combinedPdfBytes = await combinePdfs(pdfByteArrays)
+
+		// 4. Process and stamp the combined PDF
+		const finalPdfBytes = await processAndStampPdf(combinedPdfBytes, minMargin)
+
+		// 5. Create blob and open print window
+		const blob = new Blob([finalPdfBytes], { type: 'application/pdf' })
+		const url = URL.createObjectURL(blob)
+
+		const printWindow = window.open(url, '_blank')
+		if (printWindow) {
+			printWindow.onload = () => {
+				printWindow.print()
+				URL.revokeObjectURL(url)
+			}
+		}
+
+		// Clean up document URLs
+		documents.forEach((doc) => URL.revokeObjectURL(doc.url))
+	} catch (error) {
+		console.error('Error processing documents:', error)
+		throw error
+	}
 }
 
 async function loadImage(url: string): Promise<HTMLImageElement> {
@@ -278,7 +401,7 @@ async function drawSvgStamp(
 	x: number,
 	y: number,
 ): Promise<void> {
-	const svgUrl = '/favicons/stamp.svg'
+	const svgUrl = '/favicons/publicare-stamp.svg'
 	return new Promise<void>((resolve, reject) => {
 		const img = new Image()
 		img.onload = () => {
