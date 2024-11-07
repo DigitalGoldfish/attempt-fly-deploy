@@ -2,12 +2,12 @@ import { type Bereich, type Tag } from '@prisma/client'
 import { clsx } from 'clsx'
 import { useState } from 'react'
 import { useWatch } from 'react-hook-form'
-import { SelectButtons } from '#app/components/blocks/faxdienst.tsx'
 import { SingleSelectField } from '#app/components/forms/singleselect-field.tsx'
 import { TextField } from '#app/components/forms/text-field.tsx'
-import { Field, TextareaField } from '#app/components/forms.tsx'
+import { TextareaField } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { type IncomingFormType } from '#app/routes/_publicare+/faxdienst_form.tsx'
+import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
 
 function OptionButton(props: {
 	value: string

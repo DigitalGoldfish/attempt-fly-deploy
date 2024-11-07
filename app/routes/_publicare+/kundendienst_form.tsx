@@ -11,7 +11,6 @@ import { useEffect, useState } from 'react'
 import { getValidatedFormData, useRemixForm } from 'remix-hook-form'
 import { ClientOnly } from 'remix-utils/client-only'
 import { z } from 'zod'
-import { FaxdienstBlock } from '#app/components/blocks/faxdienst.tsx'
 import { DeletedBlock } from '#app/components/blocks/geloescht.tsx'
 import { KundendienstBlock } from '#app/components/blocks/kundendienst.tsx'
 import { MessageBlock } from '#app/components/blocks/message.tsx'
@@ -237,21 +236,11 @@ export function KundendienstForm({
 								<DeletedBlock setIsDeleted={setIsDeleted} />
 							) : (
 								<>
-									{!['Faxdienst', 'Forwarded', 'Geloescht'].includes(
-										data.status,
-									) ? (
-										<KundendienstBlock
-											data={data}
-											tags={tags}
-											bereiche={bereiche}
-										/>
-									) : (
-										<FaxdienstBlock
-											data={data}
-											tags={tags}
-											bereiche={bereiche}
-										/>
-									)}
+									<KundendienstBlock
+										data={data}
+										tags={tags}
+										bereiche={bereiche}
+									/>
 								</>
 							)}
 						</div>

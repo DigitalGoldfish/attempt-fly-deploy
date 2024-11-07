@@ -34,7 +34,6 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 
 	const documents: EditorDocument[] = []
 	if (docs && docs.length > 0) {
-		console.log('docs', docs)
 		docs.forEach((attachment) => {
 			const document = {
 				name: attachment.fileName,

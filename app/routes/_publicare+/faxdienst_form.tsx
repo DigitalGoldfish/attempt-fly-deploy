@@ -8,22 +8,21 @@ import {
 } from '@prisma/client'
 import { type ActionFunctionArgs, json } from '@remix-run/node'
 import { useEffect, useState } from 'react'
+import { useFormContext, useWatch } from 'react-hook-form'
 import { getValidatedFormData, useRemixForm } from 'remix-hook-form'
-import { ClientOnly } from 'remix-utils/client-only'
 import { z } from 'zod'
-import { FaxdienstBlock } from '#app/components/blocks/faxdienst.tsx'
 import { DeletedBlock } from '#app/components/blocks/geloescht.tsx'
-import { KundendienstBlock } from '#app/components/blocks/kundendienst.tsx'
 import { MessageBlock } from '#app/components/blocks/message.tsx'
 import { PreviewBlock } from '#app/components/blocks/preview.tsx'
+import { TextField } from '#app/components/forms/text-field.tsx'
 import { Form } from '#app/components/publicare-forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { HistoryDrawer } from '#app/routes/_publicare+/drawer.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
 import { stampAndPrint } from '#app/utils/pdf-stamper.tsx'
 import { ReportIssue } from './report-issue'
+import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -52,21 +51,34 @@ export type IncomingFormType = Incoming & {
 		| undefined
 }
 
-export const IncomingFormSchema = z.object({
+const FaxdienstAttributeSchema = z.object({
 	id: z.string(),
 	type: z.string(),
-	bereich: z.string(),
-	sonderstatus: z.string().optional(),
-	wiedervorlage: z.string().optional(),
-	attribute: z.array(z.string()).optional(),
+	bereich: z.string().min(1, 'Bereich muss angegeben werden'),
 	tags: z.array(z.string()).optional(),
-	neukunde: z.string(),
-	kundennr: z.string().optional(),
-	svtraeger: z.string().optional(),
 })
-const resolver = zodResolver(IncomingFormSchema)
 
-export type IncomingFormData = z.infer<typeof IncomingFormSchema>
+const NewCustomerSchema = z.object({
+	neukunde: z.literal('JA'),
+	kundennr: z
+		.string()
+		.length(0, 'Bei einem Neukunden darf keine Kundennr. gesetzt sein'),
+})
+
+const ExistingCustomerSchema = z.object({
+	neukunde: z.literal('NEIN'),
+	kundennr: z
+		.string()
+		.min(3, 'Bei einem Bestandskunden muss die Kundennummer angegeben werden'),
+})
+
+export const FaxdienstFormSchema = FaxdienstAttributeSchema.and(
+	z.union([NewCustomerSchema, ExistingCustomerSchema]),
+)
+
+const resolver = zodResolver(FaxdienstFormSchema)
+
+export type IncomingFormData = z.infer<typeof FaxdienstFormSchema>
 
 export async function action({ request }: ActionFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -76,19 +88,21 @@ export async function action({ request }: ActionFunctionArgs) {
 		receivedValues: defaultValues,
 	} = await getValidatedFormData<IncomingFormData>(
 		request,
-		zodResolver(IncomingFormSchema),
+		zodResolver(FaxdienstFormSchema),
 	)
 
 	if (errors) {
+		console.log('errors', errors)
 		return json({ errors, defaultValues })
 	}
+	console.log('Data', data)
 
 	const incoming = await prisma.incoming.findUniqueOrThrow({
 		where: { id: data.id },
 	})
 
 	if (incoming.status === 'Faxdienst') {
-		const { tags = [], attribute = [] } = data
+		const { tags = [] } = data
 		await prisma.incoming.update({
 			where: {
 				id: incoming.id,
@@ -98,8 +112,6 @@ export async function action({ request }: ActionFunctionArgs) {
 				bereich: data?.bereich,
 				neuanlage: data?.neukunde === 'JA',
 				kundennr: data?.kundennr,
-				kvnotwendig: attribute.includes('Benötigt KV'),
-				ohneverordnung: attribute.includes('Ohne Verordnung'),
 				tags:
 					tags.length > 0
 						? { connect: tags.map((tagId) => ({ id: tagId })) }
@@ -109,20 +121,13 @@ export async function action({ request }: ActionFunctionArgs) {
 				status: 'Kundendienst',
 			},
 		})
+		console.log('persistet')
 	}
 
-	if (incoming.status === 'Kundendienst') {
-		await prisma.incoming.update({
-			where: {
-				id: incoming.id,
-			},
-			data: {
-				status: 'Erledigt',
-			},
-		})
+	return {
+		status: 'error',
+		message: 'Invalid state',
 	}
-
-	return null
 }
 
 export function FaxdienstForm({
@@ -179,25 +184,13 @@ export function FaxdienstForm({
 
 	useEffect(() => {
 		if (data) {
-			const attributes = []
-			if (data.kvnotwendig) {
-				attributes.push('Benötigt KV')
-			}
-			if (data.ohneverordnung) {
-				attributes.push('Ohne Verordnung')
-			}
 			reset({
 				id: data.id,
 				type: data.type === 'Unknown' ? 'Bestellung' : data.type,
 				bereich: data.bereich || '',
 				kundennr: data.kundennr || '',
-				neukunde: !data.kundennr ? (data.neuanlage ? 'JA' : 'NEIN') : '',
-				attribute: attributes,
-				svtraeger: '',
+				neukunde: !data.kundennr ? (data.neuanlage ? 'JA' : 'NEIN') : undefined,
 				tags: data.tags ? data.tags.map((tag) => tag.id) : [],
-				// TODO:
-				// tags: [],
-				// attribute: [],
 			})
 			setIsDeleted(false)
 		}
@@ -237,21 +230,7 @@ export function FaxdienstForm({
 								<DeletedBlock setIsDeleted={setIsDeleted} />
 							) : (
 								<>
-									{!['Faxdienst', 'Forwarded', 'Geloescht'].includes(
-										data.status,
-									) ? (
-										<KundendienstBlock
-											data={data}
-											tags={tags}
-											bereiche={bereiche}
-										/>
-									) : (
-										<FaxdienstBlock
-											data={data}
-											tags={tags}
-											bereiche={bereiche}
-										/>
-									)}
+									<FaxdienstBlock tags={tags} bereiche={bereiche} />
 								</>
 							)}
 						</div>
@@ -291,5 +270,86 @@ export function FaxdienstForm({
 				</div>
 			</Form>
 		</>
+	)
+}
+
+export function FaxdienstBlock({
+	tags,
+	bereiche,
+}: {
+	tags: (Tag & { bereich: Bereich | null })[]
+	bereiche: Bereich[]
+}) {
+	const bereich = useWatch({ name: 'bereich' })
+
+	const {
+		formState: { errors },
+	} = useFormContext()
+
+	const assignableTo = tags
+		.filter((tag) => tag.bereich && tag.bereich.name === bereich)
+		.map((tag) => ({ value: tag.id, label: tag.label }))
+
+	const bereichOptions = bereiche.map((bereich) => ({
+		value: bereich.name,
+		label: bereich.label,
+	}))
+
+	return (
+		<div>
+			{Object.values(errors).length > 0 && (
+				<ul className="mb-4 bg-red-500 p-4 text-white">
+					{Object.values(errors).map((error) => (
+						<li key={error?.message?.toString()}>
+							{error?.message?.toString()}
+						</li>
+					))}
+				</ul>
+			)}
+
+			<h3 className={'mb-2 text-h5'}>Faxdienst</h3>
+
+			<div className={'my-4 grid grid-cols-5'}>
+				<span>Art der Nachricht:</span>
+				<SelectButtons
+					fieldName="type"
+					options={[
+						{ label: 'Bestellung', value: 'Bestellung' },
+						{ label: 'KV Bestätigung', value: 'KVBestaetigung' },
+						{ label: 'Sonstige', value: 'Sonstige' },
+					]}
+				/>
+			</div>
+			<div className={'grid grid-cols-5'}>
+				<span>Bereich:</span>
+				<SelectButtons fieldName="bereich" options={bereichOptions} />
+			</div>
+			{assignableTo.length > 0 && bereich !== 'Wund' && (
+				<div className={'my-4 grid w-full grid-cols-5'}>
+					<span>Tags:</span>
+					<SelectButtons
+						fieldName="tags"
+						options={assignableTo}
+						multiple={true}
+					/>
+				</div>
+			)}
+
+			<div className={'my-4 grid grid-cols-5'}>
+				<span>Kunde:</span>
+				<div className="col-span-4 flex flex-row gap-8">
+					<SelectButtons
+						fieldName="neukunde"
+						options={[
+							{ value: 'JA', label: 'Neuanlage' },
+							{ value: 'NEIN', label: 'Bestandskunde' },
+						]}
+					/>
+					<div className="col-span-4 flex flex-1 items-baseline gap-4">
+						<TextField name="kundennr" label="KndNr.:" />
+					</div>
+				</div>
+			</div>
+		</div>
 	)
 }
