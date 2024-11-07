@@ -7,7 +7,7 @@ import { SingleSelectField } from '#app/components/forms/singleselect-field.tsx'
 import { TextField } from '#app/components/forms/text-field.tsx'
 import { Field, TextareaField } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { type IncomingFormType } from '#app/routes/_publicare+/bestellung_form.tsx'
+import { type IncomingFormType } from '#app/routes/_publicare+/faxdienst_form.tsx'
 
 function OptionButton(props: {
 	value: string

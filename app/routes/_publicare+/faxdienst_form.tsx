@@ -125,7 +125,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	return null
 }
 
-export default function BestellungsForm({
+export function FaxdienstForm({
 	data,
 	tags,
 	bereiche,
@@ -142,7 +142,7 @@ export default function BestellungsForm({
 			type: 'Bestellung',
 		},
 		submitConfig: {
-			action: '/bestellung_form',
+			action: '/faxdienst_form',
 			method: 'POST',
 			navigate: false,
 		},
@@ -215,7 +215,7 @@ export default function BestellungsForm({
 				id="sample_form"
 				layout="horizontal"
 				className="w-full"
-				action="/bestellung_form"
+				action="/_publicare+/faxdienst_form"
 			>
 				<div
 					className="flex gap-8"

@@ -12,7 +12,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
-import { type IncomingFormType } from '#app/routes/_publicare+/bestellung_form.tsx'
+import { type IncomingFormType } from '#app/routes/_publicare+/faxdienst_form.tsx'
 import DocumentModifier from '../document-editor/document-modifier.tsx'
 
 export function PreviewBlock({ data }: { data: IncomingFormType }) {

@@ -6,7 +6,7 @@ import { Counter } from '#app/components/layout/counter.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { nextIncoming } from '#app/db/incoming.tsx'
-import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
+import { FaxdienstForm } from '#app/routes/_publicare+/faxdienst_form.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
@@ -52,7 +52,7 @@ export default function Faxdienst() {
 				</Button>
 			}
 		>
-			<Bestelldetails data={incoming} tags={tags} bereiche={bereiche} />
+			<FaxdienstForm data={incoming} tags={tags} bereiche={bereiche} />
 			<Outlet />
 		</DefaultLayout>
 	)

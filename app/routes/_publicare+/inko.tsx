@@ -7,7 +7,7 @@ import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 import { nextIncoming } from '#app/db/incoming.tsx'
-import Bestelldetails from '#app/routes/_publicare+/bestellung_form.tsx'
+import { KundendienstForm } from '#app/routes/_publicare+/kundendienst_form.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
@@ -88,7 +88,7 @@ export default function Stoma() {
 				</Button>
 			}
 		>
-			<Bestelldetails data={incoming} tags={tags} bereiche={bereiche} />
+			<KundendienstForm data={incoming} tags={tags} bereiche={bereiche} />
 			<Outlet />
 		</DefaultLayout>
 	)

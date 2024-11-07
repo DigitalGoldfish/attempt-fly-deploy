@@ -8,7 +8,8 @@ import { List } from 'lucide-react'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { nextIncoming } from '#app/db/incoming.tsx'
-import BestellungsForm from '#app/routes/_publicare+/bestellung_form.tsx'
+import { FaxdienstForm } from '#app/routes/_publicare+/faxdienst_form.tsx'
+import { KundendienstForm } from '#app/routes/_publicare+/kundendienst_form.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
@@ -140,6 +141,9 @@ async function handleDatabaseOperations(
 }
 export default function BestellungsDetails() {
 	const { incoming, tags, bereiche } = useLoaderData<typeof loader>()
+	if (!incoming) {
+		return 0
+	}
 	return (
 		<DefaultLayout
 			pageTitle="Details"
@@ -152,7 +156,14 @@ export default function BestellungsDetails() {
 				</Button>
 			}
 		>
-			<BestellungsForm data={incoming} tags={tags} bereiche={bereiche} />
+			{['Faxdienst', 'Geloescht', 'Weitergeleitet'].includes(
+				incoming.status,
+			) ? (
+				<FaxdienstForm data={incoming} tags={tags} bereiche={bereiche} />
+			) : (
+				<KundendienstForm data={incoming} tags={tags} bereiche={bereiche} />
+			)}
+
 			<Outlet />
 		</DefaultLayout>
 	)

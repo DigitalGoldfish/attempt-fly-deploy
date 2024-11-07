@@ -1,7 +1,7 @@
 import { TextareaField } from '#app/components/forms.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { type IncomingFormType } from '#app/routes/_publicare+/bestellung_form.tsx'
+import { type IncomingFormType } from '#app/routes/_publicare+/faxdienst_form.tsx'
 
 export function MessageBlock({ data }: { data: IncomingFormType }) {
 	const { mail, formSubmission } = data
