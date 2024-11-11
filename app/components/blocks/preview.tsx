@@ -190,9 +190,10 @@ export function FilePreview({
 		| 'incomingId'
 		| 'formSubmissionId'
 		| 'width'
+		| 'rotation'
 	>
 }) {
-	const isIgnored = attachment.height && attachment.height < 250 ? true : false
+	const isIgnored = (attachment?.height ?? 0) < 250
 	return (
 		<div
 			className="aspect-[2/3] w-full"

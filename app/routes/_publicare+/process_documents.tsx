@@ -79,19 +79,16 @@ async function processFiles(formData: FormData): Promise<ProcessedFile[]> {
 			const buffer = Buffer.from(arrayBuffer)
 
 			const contentType = file.type
-			let fileExtension = '.pdf'
-			const [type, extension] = contentType.split('/')
-
 			const imageUrls = [] as string[]
-			if (type === 'image') {
-				fileExtension = `.${extension}`
-			} else {
-				const previewImages = await pdfToImages(buffer, 2)
-				imageUrls.push(...previewImages)
-			}
 
+			const previewImages = await pdfToImages(buffer, 2)
+			imageUrls.push(...previewImages)
+
+			const fileName = file.name.startsWith('edited')
+				? `${file.name.split('.')[0]}.pdf`
+				: `edited-${file.name.split('.')[0]}${processedFiles.length + 1}.pdf`
 			processedFiles.push({
-				fileName: `${file.name}${processedFiles.length + 1}${fileExtension}`,
+				fileName,
 				contentType,
 				size: buffer.length,
 				blob: buffer,

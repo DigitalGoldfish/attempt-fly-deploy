@@ -592,12 +592,23 @@ export async function createIncomingFax(forceFaxdienst: boolean) {
 		data,
 	})
 }
+
 async function processImage(
 	content: Buffer,
+	maxWidth: number = 1400,
 ): Promise<{ buffer: Buffer; height?: number; width?: number } | null> {
 	const image = sharp(content)
 	const metadata = await image.metadata()
-	const processedBuffer = await image.rotate().toBuffer()
+
+	const processedBuffer = await image
+		.rotate()
+		.resize({
+			width: metadata.width && metadata.width > maxWidth ? maxWidth : undefined,
+			fit: 'inside',
+		})
+		.jpeg({ quality: 80, mozjpeg: true })
+		.toBuffer()
+
 	return {
 		buffer: processedBuffer,
 		height: metadata.height,
@@ -630,6 +641,7 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 				let processedContent = attachment.content
 				let attachmentHeight = undefined
 				let attachmentWidth = undefined
+				let attachmentFilename = attachment.filename
 
 				if (attachment.contentType?.startsWith('image/')) {
 					try {
@@ -644,6 +656,7 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 						processedContent = processedImage.buffer
 						attachmentHeight = processedImage.height
 						attachmentWidth = processedImage.width
+						attachmentFilename = `${attachmentFilename.split('.')[0]}.jpeg`
 						console.log('Image processed successfully')
 					} catch (error) {
 						console.error('Error processing image:', error)
@@ -698,7 +711,7 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 				}
 
 				attachmentsData.push({
-					fileName: attachment.filename || 'unnamed',
+					fileName: attachmentFilename || 'unnamed',
 					contentType: attachment.contentType || 'application/octet-stream',
 					size: processedContent.length,
 					blob: processedContent,

@@ -24,6 +24,7 @@ import { ReportIssue } from './report-issue'
 import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
 import { TextareaField } from '#app/components/forms/textarea-field.tsx'
 import { IncomingStatus } from '#app/const/IncomingStatus.ts'
+import { Stamp } from './stamp'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -177,17 +178,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		message: 'Invalid state',
 	}
 }
-function getAttachmentIds(data: IncomingFormType) {
-	return (
-		data.mail?.attachments
-			.filter(
-				(attachment) =>
-					(attachment.height && attachment.height > 250) ||
-					attachment.fileName.endsWith('.pdf'),
-			)
-			.map((attachment) => attachment.id) || []
-	)
-}
+
 export function FaxdienstForm({
 	data,
 	tags,
@@ -232,22 +223,35 @@ export function FaxdienstForm({
 		setValue('comment', '')
 	}
 
+	function getAttachmentIds() {
+		if (!data) return
+		const { mail, documents } = data
+		if (documents?.length === 0) {
+			return mail?.attachments
+				.filter(
+					(attachment) =>
+						(attachment.height && attachment.height > 250) ||
+						attachment.fileName.endsWith('.pdf'),
+				)
+				.map((attachment) => attachment.id)
+		} else {
+			console.log('THIS STAMP')
+			return documents
+				?.filter(
+					(attachment) =>
+						(attachment.height && attachment.height > 250) ||
+						attachment.fileName.endsWith('.pdf'),
+				)
+				.map((attachment) => attachment.id)
+		}
+	}
 	const handleStampAndPrint = async () => {
 		setIsStamping(true)
 		try {
-			if (data) {
-				const { mail, documents } = data
-				const mailAttachment = mail?.attachments.map(
-					(attachment) => attachment.id,
-				)
-				const incommingDoc = documents?.map((attachement) => attachement.id)
-				const toStamp =
-					mailAttachment && incommingDoc && incommingDoc?.length > 0
-						? incommingDoc
-						: mailAttachment
-				if (toStamp) {
-					await stampAndPrint(toStamp)
-				}
+			const toStamp = getAttachmentIds()
+			console.log(toStamp)
+			if (toStamp) {
+				await stampAndPrint(toStamp)
 			}
 		} catch (error) {
 			console.error('Failed to stamp and print the PDF:', error)
@@ -268,7 +272,7 @@ export function FaxdienstForm({
 				deleted: data.status === 'Geloescht',
 				deletionReason: '',
 				comment: '',
-                documentIds: getAttachmentIds(data),
+                documentIds: getAttachmentIds(),
 			})
 			setIsDeleted(data.status === 'Geloescht')
 		}
@@ -323,15 +327,7 @@ export function FaxdienstForm({
 									</Button>
 								</div>
 							)}
-							{!isDeleted && (
-								<Button
-									variant={'default'}
-									type={'button'}
-									onClick={handleStampAndPrint}
-								>
-									Drucken
-								</Button>
-							)}
+							{!isDeleted && <Stamp id={data.id} />}
 							<ReportIssue id={data.id} />
 							<div className="flex-1"></div>
 							{!isDeleted && (

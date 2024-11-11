@@ -103,7 +103,13 @@ export const createPdfFromImages = async (
 				embeddedPdf.getPageCount() - 1,
 			)
 			const [copiedPage] = await pdfDoc.copyPages(embeddedPdf, [pageIndex])
-			if (pageData.rotation) copiedPage?.setRotation(degrees(pageData.rotation))
+
+			if (pageData.rotation) {
+				copiedPage?.setRotation(
+					degrees(pageData.rotation + copiedPage.getRotation().angle),
+				)
+			}
+
 			pdfDoc.addPage(copiedPage)
 		}
 	}

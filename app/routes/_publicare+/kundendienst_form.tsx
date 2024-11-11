@@ -26,6 +26,7 @@ import { TextField } from '#app/components/forms/text-field.tsx'
 import { TextareaField } from '#app/components/forms.tsx'
 import { SingleSelectField } from '#app/components/forms/singleselect-field.tsx'
 import { subHours } from 'date-fns'
+import { Stamp } from './stamp'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -202,32 +203,7 @@ export function KundendienstForm({
 
 	const { reset } = methods
 
-	const [isStamping, setIsStamping] = useState(false)
 	const [isDeleted, setIsDeleted] = useState(false)
-
-	const handleStampAndPrint = async () => {
-		setIsStamping(true)
-		try {
-			if (data) {
-				const { mail, documents } = data
-				const mailAttachment = mail?.attachments.map(
-					(attachment) => attachment.id,
-				)
-				const incommingDoc = documents?.map((attachement) => attachement.id)
-				const toStamp =
-					mailAttachment && incommingDoc && incommingDoc?.length > 0
-						? incommingDoc
-						: mailAttachment
-				if (toStamp) {
-					await stampAndPrint(toStamp)
-				}
-			}
-		} catch (error) {
-			console.error('Failed to stamp and print the PDF:', error)
-		} finally {
-			setIsStamping(false)
-		}
-	}
 
 	useEffect(() => {
 		if (data) {
@@ -319,15 +295,7 @@ export function KundendienstForm({
 									</Button>
 								</div>
 							)}
-							{!isDeleted && (
-								<Button
-									variant={'default'}
-									type={'button'}
-									onClick={handleStampAndPrint}
-								>
-									Drucken
-								</Button>
-							)}
+							{!isDeleted && <Stamp id={data.id} />}
 							<ReportIssue id={data.id} />
 							<div className="flex-1"></div>
 							{!isDeleted && (

@@ -16,15 +16,10 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '#app/components/ui/dialog.tsx'
-import { createPdfFromImages } from '#app/utils/pdf-processor.ts'
+import { generatePdfBlob } from '#app/utils/pdf-processor.ts'
 import { DropZone } from './drop-zones'
 import { PreviewModal } from './preview-modal'
-import {
-	filterEmptyDocuments,
-	initialState,
-	prepareDocumentsForModifier,
-	reducer,
-} from './reducer'
+import { initialState, prepareDocumentsForModifier, reducer } from './reducer'
 
 interface DocumentModifierProps {
 	data: EditorDocument[]
@@ -56,13 +51,13 @@ export default function DocumentModifier({
 		documents: prepareDocumentsForModifier(data),
 	})
 	const { documents } = state
+
 	const [modal, setModal] = useState<ModalState>({
 		isOpen: false,
 		previewUrl: null,
 		previewRotation: 0,
 	})
 	const fetcher = useFetcher<FetcherResponse>()
-
 	const closeModal = () => {
 		setModal({ isOpen: false, previewUrl: null, previewRotation: 0 })
 	}
@@ -77,12 +72,12 @@ export default function DocumentModifier({
 			formData.set('incomingId', incomingId)
 
 			for (let i = 0; i < docs.length; i++) {
-				const blob = await createPdfFromImages(docs[i])
+				const blob = await generatePdfBlob(docs[i])
 				if (!blob) {
 					throw new Error(`Failed to create blob for document ${i + 1}`)
 				}
 
-				const filename = `edited-${docs[i]?.name}${i + 1}`
+				const filename = `${docs[i]?.name}${i + 1}`
 				formData.append(`document${i}`, blob, filename)
 			}
 
