@@ -12,11 +12,90 @@ import { FaxdienstForm } from '#app/routes/_publicare+/faxdienst_form.tsx'
 import { KundendienstForm } from '#app/routes/_publicare+/kundendienst_form.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { handleDatabaseOperations, processFiles } from './process_documents'
+import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
 
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellung Details' },
 ]
+interface ProcessedFile {
+	fileName: string
+	contentType: string
+	size: number
+	blob: Buffer
+	previewImages: string
+}
+
+async function processFiles(formData: FormData): Promise<ProcessedFile[]> {
+	const processedFiles: ProcessedFile[] = []
+
+	for (const [key, value] of formData.entries()) {
+		if (key.startsWith('document') && value instanceof File) {
+			const file = value as File
+			const arrayBuffer = await file.arrayBuffer()
+			const buffer = Buffer.from(arrayBuffer)
+
+			const contentType = file.type
+			const imageUrls = [] as string[]
+
+			const previewImages = await pdfToImages(buffer, 2)
+			imageUrls.push(...previewImages)
+
+			const fileName = file.name.startsWith('edited')
+				? `${file.name.split('.')[0]}.pdf`
+				: `edited-${file.name.split('.')[0]}${processedFiles.length + 1}.pdf`
+			processedFiles.push({
+				fileName,
+				contentType,
+				size: buffer.length,
+				blob: buffer,
+				previewImages: JSON.stringify(imageUrls),
+			})
+		}
+	}
+
+	return processedFiles
+}
+
+async function handleDatabaseOperations(
+	incomingId: string,
+	files: ProcessedFile[],
+) {
+	const existingIncoming = await prisma.incoming.findUnique({
+		where: { id: incomingId },
+		include: { documents: true },
+	})
+
+	if (!existingIncoming) {
+		throw new Error('Incoming record not found')
+	}
+
+	if (files[0]) {
+		await prisma.incoming.update({
+			where: { id: incomingId },
+			data: {
+				documents: {
+					deleteMany: {},
+					create: {
+						...files[0],
+					},
+				},
+			},
+		})
+	}
+
+	const { id: _, documents: __, ...dataWithoutId } = existingIncoming
+
+	for (let i = 1; i < files.length; i++) {
+		await prisma.incoming.create({
+			data: {
+				...dataWithoutId,
+				documents: {
+					create: files[i],
+				},
+			},
+		})
+	}
+}
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const { id } = params

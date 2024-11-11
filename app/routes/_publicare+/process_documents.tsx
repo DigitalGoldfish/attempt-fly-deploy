@@ -69,9 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 }
 
-export async function processFiles(
-	formData: FormData,
-): Promise<ProcessedFile[]> {
+async function processFiles(formData: FormData): Promise<ProcessedFile[]> {
 	const processedFiles: ProcessedFile[] = []
 
 	for (const [key, value] of formData.entries()) {
@@ -102,7 +100,7 @@ export async function processFiles(
 	return processedFiles
 }
 
-export async function handleDatabaseOperations(
+async function handleDatabaseOperations(
 	incomingId: string,
 	files: ProcessedFile[],
 ) {
