@@ -237,7 +237,10 @@ model Incoming {
   bereich     String?
   mitarbeiter String?
   kundennr    String?
+  bestellnr   String?
   neuanlage   Boolean @default(false)
+
+  deletionReason String?
 
   tags Tag[]
 

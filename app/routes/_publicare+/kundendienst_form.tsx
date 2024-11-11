@@ -68,6 +68,7 @@ const KundendienstAttributeSchema = z.object({
 	comment: z.string(),
 	neukunde: z.union([z.literal('JA'), z.literal('NEIN')]),
 	kundennr: z.string(),
+	bestellnr: z.string().optional(),
 })
 
 const KundendienstAttributeSchemaSS = KundendienstAttributeSchema.extend({
@@ -250,6 +251,7 @@ export function KundendienstForm({
 				bereich: data.bereich || '',
 				tags: data.tags ? data.tags.map((tag) => tag.id) : [],
 				kundennr: data.kundennr || undefined,
+				bestellnr: data.bestellnr || undefined,
 				neukunde: data.neuanlage ? 'JA' : 'NEIN',
 				kvuploaded: data.kvuploaded,
 				svtraeger: data.svTraegerId || undefined,
@@ -398,10 +400,9 @@ export function KundendienstBlock({
 			</div>
 			{isNotOrder && (
 				<div className={'grid grid-cols-5'}>
-					<span>Bestellung:</span>
-					<Button type="button" variant={'outline'}>
-						Verknüpfe mit Bestellung
-					</Button>
+					<div className={'col-span-3'}>
+						<TextField name="bestellnr" label={'Bestellnummer:'} />
+					</div>
 				</div>
 			)}
 
@@ -476,23 +477,33 @@ export function KundendienstBlock({
 				</div>
 			)}
 			{!isNotOrder && (
-				<div className={'grid grid-cols-5'}>
-					<span>Sonderstatus:</span>
-					<SelectButtons
-						fieldName="attributes"
-						multiple
-						options={[
-							{ value: 'kvsent', label: 'Kostenvoranschlag gesendet' },
-							{ value: 'kvreceived', label: 'KV Bestätigung erhalten' },
-							{
-								value: 'ohneverordnung',
-								label: 'Verordnung fehlt',
-							},
-							{ value: 'produktanlage', label: 'Warten auf Produktanlage' },
-							{ value: 'inquiry', label: 'Nachfrage' },
-						]}
-					/>
-				</div>
+				<>
+					<div className={'grid grid-cols-5'}>
+						<span>Sonderstatus:</span>
+						<SelectButtons
+							fieldName="attributes"
+							multiple
+							options={[
+								{ value: 'kvsent', label: 'Kostenvoranschlag gesendet' },
+								{ value: 'kvreceived', label: 'KV Bestätigung erhalten' },
+								{
+									value: 'ohneverordnung',
+									label: 'Verordnung fehlt',
+								},
+								{ value: 'produktanlage', label: 'Warten auf Produktanlage' },
+								{ value: 'inquiry', label: 'Nachfrage' },
+							]}
+						/>
+					</div>
+					{((attributes || []).includes('ohneverordnung') ||
+						(attributes || []).includes('kvsent')) && (
+						<div className={'grid grid-cols-5'}>
+							<div className={'col-span-3'}>
+								<TextField name="bestellnr" label={'Bestellnummer:'} />
+							</div>
+						</div>
+					)}
+				</>
 			)}
 			{!isNotOrder && (
 				<div className={'grid grid-cols-5'}>

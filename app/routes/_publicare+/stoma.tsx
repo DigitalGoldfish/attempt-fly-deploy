@@ -59,7 +59,7 @@ export default function Stoma() {
 	return (
 		<DefaultLayout
 			wide
-			pageTitle="Bestellungen Stoma/Inko"
+			pageTitle="Bestellungen Stoma"
 			aside={
 				<div className={'flex gap-8'}>
 					<Counter

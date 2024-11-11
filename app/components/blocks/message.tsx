@@ -2,9 +2,16 @@ import { TextareaField } from '#app/components/forms.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { type IncomingFormType } from '#app/routes/_publicare+/faxdienst_form.tsx'
+import { useFormContext } from 'react-hook-form'
+import { useRemixFormContext } from 'remix-hook-form'
 
 export function MessageBlock({ data }: { data: IncomingFormType }) {
 	const { mail, formSubmission } = data
+	const {
+		setValue,
+		handleSubmit,
+		formState: { errors },
+	} = useRemixFormContext()
 	if (mail) {
 		return (
 			<div className={'grid grid-cols-3'}>
@@ -23,11 +30,31 @@ export function MessageBlock({ data }: { data: IncomingFormType }) {
 					<br />
 				</div>
 				<div className="flex flex-col gap-2">
-					<Button variant={'pcblue'} disabled={data.source !== 'Email'}>
+					<Button
+						type="button"
+						variant={'pcblue'}
+						disabled={data.source !== 'Email'}
+					>
 						Antworten
 					</Button>
-					<Button>FW an office@publicare.at</Button>
-					<Button>Weiterleiten</Button>
+					<Button
+						type="button"
+						onClick={() => {
+							setValue('forwarded', true)
+							handleSubmit().catch((error) => console.log)
+						}}
+					>
+						FW an office@publicare.at
+					</Button>
+					<Button
+						type="button"
+						onClick={() => {
+							setValue('forwarded', true)
+							handleSubmit().catch((error) => console.log)
+						}}
+					>
+						Weiterleiten
+					</Button>
 				</div>
 				<div className="col-span-3">
 					<TextareaField

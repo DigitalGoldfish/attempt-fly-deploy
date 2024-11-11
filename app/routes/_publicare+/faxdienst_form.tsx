@@ -11,7 +11,6 @@ import { useEffect, useState } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { getValidatedFormData, useRemixForm } from 'remix-hook-form'
 import { z } from 'zod'
-import { DeletedBlock } from '#app/components/blocks/geloescht.tsx'
 import { MessageBlock } from '#app/components/blocks/message.tsx'
 import { PreviewBlock } from '#app/components/blocks/preview.tsx'
 import { TextField } from '#app/components/forms/text-field.tsx'
@@ -23,6 +22,8 @@ import { prisma } from '#app/utils/db.server.ts'
 import { stampAndPrint } from '#app/utils/pdf-stamper.tsx'
 import { ReportIssue } from './report-issue'
 import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
+import { TextareaField } from '#app/components/forms/textarea-field.tsx'
+import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -56,6 +57,10 @@ const FaxdienstAttributeSchema = z.object({
 	type: z.string(),
 	bereich: z.string().min(1, 'Bereich muss angegeben werden'),
 	tags: z.array(z.string()).optional(),
+	forwarded: z.literal(false),
+	deleted: z.boolean(),
+	deletionReason: z.string().optional(),
+	comment: z.string().optional(),
 })
 
 const NewCustomerSchema = z.object({
@@ -72,9 +77,25 @@ const ExistingCustomerSchema = z.object({
 		.min(3, 'Bei einem Bestandskunden muss die Kundennummer angegeben werden'),
 })
 
+const DeletedFormSchema = z.object({
+	id: z.string(),
+	forwarded: z.literal(false),
+	deleted: z.literal(true),
+	deletionReason: z.string().optional(),
+	comment: z.string().optional(),
+})
+
+const ForwardedFormSchema = z.object({
+	id: z.string(),
+	forwarded: z.literal(true),
+	comment: z.string().optional(),
+})
+
 export const FaxdienstFormSchema = FaxdienstAttributeSchema.and(
 	z.union([NewCustomerSchema, ExistingCustomerSchema]),
 )
+	.or(DeletedFormSchema)
+	.or(ForwardedFormSchema)
 
 const resolver = zodResolver(FaxdienstFormSchema)
 
@@ -100,7 +121,27 @@ export async function action({ request }: ActionFunctionArgs) {
 		where: { id: data.id },
 	})
 
-	if (incoming.status === 'Faxdienst') {
+	if (data.forwarded === true) {
+		await prisma.incoming.update({
+			where: {
+				id: incoming.id,
+			},
+			data: {
+				status: IncomingStatus.Weitergeleitet,
+			},
+		})
+	} else if (data.deleted) {
+		await prisma.incoming.update({
+			where: {
+				id: incoming.id,
+			},
+			data: {
+				deletionReason: data?.deletionReason,
+				comment: data?.comment,
+				status: 'Geloescht',
+			},
+		})
+	} else {
 		const { tags = [] } = data
 		await prisma.incoming.update({
 			where: {
@@ -115,13 +156,13 @@ export async function action({ request }: ActionFunctionArgs) {
 					tags.length > 0
 						? { connect: tags.map((tagId) => ({ id: tagId })) }
 						: undefined,
-				status: 'Kundendienst',
+
+				deletionReason: data?.deletionReason,
+				comment: data?.comment,
+				status: data?.deleted ? 'Geloescht' : 'Kundendienst',
 			},
 		})
 	}
-
-	// TODO: forwarding
-	// TODO: deletion
 
 	return {
 		status: 'error',
@@ -144,6 +185,10 @@ export function FaxdienstForm({
 		defaultValues: {
 			id: '',
 			type: 'Bestellung',
+			deleted: false,
+			forwarded: false,
+			deletionReason: '',
+			comment: '',
 		},
 		submitConfig: {
 			action: '/faxdienst_form',
@@ -152,10 +197,22 @@ export function FaxdienstForm({
 		},
 	})
 
-	const { reset } = methods
+	const { reset, setValue } = methods
 
 	const [isStamping, setIsStamping] = useState(false)
 	const [isDeleted, setIsDeleted] = useState(false)
+
+	const deleteEntry = () => {
+		setIsDeleted(true)
+		setValue('deleted', true)
+	}
+
+	const undeleteEntry = () => {
+		setIsDeleted(false)
+		setValue('deleted', false)
+		setValue('deletionReason', undefined)
+		setValue('comment', '')
+	}
 
 	const handleStampAndPrint = async () => {
 		setIsStamping(true)
@@ -190,8 +247,11 @@ export function FaxdienstForm({
 				kundennr: data.kundennr || '',
 				neukunde: !data.kundennr ? (data.neuanlage ? 'JA' : 'NEIN') : undefined,
 				tags: data.tags ? data.tags.map((tag) => tag.id) : [],
+				deleted: data.status === 'Geloescht',
+				deletionReason: '',
+				comment: '',
 			})
-			setIsDeleted(false)
+			setIsDeleted(data.status === 'Geloescht')
 		}
 	}, [reset, data])
 
@@ -226,7 +286,7 @@ export function FaxdienstForm({
 						<div className="h-full flex-grow overflow-y-scroll pr-4">
 							<MessageBlock data={data} />
 							{isDeleted ? (
-								<DeletedBlock setIsDeleted={setIsDeleted} />
+								<DeletedBlock undelete={undeleteEntry} />
 							) : (
 								<>
 									<FaxdienstBlock tags={tags} bereiche={bereiche} />
@@ -259,7 +319,7 @@ export function FaxdienstForm({
 								<Button
 									variant={'destructive'}
 									type={'button'}
-									onClick={() => setIsDeleted(true)}
+									onClick={() => deleteEntry()}
 								>
 									Löschen
 								</Button>
@@ -348,6 +408,57 @@ export function FaxdienstBlock({
 						<TextField name="kundennr" label="KndNr.:" />
 					</div>
 				</div>
+			</div>
+		</div>
+	)
+}
+
+export function DeletedBlock({ undelete }: { undelete: () => void }) {
+	const {
+		formState: { errors },
+	} = useFormContext()
+
+	return (
+		<div>
+			<h3 className={'text-h5'}>Gelöscht</h3>
+			<div className={'my-4 grid w-full grid-cols-5'}>
+				<span>Tags:</span>
+				<SelectButtons
+					fieldName="deletionReason"
+					options={[
+						{
+							value: 'SPAM',
+							label: 'SPAM',
+						},
+						{
+							value: 'NichtLieferbar',
+							label: 'Nicht lieferbar',
+						},
+						{
+							value: 'NoReaction',
+							label: 'Auf Nachfrage nicht reagiert',
+						},
+						{
+							value: 'Sonstiger',
+							label: 'Sonstiger',
+						},
+					]}
+					multiple={false}
+				/>
+			</div>
+			<div className={'my-8 grid grid-cols-5'}>
+				<div className={'col-span-5'}>
+					<TextareaField
+						name={'comment'}
+						label="Anmerkung"
+						className={'w-full'}
+					/>
+				</div>
+			</div>
+			<div className={'my-8'} onClick={() => undelete()}>
+				<Button variant="link" className="text-teal-600">
+					Löschen rückgängig machen
+				</Button>
 			</div>
 		</div>
 	)
