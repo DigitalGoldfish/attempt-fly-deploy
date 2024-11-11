@@ -1,8 +1,6 @@
 import { Link } from '@remix-run/react'
 import { Handle, Position } from '@xyflow/react'
 import { cva } from 'class-variance-authority'
-import { Trash, Trash2 } from 'lucide-react'
-import { useCallback } from 'react'
 import { cn } from '#app/utils/misc.tsx'
 
 const nodeVariants = cva('rounded border-2 px-4 py-2 text-right text-white', {

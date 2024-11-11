@@ -18,8 +18,6 @@ import { Form } from '#app/components/publicare-forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-
-import { stampAndPrint } from '#app/utils/pdf-stamper.tsx'
 import { ReportIssue } from './report-issue'
 import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
 import { TextareaField } from '#app/components/forms/textarea-field.tsx'
@@ -243,20 +241,6 @@ export function FaxdienstForm({
 						attachment.fileName.endsWith('.pdf'),
 				)
 				.map((attachment) => attachment.id)
-		}
-	}
-	const handleStampAndPrint = async () => {
-		setIsStamping(true)
-		try {
-			const toStamp = getAttachmentIds()
-			console.log(toStamp)
-			if (toStamp) {
-				await stampAndPrint(toStamp)
-			}
-		} catch (error) {
-			console.error('Failed to stamp and print the PDF:', error)
-		} finally {
-			setIsStamping(false)
 		}
 	}
 

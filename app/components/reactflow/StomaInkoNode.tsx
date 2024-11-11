@@ -1,7 +1,6 @@
-import { Link, useFetcher } from '@remix-run/react'
+import { Link } from '@remix-run/react'
 import { Handle, Position } from '@xyflow/react'
 import { cva } from 'class-variance-authority'
-import { useEffect } from 'react'
 import { type TagCount } from '#app/routes/_publicare+/status.tsx'
 import { cn } from '#app/utils/misc.tsx'
 

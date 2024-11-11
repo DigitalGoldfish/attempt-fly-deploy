@@ -1,8 +1,8 @@
-import sharp from 'sharp'
-import { PDFDocument, PageSizes } from 'pdf-lib'
-import path from 'path'
 import { promises as fs } from 'fs'
+import path from 'path'
+import { PDFDocument, PageSizes } from 'pdf-lib'
 import { pdf } from 'pdf-to-img'
+import sharp from 'sharp'
 
 const A4_DIMENSIONS = {
 	width: PageSizes.A4[0],

@@ -9,8 +9,6 @@ import {
 	TableActionCell,
 } from '#app/components/tables/data-table-cells.tsx'
 import { DataTable } from '#app/components/tables/data-table.tsx'
-import { Badge } from '#app/components/ui/badge.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
 
 export type RoleTableModel = {
 	id: string

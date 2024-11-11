@@ -1,13 +1,12 @@
 import { clsx } from 'clsx'
 import * as React from 'react'
-import { useState, useRef, useId, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 import { cn } from '#app/utils/misc.tsx'
 
 import { Button, type ButtonProps } from './button.tsx'
 import { Command, CommandInput, CommandGroup, CommandItem } from './command.tsx'
 import { Icon } from './icon.tsx'
-import { Label } from './label.tsx'
 import { Popover, PopoverTrigger, PopoverContent } from './popover.tsx'
 
 export type Selectable = {

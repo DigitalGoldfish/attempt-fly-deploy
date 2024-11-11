@@ -1,10 +1,10 @@
+import { type ActionFunctionArgs } from '@remix-run/node'
 import { useFetcher } from '@remix-run/react'
-import { Button } from '#app/components/ui/button.tsx'
-import { ActionFunctionArgs } from '@remix-run/node'
-import { prisma } from '#app/utils/db.server.ts'
-import { stampAndPrint } from '#app/utils/stamp.server.ts'
 import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
+import { Button } from '#app/components/ui/button.tsx'
+import { prisma } from '#app/utils/db.server.ts'
+import { stampAndPrint } from '#app/utils/stamp.server.ts'
 
 export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()

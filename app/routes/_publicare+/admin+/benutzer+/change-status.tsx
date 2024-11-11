@@ -22,7 +22,6 @@ import {
 	DialogTitle,
 	DialogHeader,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 } from '#app/components/ui/dialog.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'

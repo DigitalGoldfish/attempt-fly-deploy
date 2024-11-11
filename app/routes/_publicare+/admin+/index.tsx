@@ -1,9 +1,7 @@
 import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
-import { Link } from '@remix-run/react'
 import { DashboardTile } from '#app/components/dashboard-tile.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
-import { Button } from '#app/components/ui/button.tsx'
-import { Input } from '#app/components/ui/input.tsx'
+
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare' }]

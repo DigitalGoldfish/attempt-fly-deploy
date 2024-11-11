@@ -12,6 +12,7 @@ import { FaxdienstForm } from '#app/routes/_publicare+/faxdienst_form.tsx'
 import { KundendienstForm } from '#app/routes/_publicare+/kundendienst_form.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import { handleDatabaseOperations, processFiles } from './process_documents'
 
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellung Details' },
@@ -27,13 +28,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		bereiche: await prisma.bereich.findMany({}),
 		tags: await prisma.tag.findMany({ include: { bereich: true } }),
 	}
-}
-
-interface ProcessedFile {
-	fileName: string
-	contentType: string
-	size: number
-	blob: Buffer
 }
 
 export async function action({ request }: ActionFunctionArgs) {
