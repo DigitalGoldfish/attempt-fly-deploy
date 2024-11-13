@@ -4,6 +4,7 @@ import { glob } from 'glob'
 import { flatRoutes } from 'remix-flat-routes'
 import { defineConfig } from 'vite'
 import { envOnlyMacros } from 'vite-env-only'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 import topLevelAwait from 'vite-plugin-top-level-await'
 
 const MODE = process.env.NODE_ENV
@@ -36,6 +37,16 @@ export default defineConfig({
 		},
 	},
 	plugins: [
+		viteStaticCopy({
+			// Make the files necessary for running the Scanbot SDK WebAssembly modules available as static files
+			targets: [
+				{
+					src: 'node_modules/scanbot-web-sdk/bundle/bin/complete/*',
+					dest: 'wasm',
+				},
+			],
+			structured: false,
+		}),
 		envOnlyMacros(),
 		topLevelAwait({
 			// The export name of top-level await promise for each chunk module

@@ -24,14 +24,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 		setDisplayedFile(0)
 	}, [data])
 
-	if (!mail) {
-		return <div>No Attachments</div>
-	}
-	const { attachments } = mail
-	if (!attachments || !attachments.length) {
-		return <div>No Attachments</div>
-	}
-
+	const attachments = mail?.attachments! || docs
 	const documents: EditorDocument[] = []
 	if (docs && docs.length > 0) {
 		docs.forEach((attachment) => {
@@ -71,7 +64,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 			documents.push(document)
 		})
 	} else {
-		attachments.forEach((attachment) => {
+		attachments?.forEach((attachment) => {
 			const document = {
 				name: attachment.fileName,
 				pages: [] as EditorPage[],
