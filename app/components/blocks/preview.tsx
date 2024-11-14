@@ -90,7 +90,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 				document.pages.push({
 					fileName: attachment.fileName,
 					imageUrl: `/resources/mail-attachment/${attachment.id}`,
-					ignored: false,
+					ignored: attachment.height && attachment.height < 250 ? true : false,
 					originalDocumentId: attachment.id,
 					rotation: 0,
 					originalDocumentType: 'image',
@@ -161,9 +161,9 @@ export function FilePreview({
 		| 'incomingId'
 		| 'formSubmissionId'
 		| 'width'
-		| 'height'
 	>
 }) {
+	const isIgnored = attachment.height && attachment.height < 250 ? true : false
 	return (
 		<div
 			className="aspect-[2/3] w-full"
@@ -175,10 +175,17 @@ export function FilePreview({
 					src={`/resources/mail-attachment/${attachment.id}`}
 				></iframe>
 			) : (
-				<img
-					className="max-w-full"
-					src={`/resources/mail-attachment/${attachment.id}`}
-				/>
+				<div className="relative inline-block">
+					<img
+						className={`max-w-full ${isIgnored ? 'opacity-40' : ''}`}
+						src={`/resources/mail-attachment/${attachment.id}`}
+					/>
+					{isIgnored && (
+						<div className="absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center bg-black bg-opacity-50 text-sm font-semibold text-white">
+							Ignored
+						</div>
+					)}
+				</div>
 			)}
 		</div>
 	)

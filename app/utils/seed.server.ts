@@ -592,6 +592,18 @@ export async function createIncomingFax(forceFaxdienst: boolean) {
 		data,
 	})
 }
+async function processImage(
+	content: Buffer,
+): Promise<{ buffer: Buffer; height?: number; width?: number } | null> {
+	const image = sharp(content)
+	const metadata = await image.metadata()
+	const processedBuffer = await image.rotate().toBuffer()
+	return {
+		buffer: processedBuffer,
+		height: metadata.height,
+		width: metadata.width,
+	}
+}
 
 export async function importMailData(parsedEmails: ParsedEmail[]) {
 	const results = {
@@ -601,16 +613,6 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 		pdfProcessed: 0,
 		previewsGenerated: 0,
 		rejectedImages: 0,
-	}
-
-	async function processImage(content: Buffer): Promise<Buffer | null> {
-		const image = sharp(content)
-		const metadata = await image.metadata()
-		if (!metadata.height || metadata.height < 250 || !metadata.width) {
-			return null
-		}
-
-		return await image.rotate().toBuffer()
 	}
 
 	for (const emailData of parsedEmails) {
@@ -626,18 +628,22 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 				let previewImages: string[] = []
 				const isPdf = attachment.filename?.toLowerCase().endsWith('.pdf')
 				let processedContent = attachment.content
+				let attachmentHeight = undefined
+				let attachmentWidth = undefined
 
 				if (attachment.contentType?.startsWith('image/')) {
 					try {
 						const processedImage = await processImage(attachment.content)
 						if (processedImage === null) {
 							console.log(
-								`Image rejected - height less than 250px: ${attachment.filename}`,
+								`Image rejected - invalid dimensions: ${attachment.filename}`,
 							)
 							results.rejectedImages++
 							continue
 						}
-						processedContent = processedImage
+						processedContent = processedImage.buffer
+						attachmentHeight = processedImage.height
+						attachmentWidth = processedImage.width
 						console.log('Image processed successfully')
 					} catch (error) {
 						console.error('Error processing image:', error)
@@ -662,7 +668,6 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 						await new Promise((resolve) => setTimeout(resolve, 100))
 						attachment.contentType = 'application/pdf'
 						previewImages = await pdfToImages(processedContent, 2)
-
 						if (previewImages && previewImages.length > 0) {
 							// Process preview images
 							/* const processedPreviews = await Promise.all(
@@ -723,6 +728,8 @@ export async function importMailData(parsedEmails: ParsedEmail[]) {
 					size: processedContent.length,
 					blob: processedContent,
 					previewImages: JSON.stringify(previewImages),
+					width: attachmentWidth,
+					height: attachmentHeight,
 				})
 			}
 

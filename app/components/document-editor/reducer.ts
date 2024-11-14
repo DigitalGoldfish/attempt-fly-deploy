@@ -97,13 +97,7 @@ export const movePageNew = (state: State, from: PageID, to: PageID) => {
 }
 
 export const filterEmptyDocuments = (documents: EditorDocument[]) => {
-	const res = documents
-		.map((document) => ({
-			...document,
-			pages: document.pages.filter((page) => !page.ignored),
-		}))
-		.filter((document) => document.pages.length > 0)
-	return res
+	return documents.filter((document) => document.pages.length > 0)
 }
 
 export const prepareDocumentsForModifier = (documents: EditorDocument[]) => {
