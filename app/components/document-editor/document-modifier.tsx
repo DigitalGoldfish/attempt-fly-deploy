@@ -16,7 +16,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '#app/components/ui/dialog.tsx'
-import { generatePdfBlob } from '#app/utils/pdf-processor.ts'
+import { createPdfFromImages } from '#app/utils/pdf-processor.ts'
 import { DropZone } from './drop-zones'
 import { PreviewModal } from './preview-modal'
 import { initialState, prepareDocumentsForModifier, reducer } from './reducer'
@@ -72,7 +72,7 @@ export default function DocumentModifier({
 			formData.set('incomingId', incomingId)
 
 			for (let i = 0; i < docs.length; i++) {
-				const blob = await generatePdfBlob(docs[i])
+				const blob = await createPdfFromImages(docs[i])
 				if (!blob) {
 					throw new Error(`Failed to create blob for document ${i + 1}`)
 				}
