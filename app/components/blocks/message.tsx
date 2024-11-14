@@ -1,9 +1,26 @@
 import { TextareaField } from '#app/components/forms.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { type IncomingFormType } from '#app/routes/_publicare+/faxdienst_form.tsx'
-import { useFormContext } from 'react-hook-form'
 import { useRemixFormContext } from 'remix-hook-form'
+import type { FormSubmission, Incoming, Mail } from '@prisma/client'
+
+export type IncomingFormType = Incoming & {
+	mail?:
+		| (Mail & {
+				attachments: {
+					id: string
+					contentType: string
+					fileName: string
+					size: number
+					previewImages: string | null
+					height: number | null
+					width: number | null
+				}[]
+		  })
+		| null
+		| undefined
+	formSubmission?: FormSubmission | null
+}
 
 export function MessageBlock({ data }: { data: IncomingFormType }) {
 	const { mail, formSubmission } = data

@@ -1,4 +1,4 @@
-import { type Document } from '@prisma/client'
+import { type Document, type Mail } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import {
 	type EditorDocument,
@@ -12,10 +12,39 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
-import { type IncomingFormType } from '#app/routes/_publicare+/faxdienst_form.tsx'
 import DocumentModifier from '../document-editor/document-modifier.tsx'
 
-export function PreviewBlock({ data }: { data: IncomingFormType }) {
+type PreviewData = {
+	id: string
+	mail?:
+		| (Mail & {
+				attachments: {
+					id: string
+					contentType: string
+					fileName: string
+					size: number
+					previewImages: string | null
+					height: number | null
+					width: number | null
+				}[]
+		  })
+		| null
+		| undefined
+	documents?:
+		| {
+				id: string
+				contentType: string
+				fileName: string
+				size: number
+				previewImages: string | null
+				height: number | null
+				width: number | null
+		  }[]
+		| null
+		| undefined
+}
+
+export function PreviewBlock({ data }: { data: PreviewData }) {
 	const { mail, documents: docs } = data
 	const [displayedFile, setDisplayedFile] = useState(0)
 	const [editFiles, setEditFiles] = useState(false)
@@ -90,7 +119,7 @@ export function PreviewBlock({ data }: { data: IncomingFormType }) {
 				document.pages.push({
 					fileName: attachment.fileName,
 					imageUrl: `/resources/mail-attachment/${attachment.id}`,
-					ignored: attachment.height && attachment.height < 250 ? true : false,
+					ignored: !!(attachment.height && attachment.height < 250),
 					originalDocumentId: attachment.id,
 					rotation: 0,
 					originalDocumentType: 'image',

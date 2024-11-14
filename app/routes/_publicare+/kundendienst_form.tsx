@@ -36,6 +36,8 @@ export type IncomingFormType = Incoming & {
 					fileName: string
 					size: number
 					previewImages: string | null
+					height: number | null
+					width: number | null
 				}[]
 		  })
 		| null
@@ -49,6 +51,8 @@ export type IncomingFormType = Incoming & {
 				fileName: string
 				size: number
 				previewImages: string | null
+				height: number | null
+				width: number | null
 		  }[]
 		| null
 		| undefined
