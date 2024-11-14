@@ -113,7 +113,7 @@ async function handleDatabaseOperations(
 	}
 
 	if (files[0]) {
-		const updatedIncoming = await prisma.incoming.update({
+		await prisma.incoming.update({
 			where: { id: incomingId },
 			data: {
 				documents: {
@@ -129,7 +129,7 @@ async function handleDatabaseOperations(
 	const { id: _, documents: __, ...dataWithoutId } = existingIncoming
 
 	for (let i = 1; i < files.length; i++) {
-		const newIncoming = await prisma.incoming.create({
+		await prisma.incoming.create({
 			data: {
 				...dataWithoutId,
 				documents: {

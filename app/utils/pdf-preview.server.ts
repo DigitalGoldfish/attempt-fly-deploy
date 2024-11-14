@@ -3,7 +3,6 @@ import fs2, { promises as fs } from 'node:fs'
 
 import os from 'node:os'
 import path from 'node:path'
-import { folder } from 'jszip'
 import { pdf } from 'pdf-to-img'
 
 export async function pdfToImages(

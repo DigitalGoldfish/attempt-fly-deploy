@@ -1,13 +1,14 @@
-import { Document } from '#app/routes/_publicare+/upload_form.tsx'
-import ScanbotSDK from 'scanbot-web-sdk'
-import { IDocumentScannerHandle } from 'scanbot-web-sdk/@types/interfaces/i-document-scanner-handle'
-import { DocumentScannerConfiguration } from 'scanbot-web-sdk/@types/model/configuration/document-scanner-configuration'
-import { DocumentDetectionResult } from 'scanbot-web-sdk/@types/model/document/document-detection-result'
-import {
-	PageDirection,
-	PageFit,
-	PageSize,
+import type ScanbotSDK from 'scanbot-web-sdk'
+import  { type IDocumentScannerHandle } from 'scanbot-web-sdk/@types/interfaces/i-document-scanner-handle'
+import { type DocumentScannerConfiguration } from 'scanbot-web-sdk/@types/model/configuration/document-scanner-configuration'
+import { type DocumentDetectionResult } from 'scanbot-web-sdk/@types/model/document/document-detection-result'
+import  {
+	type PageDirection,
+	type PageFit,
+	type PageSize,
 } from 'scanbot-web-sdk/@types/service/pdf-generator'
+import { type Document } from '#app/components/form-upload/render-preview.tsx'
+
 interface PdfGenerationOptions {
 	standardPaperSize?: PageSize
 	pageDirection?: PageDirection
@@ -82,6 +83,7 @@ export default class ScanbotSDKService {
 						}
 						resolve({
 							...document,
+							id: document.id!,
 							image: base64,
 							type: 'scanned',
 							buffer: e.cropped,

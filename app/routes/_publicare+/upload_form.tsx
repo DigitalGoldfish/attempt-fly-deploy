@@ -1,156 +1,150 @@
-import React, { useRef, useState } from 'react'
-import { Upload, Camera, X, FileType } from 'lucide-react'
+import { json, type ActionFunctionArgs } from '@remix-run/node'
 import { useFetcher } from '@remix-run/react'
-import { toast as showToast } from 'sonner'
-import { Button } from '#app/components/ui/button.tsx'
-import { Label } from '#app/components/forms/field.tsx'
-import { Textarea } from '#app/components/ui/textarea.tsx'
-import { DefaultLayout } from '#app/components/layout/default.tsx'
-import ScanbotSDKService from '#app/services/scanner.service.ts'
-import DocumentScanner from '../../components/form-upload/scanner-dialog'
-import RenderPreview from '#app/components/form-upload/render-preview.tsx'
-import { getValidatedFormData } from 'remix-hook-form'
-import { ActionFunctionArgs } from '@remix-run/node'
-import { PageSizes, PDFDocument } from 'pdf-lib'
+import { Upload, Camera } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import RenderPreview, {
+	type Document,
+} from '#app/components/form-upload/render-preview'
+import { Label } from '#app/components/forms/field'
+import { DefaultLayout } from '#app/components/layout/default'
+import { Button } from '#app/components/ui/button'
+import { Textarea } from '#app/components/ui/textarea'
+import ScanbotSDKService from '#app/services/scanner.service'
 import { prisma } from '#app/utils/db.server.ts'
 import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
+import { combineDocuments } from '#app/utils/pdf-processor.ts'
+import DocumentScanner from '../../components/form-upload/scanner-dialog'
 
-const ACCEPTED_FILE_TYPES = {
-	'application/pdf': ['.pdf'],
-	'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
-}
+export async function action({ request }: ActionFunctionArgs) {
+	try {
+		const formData = await request.formData()
+		const comment = formData.get('comment') as string
+		const pdf = formData.get('pdf') as File
 
-interface FileError {
-	message: string
-	type: 'error' | 'warning'
-}
+		const arrayBuffer = await pdf.arrayBuffer()
+		const buffer = Buffer.from(arrayBuffer)
 
-export interface Document {
-	id?: string | undefined
-	type: 'scanned' | 'uploaded'
-	image?: string
-	filename: string
-	isPdf?: boolean
-	buffer?: ArrayBuffer
+		let previewImages
+		try {
+			previewImages = await pdfToImages(buffer, 2)
+		} catch (error) {
+			return json(
+				{ message: 'Failed to generate preview images,', error },
+				{ status: 500 },
+			)
+		}
+
+		try {
+			const document = await prisma.document.create({
+				data: {
+					blob: buffer,
+					fileName: pdf.name,
+					size: pdf.size,
+					previewImages: JSON.stringify(previewImages),
+					contentType: pdf.type,
+				},
+			})
+
+			await prisma.incoming.create({
+				data: {
+					status: 'Faxdienst',
+					source: 'FormSubmission',
+					formSubmission: {
+						create: {
+							message: comment,
+							document: { connect: { id: document.id } },
+						},
+					},
+					documents: {
+						connect: { id: document.id },
+					},
+				},
+			})
+
+			return json(
+				{ message: 'Document uploaded successfully' },
+				{ status: 200 },
+			)
+		} catch (error) {
+			return json(
+				{ message: 'Failed to save document to database', error },
+				{ status: 500 },
+			)
+		}
+	} catch (error) {
+		console.error('Form submission error:', error)
+		return json({ message: 'An unexpected error occurred' }, { status: 500 })
+	}
 }
 
 interface FetcherResponse {
-	message?: string
+	message: string
 }
-export async function action({ request }: ActionFunctionArgs) {
-	const formData = await request.formData()
-	const comment = formData.get('comment') as string
-	const pdf = formData.get('pdf') as File
-	const arrayBuffer = await pdf.arrayBuffer()
-	const buffer = Buffer.from(arrayBuffer)
-	const previewImages = await pdfToImages(buffer, 2)
-	const document = await prisma.document.create({
-		data: {
-			blob: buffer,
-			fileName: pdf.name,
-			size: pdf.size,
-			previewImages: JSON.stringify(previewImages),
-			contentType: pdf.type,
-		},
-	})
-	await prisma.incoming.create({
-		data: {
-			status: 'Faxdienst',
-			source: 'FormSubmition',
-			formSubmission: {
-				create: {
-					document: {
-						connect: { id: document.id },
-					},
-					message: comment,
-				},
-			},
-			documents: { connect: { id: document.id } },
-		},
-	})
-	return null
-}
-
 export default function FileUploadPage() {
 	const [documents, setDocuments] = useState<Document[]>([])
 	const [comment, setComment] = useState('')
+	const [isLoading, setIsLoading] = useState(false)
+	const [error, setError] = useState<string | null>(null)
+	const [showScanner, setShowScanner] = useState(false)
 	const fileInputRef = useRef<HTMLInputElement>(null)
-	const [isLoading, setIsLoading] = useState<boolean>(false)
-	const [fileError, setFileError] = useState<FileError | null>(null)
-	const [showScanner, setShowScanner] = useState<boolean>(false)
 	const fetcher = useFetcher<FetcherResponse>()
 
-	const handleShow = async () => {
+	const handleScanner = async () => {
 		setShowScanner(true)
-		const doc =
-			await ScanbotSDKService.instance.createDocumentScanner('document-scanner')
-		if (doc) {
-			const newDocs = {
-				...doc,
-				id: crypto.randomUUID(),
-				type: 'scanned' as const,
+		try {
+			const doc =
+				await ScanbotSDKService.instance.createDocumentScanner(
+					'document-scanner',
+				)
+			if (doc) {
+				setDocuments((prev) => [
+					...prev,
+					{
+						...doc,
+					},
+				])
 			}
-			console.log('DOCS', newDocs)
-			setDocuments((prev) => [...prev, newDocs])
+		} catch (error) {
+			setError(`Scanner failed to initialize ${error}`)
+		} finally {
 			setShowScanner(false)
-			ScanbotSDKService.instance.disposeDocumentScanner()
+			await ScanbotSDKService.instance.disposeDocumentScanner()
 		}
-	}
-
-	const createFilePreview = async (
-		file: File,
-	): Promise<{ url: string; isPdf: boolean }> => {
-		if (file.type === 'application/pdf') {
-			return {
-				url: URL.createObjectURL(file),
-				isPdf: true,
-			}
-		}
-
-		return new Promise((resolve, reject) => {
-			const reader = new FileReader()
-			reader.onloadend = () => {
-				resolve({
-					url: reader.result as string,
-					isPdf: false,
-				})
-			}
-			reader.onerror = reject
-			reader.readAsDataURL(file)
-		})
 	}
 
 	const handleFileChange = async (
 		event: React.ChangeEvent<HTMLInputElement>,
 	) => {
-		const selectedFiles = Array.from(event.target.files || [])
-		setFileError(null)
+		const files = Array.from(event.target.files || [])
+		setError(null)
 
-		for (const file of selectedFiles) {
+		for (const file of files) {
 			try {
-				const { url, isPdf } = await createFilePreview(file)
-				const arrayBuffer = await file.arrayBuffer()
+				const isPdf = file.type === 'application/pdf'
+				const url = URL.createObjectURL(file)
+				const buffer = await file.arrayBuffer()
+
 				if (!isPdf) {
 					ScanbotSDKService.instance.saveDocument({
 						id: crypto.randomUUID(),
-						image: arrayBuffer,
+						image: buffer,
 					})
 				}
 
-				const newDocument: Document = {
-					id: crypto.randomUUID(),
-					type: 'uploaded',
-					image: url,
-					filename: file.name,
-					isPdf,
-					buffer: arrayBuffer,
-				}
-				setDocuments((prev) => [...prev, newDocument])
+				setDocuments((prev) => [
+					...prev,
+					{
+						id: crypto.randomUUID(),
+						type: 'uploaded',
+						image: url,
+						filename: file.name,
+						isPdf,
+						buffer,
+					},
+				])
 			} catch (error) {
-				setFileError({
-					message: `Failed to preview file: ${file.name}`,
-					type: 'error',
-				})
+				setError(`Failed to process file: ${file.name} ${error}`)
 			}
 		}
 
@@ -159,179 +153,85 @@ export default function FileUploadPage() {
 		}
 	}
 
-	const handleRemoveDocument = (id: string | undefined) => {
-		if (!id) return
-		setDocuments((prev) => {
-			const docsToKeep = prev.filter((doc) => doc.id !== id)
-			const removedDoc = prev.find((doc) => doc.id === id)
-			if (removedDoc?.isPdf && removedDoc.image) {
-				URL.revokeObjectURL(removedDoc.image)
-			}
-			return docsToKeep
-		})
-	}
-
 	const handleSubmit = async () => {
+		if (documents.length === 0) return
+
+		setIsLoading(true)
 		try {
-			setIsLoading(true)
-			const formData = new FormData()
-			formData.append('comment', comment)
-
-			const generatedPdf = await ScanbotSDKService.instance.generatePdf()
-			if (!generatedPdf) {
-				throw new Error('Failed to generate PDF')
-			}
-
-			const mergedPdf = await PDFDocument.create()
-
-			const A4_WIDTH = PageSizes.A4[0]
-			const A4_HEIGHT = PageSizes.A4[1]
-
-			for (const doc of documents) {
-				if (doc.isPdf && doc.buffer) {
-					const pdfDoc = await PDFDocument.load(doc.buffer)
-					const sourcePages = await mergedPdf.copyPages(
-						pdfDoc,
-						pdfDoc.getPageIndices(),
-					)
-
-					for (const sourcePage of sourcePages) {
-						const newPage = mergedPdf.addPage(PageSizes.A4)
-						const embeddedPage = await mergedPdf.embedPage(sourcePage)
-
-						const { width: oldWidth, height: oldHeight } = embeddedPage
-						const scale = Math.min(A4_WIDTH / oldWidth, A4_HEIGHT / oldHeight)
-
-						const xOffset = (A4_WIDTH - oldWidth * scale) / 2
-						const yOffset = (A4_HEIGHT - oldHeight * scale) / 2
-
-						newPage.drawPage(embeddedPage, {
-							x: xOffset,
-							y: yOffset,
-							width: oldWidth * scale,
-							height: oldHeight * scale,
-						})
-					}
-				} else {
-					try {
-						const page = mergedPdf.addPage([A4_WIDTH, A4_HEIGHT])
-
-						let image
-						if (doc.filename.includes('png')) {
-							image = await mergedPdf.embedPng(doc.buffer!)
-						} else if (
-							doc.filename.includes('jpeg') ||
-							doc.filename?.includes('jpg')
-						) {
-							image = await mergedPdf.embedJpg(doc.buffer!)
-						} else {
-							continue
-						}
-
-						const imgDims = image.size()
-						const scale = Math.min(
-							A4_WIDTH / imgDims.width,
-							A4_HEIGHT / imgDims.height,
-						)
-
-						const x = (A4_WIDTH - imgDims.width * scale) / 2
-						const y = (A4_HEIGHT - imgDims.height * scale) / 2
-
-						page.drawImage(image, {
-							x,
-							y,
-							width: imgDims.width * scale,
-							height: imgDims.height * scale,
-						})
-					} catch (imgError) {
-						console.error('Failed to embed image:', imgError)
-					}
-				}
-			}
-
-			const mergedPdfBytes = await mergedPdf.save()
+			const mergedPdfBytes = await combineDocuments(documents)
 			const mergedPdfBlob = new Blob([mergedPdfBytes], {
 				type: 'application/pdf',
 			})
 
-			const filename = `${documents[0]?.filename.split('.')[0]}.pdf`
-			formData.append('pdf', mergedPdfBlob, filename)
+			const formData = new FormData()
+			formData.append('comment', comment)
+			formData.append(
+				'pdf',
+				mergedPdfBlob,
+				`${documents[0]?.filename.split('.')[0]}.pdf`,
+			)
 
 			fetcher.submit(formData, {
 				method: 'POST',
 				encType: 'multipart/form-data',
 				action: '/upload_form',
 			})
-		} catch (err) {
-			console.error('Upload error:', err)
-			setFileError({
-				message: 'Failed to upload files',
-				type: 'error',
-			})
-			throw err
-		} finally {
-			setIsLoading(false)
+		} catch (error) {
+			setError('Failed to process files')
+			console.error('Upload error:', error)
 		}
 	}
-	if (fetcher.state === 'idle' && fetcher.data) {
-		const { message } = fetcher.data
-		if (message) {
-			showToast['success'](message)
-			// Reset form
-			setDocuments([])
-			setComment('')
-			setIsLoading(false)
+	useEffect(() => {
+		if (fetcher.state === 'idle' && fetcher.data) {
+			const { message } = fetcher.data
+
+			if (message.includes('successfully')) {
+				toast['success'](message)
+				setDocuments([])
+				setComment('')
+				setIsLoading(false)
+			} else {
+				toast['error'](message)
+			}
 		}
-	}
+	}, [fetcher.state, fetcher.data])
 
 	return (
 		<DefaultLayout>
 			<div className="col-span-2 row-span-2 flex h-full w-full flex-col gap-6 rounded-2xl border border-pcblue-600 p-4">
-				<div className="w-full">
-					<div>
-						<h2 className="bold text-h4">Upload Document</h2>
-						<div>
+				<div className="w-full space-y-6">
+					<header>
+						<h2 className="text-h4 font-bold">Upload Document</h2>
+						<p>
 							Upload a PDF or image file from your device or scan a new document
-						</div>
-					</div>
+						</p>
+					</header>
 
 					<div className="space-y-4">
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-							<div>
+							<Label
+								htmlFor="file-upload"
+								className="flex h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors hover:bg-gray-50"
+							>
 								<input
 									type="file"
 									id="file-upload"
 									className="hidden"
 									onChange={handleFileChange}
 									ref={fileInputRef}
-									accept={Object.entries(ACCEPTED_FILE_TYPES)
-										.map(([type, extensions]) =>
-											type === 'image/*'
-												? extensions.join(',')
-												: type + extensions.join(','),
-										)
-										.join(',')}
+									accept=".pdf,.png,.jpg,.jpeg"
 									multiple
 								/>
-								<Label
-									htmlFor="file-upload"
-									className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors hover:bg-gray-50"
-								>
-									<div className="flex flex-col items-center justify-center pb-6 pt-5">
-										<Upload className="mb-2 h-8 w-8 text-gray-500" />
-										<p className="text-sm text-gray-500">
-											Click to upload PDF or image
-										</p>
-										<p className="text-xs text-gray-400">
-											Max size: 10MB per file
-										</p>
-									</div>
-								</Label>
-							</div>
+								<Upload className="mb-2 h-8 w-8 text-gray-500" />
+								<p className="text-sm text-gray-500">
+									Click to upload PDF or image
+								</p>
+								<p className="text-xs text-gray-400">PDF, PNG, JPG</p>
+							</Label>
 
 							<Button
 								type="button"
-								onClick={handleShow}
+								onClick={handleScanner}
 								className="flex h-32 flex-col items-center justify-center space-y-2 border"
 							>
 								<Camera className="h-8 w-8" />
@@ -339,61 +239,24 @@ export default function FileUploadPage() {
 							</Button>
 						</div>
 
-						{fileError && (
-							<div
-								className={`rounded-lg p-4 ${
-									fileError.type === 'error'
-										? 'bg-red-100 text-red-700'
-										: 'bg-yellow-100 text-yellow-700'
-								}`}
-							>
-								{fileError.message}
+						{error && (
+							<div className="rounded-lg bg-red-100 p-4 text-red-700">
+								{error}
 							</div>
 						)}
 
 						{documents.length > 0 && (
-							<div className="grid gap-4 md:grid-cols-2">
-								{documents.map((doc) => (
-									<div
-										key={doc.id}
-										className="relative rounded-lg bg-gray-100 p-4"
-									>
-										<button
-											type="button"
-											onClick={() => handleRemoveDocument(doc?.id)}
-											className="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
-										>
-											<X className="h-4 w-4" />
-										</button>
-										<div className="flex items-center gap-2">
-											<div className="flex items-center gap-2">
-												{doc.isPdf ? (
-													<FileType className="h-5 w-5" />
-												) : (
-													<Camera className="h-5 w-5" />
-												)}
-												<p className="text-h5 font-medium">
-													{doc.type === 'scanned'
-														? 'Scanned Document'
-														: doc.filename}
-												</p>
-											</div>
-											<span className="text-xs text-gray-500">
-												({doc.type})
-											</span>
-										</div>
-
-										<div className="mt-4">
-											<RenderPreview doc={doc} />
-										</div>
-									</div>
-								))}
-							</div>
+							<RenderPreview
+								documents={documents}
+								setDocuments={setDocuments}
+							/>
 						)}
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="comment">Comment</Label>
+						<Label htmlFor="comment" className="text-sm">
+							Comment
+						</Label>
 						<Textarea
 							id="comment"
 							value={comment}
@@ -412,11 +275,20 @@ export default function FileUploadPage() {
 					>
 						{isLoading
 							? 'Uploading...'
-							: `Upload ${documents.length} Document${documents.length !== 1 ? 's' : ''}`}
+							: `Upload Document${documents.length !== 1 ? 's' : ''}`}
 					</Button>
 				</div>
 			</div>
-			{showScanner && <DocumentScanner isOpen={showScanner} />}
+
+			{showScanner && (
+				<DocumentScanner
+					isOpen={showScanner}
+					onClose={async () => {
+						setShowScanner(false)
+						await ScanbotSDKService.instance.disposeDocumentScanner()
+					}}
+				/>
+			)}
 		</DefaultLayout>
 	)
 }
