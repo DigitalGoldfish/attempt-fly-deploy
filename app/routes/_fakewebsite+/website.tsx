@@ -115,9 +115,12 @@ const OrderPage = () => {
 									Schritt 2 - Zusendung des Rezeptes/Verordnungsscheines
 								</h2>
 								<p className="text-gray-700">
-									Das Rezept oder den Verordnungschein bitte per Fax (07229
-									7056-60), per Email (bestellung@publicare.at) oder per Post an
-									uns senden.
+									Das Rezept oder den Verordnungschein bitte über unser{' '}
+									<Link to="/upload_form" className="text-pcblue-600">
+										Uploadformular
+									</Link>
+									, per Fax (07229 7056-60), per Email (bestellung@publicare.at)
+									oder per Post an uns senden.
 								</p>
 								<p>
 									Für ihre Bestellung reicht ein Fax oder Email des Rezeptes

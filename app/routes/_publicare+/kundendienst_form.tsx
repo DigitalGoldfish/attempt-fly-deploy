@@ -18,7 +18,6 @@ import { Button } from '#app/components/ui/button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
-import { stampAndPrint } from '#app/utils/pdf-stamper.tsx'
 import { ReportIssue } from './report-issue'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
@@ -316,7 +315,6 @@ export function KundendienstForm({
 }
 
 export function KundendienstBlock({
-	data,
 	tags,
 	bereiche,
 }: {
