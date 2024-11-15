@@ -1,6 +1,6 @@
 import { json, type ActionFunctionArgs } from '@remix-run/node'
 import { Link, useFetcher } from '@remix-run/react'
-import { Upload, Camera, Plus } from 'lucide-react'
+import { Upload, Camera, Plus, Eye, Trash } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import RenderPreview, {
@@ -15,6 +15,7 @@ import { prisma } from '#app/utils/db.server.ts'
 import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
 import { combineDocuments } from '#app/utils/pdf-processor.ts'
 import DocumentScanner from '../../components/form-upload/scanner-dialog.tsx'
+import Preview from './preview-documet.tsx'
 
 export async function action({ request }: ActionFunctionArgs) {
 	try {
@@ -94,9 +95,13 @@ export default function FileUploadPage() {
 						<h2 className="text-h4 font-bold">Bestellung</h2>
 					</header>
 
-					<div className="grid grid-cols-2 gap-8">
-						<UploadForm />
-						<TextBlock />
+					<div className="flex flex-col gap-8 md:grid md:grid-cols-2">
+						<div className="order-2 md:order-1">
+							<UploadForm />
+						</div>
+						<div className="order-1 md:order-2">
+							<TextBlock />
+						</div>
 					</div>
 
 					<div className="flex flex-col gap-4"></div>
@@ -142,8 +147,35 @@ function UploadForm() {
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [showScanner, setShowScanner] = useState(false)
-	const fetcher = useFetcher<FetcherResponse>()
+	const [viewItem, setViewItem] = useState<Document | undefined>()
 
+	const fetcher = useFetcher<FetcherResponse>()
+	const handleRemoveDocument = (id: string | undefined) => {
+		if (!id) return
+		setDocuments((prev: Document[]) => {
+			const docsToKeep = prev.filter((doc) => doc.id !== id)
+			const removedDoc = prev.find((doc) => doc.id === id)
+			if (removedDoc?.isPdf && removedDoc.image) {
+				URL.revokeObjectURL(removedDoc.image)
+			}
+			return docsToKeep
+		})
+	}
+	const handleViewDocuments = async () => {
+		try {
+			const mergedPdfBytes = await combineDocuments(documents)
+			const mergedPdfBlob = new Blob([mergedPdfBytes], {
+				type: 'application/pdf',
+			})
+			const blobUrl = URL.createObjectURL(mergedPdfBlob)
+
+			window.open(blobUrl, '_blank')
+
+			setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+		} catch (error) {
+			console.error('Error viewing documents:', error)
+		}
+	}
 	const handleSubmit = async () => {
 		if (documents.length === 0) return
 
@@ -254,16 +286,32 @@ function UploadForm() {
 		return (
 			<div className="flex flex-col gap-4">
 				<ul className={'flex flex-col gap-2'}>
-					{documents.map((document, i) => (
-						<li key={document.filename} className="rounded bg-gray-300 p-2">
-							Document ${i + 1}
-						</li>
+					{documents.map((document) => (
+						<div className="flex w-full items-center gap-4">
+							<Button
+								onClick={() => setViewItem(document)}
+								key={document.filename}
+								className="w-full rounded bg-gray-300 p-2 text-black hover:text-slate-100"
+							>
+								Document {document.filename}
+							</Button>
+							<Button onClick={() => handleRemoveDocument(document.id)}>
+								<Trash size={25} />
+							</Button>
+						</div>
 					))}
 				</ul>
-				<Button variant={'link'}>
-					<Plus />
-					Weiteres Bild aufnehmen
-				</Button>
+				<div className="flex justify-center">
+					<Button variant={'link'} onClick={handleScanner}>
+						<Plus />
+						Weiteres Bild aufnehmen
+					</Button>
+					<Button onClick={handleViewDocuments} variant={'link'}>
+						<Eye />
+						View Combined Files
+					</Button>
+				</div>
+
 				<div className="space-y-2">
 					<Label htmlFor="comment" className="text-sm">
 						Anmerkung
@@ -299,6 +347,7 @@ function UploadForm() {
 						}}
 					/>
 				)}
+				{viewItem && <Preview document={viewItem} onClose={setViewItem} />}
 			</div>
 		)
 	}
@@ -313,7 +362,7 @@ function UploadForm() {
 					<Camera className="h-12 w-12" />
 					<span className="text-body-md">
 						Rezept/Verordnung mit <br />
-						Kamera scannen
+						Kamera scannen sdsadass
 					</span>
 				</Button>
 			</div>

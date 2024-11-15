@@ -87,7 +87,7 @@ async function findOptimalStampPosition(
 				bestRegion = { x, y, score }
 			}
 
-			if (score > 0.99) {
+			if (score > 0.95) {
 				return bestRegion
 			}
 		}
@@ -222,14 +222,19 @@ export async function stampAndPrint(
 	if (!docs) return null
 
 	try {
-		const imageBuffers = await Promise.all(
+		const processedDocs = await Promise.all(
 			docs.map(async (doc) => {
 				try {
 					if (doc.contentType.startsWith('image/') && doc.blob) {
-						return doc.blob
-					} else if (doc.contentType === 'application/pdf') {
+						return [doc.blob]
+					} else if (doc.contentType === 'application/pdf' && doc.blob) {
 						const pdfDocument = await pdf(doc.blob, { scale: 3 })
-						return await pdfDocument.getPage(1)
+						const pages = []
+						for (let i = 1; i <= pdfDocument.length; i++) {
+							const page = await pdfDocument.getPage(i)
+							pages.push(page)
+						}
+						return pages
 					}
 					throw new Error(`Unsupported file type: ${doc.contentType}`)
 				} catch (error) {
@@ -239,9 +244,15 @@ export async function stampAndPrint(
 			}),
 		)
 
-		const validBuffers = imageBuffers.filter(
-			(buffer): buffer is Buffer => buffer !== null,
-		)
+		const validBuffers = processedDocs
+			.filter((buffers): buffers is Buffer[] => buffers !== null)
+			.flat()
+
+		if (validBuffers.length === 0) {
+			console.warn('No valid documents to process')
+			return null
+		}
+
 		return await processAndStampImages(validBuffers)
 	} catch (error) {
 		console.error('Error in stampAndPrint:', error)

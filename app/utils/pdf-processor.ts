@@ -149,17 +149,17 @@ export const combineDocuments = async (
 		}
 	}
 
-	const drawImageOnPage = async (doc: Document, page: PDFPage) => {
+	const drawImageOnPage = async (doc: Document) => {
 		if (doc.buffer) {
 			const isPng = doc.filename.toLowerCase().includes('png')
 			const image = await embedImage(mergedPdf, doc.buffer, isPng)
-			const scale = Math.min(A4_WIDTH / image.width, A4_HEIGHT / image.height)
+			const page = mergedPdf.addPage([image.width, image.height])
 
 			page.drawImage(image, {
-				x: (A4_WIDTH - image.width * scale) / 2,
-				y: (A4_HEIGHT - image.height * scale) / 2,
-				width: image.width * scale,
-				height: image.height * scale,
+				x: 0,
+				y: 0,
+				width: image.width,
+				height: image.height,
 			})
 		}
 	}
@@ -168,14 +168,12 @@ export const combineDocuments = async (
 		if (doc.isPdf && doc.buffer) {
 			await embedPdfPages(doc.buffer)
 		} else {
-			const page = mergedPdf.addPage([A4_WIDTH, A4_HEIGHT])
-			await drawImageOnPage(doc, page)
+			await drawImageOnPage(doc)
 		}
 	}
 
 	return mergedPdf.save()
 }
-
 export default {
 	createSinglePagePdf,
 	isImageURL,
