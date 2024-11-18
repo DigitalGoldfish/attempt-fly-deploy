@@ -163,10 +163,7 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 						</TabsList>
 						{displayAttachment.map((attachment, index) => (
 							<TabsContent value={`file${index + 1}`} key={attachment.id}>
-								<FilePreview
-									attachment={attachment}
-									hasOneAttachment={displayAttachment.length === 1}
-								/>
+								<FilePreview attachment={attachment} />
 							</TabsContent>
 						))}
 					</Tabs>
@@ -189,9 +186,7 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 
 export function FilePreview({
 	attachment,
-	hasOneAttachment,
 }: {
-	hasOneAttachment: boolean
 	attachment: Omit<
 		Document,
 		| 'blob'
@@ -203,7 +198,7 @@ export function FilePreview({
 		| 'width'
 	>
 }) {
-	const { rotation, setRotation } = useRotationContext()
+	const [rotation, setRotation] = useState(0)
 	const fetcher = useFetcher()
 
 	const handleRotate = (degrees: number) => {
@@ -263,55 +258,52 @@ export function FilePreview({
 					</div>
 				</div>
 			)}
-			{hasOneAttachment && (
-				<>
-					<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 space-x-2 rounded bg-white/80 p-2 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
+
+			<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 space-x-2 rounded bg-white/80 p-2 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
+				<Button
+					type="button"
+					className="h-auto bg-transparent text-black"
+					onClick={() => handleRotate(-90)}
+					disabled={isSubmitting}
+				>
+					<Icon name="rotate-left" size="xl" />
+				</Button>
+				<Button
+					type="button"
+					className="h-auto bg-transparent text-black"
+					onClick={() => handleRotate(180)}
+					disabled={isSubmitting}
+				>
+					<Icon name="rotate-upside-down" size="xl" />
+				</Button>
+				<Button
+					type="button"
+					className="h-auto bg-transparent text-black"
+					onClick={() => handleRotate(90)}
+					disabled={isSubmitting}
+				>
+					<Icon name="rotate-right" size="xl" />
+				</Button>
+				{rotation !== 0 && (
+					<>
+						<div className="mx-2 h-6 w-px bg-gray-300" />
 						<Button
 							type="button"
 							className="h-auto bg-transparent text-black"
-							onClick={() => handleRotate(-90)}
+							onClick={handleSaveRotation}
 							disabled={isSubmitting}
 						>
-							<Icon name="rotate-left" size="xl" />
+							<Save size={30} />
 						</Button>
-						<Button
-							type="button"
-							className="h-auto bg-transparent text-black"
-							onClick={() => handleRotate(180)}
-							disabled={isSubmitting}
-						>
-							<Icon name="rotate-upside-down" size="xl" />
-						</Button>
-						<Button
-							type="button"
-							className="h-auto bg-transparent text-black"
-							onClick={() => handleRotate(90)}
-							disabled={isSubmitting}
-						>
-							<Icon name="rotate-right" size="xl" />
-						</Button>
-						{rotation !== 0 && (
-							<>
-								<div className="mx-2 h-6 w-px bg-gray-300" />
-								<Button
-									type="button"
-									className="h-auto bg-transparent text-black"
-									onClick={handleSaveRotation}
-									disabled={isSubmitting}
-								>
-									<Save size={30} />
-								</Button>
-							</>
-						)}
+					</>
+				)}
+			</div>
+			{isSubmitting && (
+				<div className="absolute inset-0 flex items-center justify-center bg-black/10">
+					<div className="rounded-lg bg-white p-4 shadow-lg">
+						<Loader className="animate-spin" size={30} />
 					</div>
-					{isSubmitting && (
-						<div className="absolute inset-0 flex items-center justify-center bg-black/10">
-							<div className="rounded-lg bg-white p-4 shadow-lg">
-								<Loader className="animate-spin" size={30} />
-							</div>
-						</div>
-					)}
-				</>
+				</div>
 			)}
 		</div>
 	)
