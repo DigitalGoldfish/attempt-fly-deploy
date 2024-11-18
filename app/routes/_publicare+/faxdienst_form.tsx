@@ -14,14 +14,14 @@ import { z } from 'zod'
 import { MessageBlock } from '#app/components/blocks/message.tsx'
 import { PreviewBlock } from '#app/components/blocks/preview.tsx'
 import { TextField } from '#app/components/forms/text-field.tsx'
+import { TextareaField } from '#app/components/forms/textarea-field.tsx'
 import { Form } from '#app/components/publicare-forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
+import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
+import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { ReportIssue } from './report-issue'
-import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
-import { TextareaField } from '#app/components/forms/textarea-field.tsx'
-import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 import { Stamp } from './stamp'
 
 export type IncomingFormType = Incoming & {
@@ -35,7 +35,7 @@ export type IncomingFormType = Incoming & {
 					previewImages: string | null
 					height: number | null
 					width: number | null
-					rotation: number
+					// rotation: number
 				}[]
 		  })
 		| null
@@ -51,7 +51,7 @@ export type IncomingFormType = Incoming & {
 				previewImages: string | null
 				height: number | null
 				width: number | null
-				rotation: number
+				// rotation: number
 		  }[]
 		| null
 		| undefined
