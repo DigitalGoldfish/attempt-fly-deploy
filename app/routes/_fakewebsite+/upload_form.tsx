@@ -64,7 +64,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			})
 
 			return json(
-				{ message: 'Document uploaded successfully' },
+				{ message: 'Dokument erfolgreich hochgeladen' },
 				{ status: 200 },
 			)
 		} catch (error) {
@@ -128,7 +128,12 @@ function TextBlock() {
 			</p>
 			<p className="mb-8">
 				Bitte sorgen sie dafür das die Dokumente leserlich sind. Bei der
-				Verwendung der .
+				Verwendung der Scanner-App erfolgt diese Qualitätsüberprüfung
+				automatisch, daher verwenden Sie wenn möglich diese.
+			</p>
+			<p>
+				Falls sie Verordnungen für mehrere Patienten hochladen bitte senden sie
+				das Formular getrennt für jeden Patienten hoch.
 			</p>
 			<p className="mb-8">
 				Ihrer Lieferung liegt standardmäßig ein kostenloser Rückumschlag bei, in
@@ -308,7 +313,7 @@ function UploadForm() {
 					</Button>
 					<Button onClick={handleViewDocuments} variant={'link'}>
 						<Eye />
-						View Combined Files
+						Dokument ansehen
 					</Button>
 				</div>
 
@@ -362,7 +367,7 @@ function UploadForm() {
 					<Camera className="h-12 w-12" />
 					<span className="text-body-md">
 						Rezept/Verordnung mit <br />
-						Kamera scannen sdsadass
+						Kamera scannen
 					</span>
 				</Button>
 			</div>
