@@ -38,7 +38,6 @@ export type IncomingFormType = Incoming & {
 					previewImages: string | null
 					height: number | null
 					width: number | null
-					rotation: number
 				}[]
 		  })
 		| null
@@ -54,7 +53,6 @@ export type IncomingFormType = Incoming & {
 				previewImages: string | null
 				height: number | null
 				width: number | null
-				rotation: number
 		  }[]
 		| null
 		| undefined

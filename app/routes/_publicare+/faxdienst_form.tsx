@@ -23,7 +23,6 @@ import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
 import { TextareaField } from '#app/components/forms/textarea-field.tsx'
 import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 import { Stamp } from './stamp'
-import RotationContext from '#app/utils/context/RotationContext.ts'
 
 export type IncomingFormType = Incoming & {
 	mail?:
