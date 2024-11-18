@@ -23,6 +23,7 @@ import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
 import { TextareaField } from '#app/components/forms/textarea-field.tsx'
 import { IncomingStatus } from '#app/const/IncomingStatus.ts'
 import { Stamp } from './stamp'
+import RotationContext from '#app/utils/context/RotationContext.ts'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -35,6 +36,7 @@ export type IncomingFormType = Incoming & {
 					previewImages: string | null
 					height: number | null
 					width: number | null
+					rotation: number
 				}[]
 		  })
 		| null
@@ -50,6 +52,7 @@ export type IncomingFormType = Incoming & {
 				previewImages: string | null
 				height: number | null
 				width: number | null
+				rotation: number
 		  }[]
 		| null
 		| undefined
@@ -64,7 +67,8 @@ const FaxdienstAttributeSchema = z.object({
 	deleted: z.boolean(),
 	deletionReason: z.string().optional(),
 	comment: z.string().optional(),
-    documentIds: z.array(z.string()),
+	documentIds: z.array(z.string()),
+	rotation: z.number().optional(),
 })
 
 const NewCustomerSchema = z.object({
@@ -107,6 +111,7 @@ export type IncomingFormData = z.infer<typeof FaxdienstFormSchema>
 
 export async function action({ request }: ActionFunctionArgs) {
 	const userId = await requireUserId(request)
+
 	const {
 		errors,
 		data,
@@ -147,7 +152,9 @@ export async function action({ request }: ActionFunctionArgs) {
 		})
 	} else {
 		const { tags = [] } = data
-		await prisma.incoming.update({
+		const docId = data.documentIds?.map((docId) => docId)
+
+		const res = await prisma.incoming.update({
 			where: {
 				id: incoming.id,
 			},
@@ -206,7 +213,6 @@ export function FaxdienstForm({
 
 	const { reset, setValue } = methods
 
-	const [isStamping, setIsStamping] = useState(false)
 	const [isDeleted, setIsDeleted] = useState(false)
 
 	const deleteEntry = () => {
@@ -233,7 +239,6 @@ export function FaxdienstForm({
 				)
 				.map((attachment) => attachment.id)
 		} else {
-			console.log('THIS STAMP')
 			return documents
 				?.filter(
 					(attachment) =>
@@ -256,7 +261,7 @@ export function FaxdienstForm({
 				deleted: data.status === 'Geloescht',
 				deletionReason: '',
 				comment: '',
-                documentIds: getAttachmentIds(),
+				documentIds: getAttachmentIds(),
 			})
 			setIsDeleted(data.status === 'Geloescht')
 		}

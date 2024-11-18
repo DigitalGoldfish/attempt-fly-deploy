@@ -7,24 +7,24 @@ import {
 	type Tag,
 } from '@prisma/client'
 import { type ActionFunctionArgs, json } from '@remix-run/node'
+import { subHours } from 'date-fns'
 import { useEffect, useState } from 'react'
+import { useFormContext, useWatch } from 'react-hook-form'
 import { getValidatedFormData, useRemixForm } from 'remix-hook-form'
 import { z } from 'zod'
 import { DeletedBlock } from '#app/components/blocks/geloescht.tsx'
 import { MessageBlock } from '#app/components/blocks/message.tsx'
 import { PreviewBlock } from '#app/components/blocks/preview.tsx'
+import { SingleSelectField } from '#app/components/forms/singleselect-field.tsx'
+import { TextField } from '#app/components/forms/text-field.tsx'
+import { TextareaField } from '#app/components/forms.tsx'
 import { Form } from '#app/components/publicare-forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
+import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
 import { ReportIssue } from './report-issue'
-import { useFormContext, useWatch } from 'react-hook-form'
-import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
-import { TextField } from '#app/components/forms/text-field.tsx'
-import { TextareaField } from '#app/components/forms.tsx'
-import { SingleSelectField } from '#app/components/forms/singleselect-field.tsx'
-import { subHours } from 'date-fns'
 import { Stamp } from './stamp'
 
 export type IncomingFormType = Incoming & {
@@ -38,6 +38,7 @@ export type IncomingFormType = Incoming & {
 					previewImages: string | null
 					height: number | null
 					width: number | null
+					rotation: number
 				}[]
 		  })
 		| null
@@ -53,6 +54,7 @@ export type IncomingFormType = Incoming & {
 				previewImages: string | null
 				height: number | null
 				width: number | null
+				rotation: number
 		  }[]
 		| null
 		| undefined
