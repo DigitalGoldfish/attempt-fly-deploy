@@ -15,7 +15,6 @@ import {
 import DocumentModifier from '../document-editor/document-modifier.tsx'
 import { Icon } from '../ui/icon.tsx'
 import { useFetcher } from '@remix-run/react'
-import { useRotationContext } from '#app/utils/context/RotationContext.ts'
 import { Loader, Save } from 'lucide-react'
 
 type PreviewData = {
@@ -30,7 +29,6 @@ type PreviewData = {
 					previewImages: string | null
 					height: number | null
 					width: number | null
-					rotation: number
 				}[]
 		  })
 		| null
@@ -44,7 +42,6 @@ type PreviewData = {
 				previewImages: string | null
 				height: number | null
 				width: number | null
-				rotation: number
 		  }[]
 		| null
 		| undefined
@@ -79,7 +76,7 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 						imageUrl: previewImage,
 						ignored: false,
 						originalDocumentId: attachment.id,
-						rotation: attachment.rotation,
+						rotation: 0,
 						originalDocumentType: 'pdf',
 						originalDocumentPageNumber: pageIndex,
 					})
@@ -116,7 +113,7 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 						imageUrl: previewImage,
 						ignored: false,
 						originalDocumentId: attachment.id,
-						rotation: attachment.rotation,
+						rotation: 0,
 						originalDocumentType: 'pdf',
 						originalDocumentPageNumber: pageIndex,
 					})
@@ -163,7 +160,10 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 						</TabsList>
 						{displayAttachment.map((attachment, index) => (
 							<TabsContent value={`file${index + 1}`} key={attachment.id}>
-								<FilePreview attachment={attachment} />
+								<FilePreview
+									attachment={attachment}
+									isOnlyAttachment={displayAttachment.length === 1}
+								/>
 							</TabsContent>
 						))}
 					</Tabs>
@@ -186,7 +186,9 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 
 export function FilePreview({
 	attachment,
+	isOnlyAttachment,
 }: {
+	isOnlyAttachment: boolean
 	attachment: Omit<
 		Document,
 		| 'blob'
@@ -258,52 +260,55 @@ export function FilePreview({
 					</div>
 				</div>
 			)}
-
-			<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 space-x-2 rounded bg-white/80 p-2 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
-				<Button
-					type="button"
-					className="h-auto bg-transparent text-black"
-					onClick={() => handleRotate(-90)}
-					disabled={isSubmitting}
-				>
-					<Icon name="rotate-left" size="xl" />
-				</Button>
-				<Button
-					type="button"
-					className="h-auto bg-transparent text-black"
-					onClick={() => handleRotate(180)}
-					disabled={isSubmitting}
-				>
-					<Icon name="rotate-upside-down" size="xl" />
-				</Button>
-				<Button
-					type="button"
-					className="h-auto bg-transparent text-black"
-					onClick={() => handleRotate(90)}
-					disabled={isSubmitting}
-				>
-					<Icon name="rotate-right" size="xl" />
-				</Button>
-				{rotation !== 0 && (
-					<>
-						<div className="mx-2 h-6 w-px bg-gray-300" />
+			{isOnlyAttachment && (
+				<>
+					<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 space-x-2 rounded bg-white/80 p-2 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
 						<Button
 							type="button"
 							className="h-auto bg-transparent text-black"
-							onClick={handleSaveRotation}
+							onClick={() => handleRotate(-90)}
 							disabled={isSubmitting}
 						>
-							<Save size={30} />
+							<Icon name="rotate-left" size="xl" />
 						</Button>
-					</>
-				)}
-			</div>
-			{isSubmitting && (
-				<div className="absolute inset-0 flex items-center justify-center bg-black/10">
-					<div className="rounded-lg bg-white p-4 shadow-lg">
-						<Loader className="animate-spin" size={30} />
+						<Button
+							type="button"
+							className="h-auto bg-transparent text-black"
+							onClick={() => handleRotate(180)}
+							disabled={isSubmitting}
+						>
+							<Icon name="rotate-upside-down" size="xl" />
+						</Button>
+						<Button
+							type="button"
+							className="h-auto bg-transparent text-black"
+							onClick={() => handleRotate(90)}
+							disabled={isSubmitting}
+						>
+							<Icon name="rotate-right" size="xl" />
+						</Button>
+						{rotation !== 0 && (
+							<>
+								<div className="mx-2 h-6 w-px bg-gray-300" />
+								<Button
+									type="button"
+									className="h-auto bg-transparent text-black"
+									onClick={handleSaveRotation}
+									disabled={isSubmitting}
+								>
+									<Save size={30} />
+								</Button>
+							</>
+						)}
 					</div>
-				</div>
+					{isSubmitting && (
+						<div className="absolute inset-0 flex items-center justify-center bg-black/10">
+							<div className="rounded-lg bg-white p-4 shadow-lg">
+								<Loader className="animate-spin" size={30} />
+							</div>
+						</div>
+					)}
+				</>
 			)}
 		</div>
 	)

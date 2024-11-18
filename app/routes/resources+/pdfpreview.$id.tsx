@@ -20,7 +20,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
 			'Content-Type': 'image/png',
 			'Content-Length': Buffer.byteLength(file).toString(),
 			'Content-Disposition': `inline; filename="${params.id}"`,
-			'Cache-Control': 'public, max-age=31536000, immutable',
 		},
 	})
 }
