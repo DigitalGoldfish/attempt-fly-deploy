@@ -17,6 +17,7 @@ import { Icon } from '../ui/icon.tsx'
 import { useFetcher } from '@remix-run/react'
 import { Loader, Save, EyeOff } from 'lucide-react'
 import { clsx } from 'clsx'
+import ImageCropper from '#app/routes/_publicare+/image-cropper.tsx'
 
 type Doc = {
 	id: string
@@ -288,6 +289,11 @@ export function FilePreview({
 								Ignored
 							</div>
 						)}
+						<div className="absolute right-4 top-4 z-50 bg-white/80 opacity-0 group-hover:opacity-100">
+							<ImageCropper
+								imgUrl={`/resources/mail-attachment/${attachment.id}`}
+							/>
+						</div>
 					</div>
 				</div>
 			)}

@@ -8,6 +8,10 @@ import {
 	type PageSize,
 } from 'scanbot-web-sdk/@types/service/pdf-generator'
 import { type Document } from '#app/components/form-upload/render-preview.tsx'
+import { ICroppingViewHandle } from 'scanbot-web-sdk/@types/interfaces/i-cropping-view-handle'
+import { CroppingViewConfiguration } from 'scanbot-web-sdk/@types/model/configuration/cropping-view-configuration'
+import { Polygon } from 'scanbot-web-sdk/@types/utils/dto/Polygon'
+import { CroppingResult } from 'scanbot-web-sdk/@types/model/response/cropping-result'
 
 interface PdfGenerationOptions {
 	standardPaperSize?: PageSize
@@ -17,6 +21,14 @@ interface PdfGenerationOptions {
 	jpegQuality?: number
 	resample?: boolean
 }
+
+export class ScanbotDocument {
+	id?: string
+	imageBuffer?: ArrayBuffer
+	imageDataUrl?: string
+	result?: DocumentDetectionResult
+}
+
 export default class ScanbotSDKService {
 	public static instance: ScanbotSDKService = new ScanbotSDKService()
 
@@ -50,13 +62,15 @@ export default class ScanbotSDKService {
 			engine: 'wasm',
 		})
 	}
-	private documents: ScanbotDocument[] = []
 
+	private documents: ScanbotDocument[] = []
+	private croppingView?: ICroppingViewHandle
 	private documentScanner?: IDocumentScannerHandle
 
 	public saveDocument(document: ScanbotDocument) {
 		this.documents.push(document)
 	}
+
 	async generatePdf(): Promise<ArrayBuffer | undefined> {
 		await this.initialize()
 		const options: PdfGenerationOptions = {
@@ -70,7 +84,11 @@ export default class ScanbotSDKService {
 
 		const pdfGenerator = await this.sdk!.beginPdf(options)
 		const documents = this.getDocuments()
-		documents.forEach(async (doc) => await pdfGenerator.addPage(doc.image!))
+		for (const doc of documents) {
+			if (doc.imageBuffer) {
+				await pdfGenerator.addPage(doc.imageBuffer)
+			}
+		}
 
 		return await pdfGenerator.complete()
 	}
@@ -84,11 +102,13 @@ export default class ScanbotSDKService {
 				onDocumentDetected: async (e: DocumentDetectionResult) => {
 					try {
 						const id = (Math.random() + 1).toString(36).substring(7)
-						const base64 = await this.sdk!.toDataUrl(e.cropped ?? e.original)
+						const imageBuffer = e.cropped ?? e.original
+						const base64 = await this.sdk!.toDataUrl(imageBuffer)
 
 						const document: ScanbotDocument = {
 							id: id,
-							image: e.cropped,
+							imageBuffer: imageBuffer,
+							imageDataUrl: base64,
 							result: e,
 						}
 						this.saveDocument(document)
@@ -101,7 +121,7 @@ export default class ScanbotSDKService {
 							id: document.id!,
 							image: base64,
 							type: 'scanned',
-							buffer: e.cropped,
+							buffer: imageBuffer,
 							filename: `${id}.jpg`,
 						})
 					} catch (error) {
@@ -109,7 +129,6 @@ export default class ScanbotSDKService {
 						reject(error)
 					}
 				},
-
 				onError: (error: Error) => {
 					console.log('Encountered error scanning documents:', error)
 					reject(error)
@@ -140,16 +159,74 @@ export default class ScanbotSDKService {
 	public getDocuments() {
 		return this.documents
 	}
+
 	public hasDocuments() {
 		return this.documents.length > 0
 	}
+
 	findDocument(id: string) {
 		return this.getDocuments().find((d) => d.id === id)
 	}
-}
+	async detectDocument(imageBuffer: ArrayBuffer) {
+		try {
+			await this.initialize()
+			return await this.sdk!.detectDocument(imageBuffer)
+		} catch (error) {
+			throw new Error(
+				`Failed to detect document: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			)
+		}
+	}
+	async openCroppingView(containerId: string, imageSrc: string) {
+		try {
+			console.log('Fetching image...')
+			await this.initialize()
+			const response = await fetch(imageSrc)
+			if (!response.ok) {
+				throw new Error(`Failed to fetch the image: ${response.statusText}`)
+			}
+			const arrayBuffer = await response.arrayBuffer()
 
-export class ScanbotDocument {
-	id?: string
-	image?: ArrayBuffer
-	result?: DocumentDetectionResult
+			const imageBuffer = new Uint8Array(arrayBuffer)
+			console.log('Image fetched and converted to Uint8Array')
+
+			console.log('Initializing SDK...')
+
+			console.log('SDK initialized')
+
+			const configuration: CroppingViewConfiguration = {
+				containerId: containerId,
+				image: imageBuffer as Uint8Array,
+				polygon: undefined,
+				disableScroll: true,
+				style: {
+					padding: 20,
+					polygon: {
+						color: 'green',
+						width: 4,
+						handles: {
+							size: 14,
+							color: 'white',
+							border: '1px solid lightgray',
+						},
+					},
+				},
+			}
+
+			console.log('Opening cropping view...')
+			this.croppingView = await this.sdk!.openCroppingView(configuration)
+			console.log('Cropping view opened successfully')
+		} catch (error) {
+			console.error('Error in openCroppingView:', error)
+			throw error
+		}
+	}
+
+	onCropApplied: () => void = () => {}
+
+	async applyCrop(): Promise<CroppingResult | undefined> {
+		const result = await this.croppingView?.apply()
+		this.onCropApplied()
+		return result
+	}
 }
