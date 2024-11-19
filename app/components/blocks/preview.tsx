@@ -15,7 +15,8 @@ import {
 import DocumentModifier from '../document-editor/document-modifier.tsx'
 import { Icon } from '../ui/icon.tsx'
 import { useFetcher } from '@remix-run/react'
-import { Loader, Save } from 'lucide-react'
+import { Loader, Save, EyeOff } from 'lucide-react'
+import { clsx } from 'clsx'
 
 type Doc = {
 	id: string
@@ -161,20 +162,31 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 				<div className="flex max-w-[800px] flex-col gap-4">
 					<Tabs defaultValue="file1" className="m-r-[100px] w-full">
 						<TabsList className="relative flex w-full justify-start overflow-x-auto">
-							{displayAttachment.map((attachment, index) => (
-								<TabsTrigger value={`file${index + 1}`} key={attachment.id}>
-									<div className={'max-w-24 overflow-hidden overflow-ellipsis'}>
-										{attachment.fileName}
-									</div>
-								</TabsTrigger>
-							))}
+							{displayAttachment.map((attachment, index) => {
+								const isIgnored =
+									(attachment.width && attachment.width < 250) ||
+									(attachment.height && attachment.height < 250)
+								return (
+									<TabsTrigger value={`file${index + 1}`} key={attachment.id}>
+										<div
+											className={clsx(
+												'max-w-30 flex items-center gap-4 overflow-hidden overflow-ellipsis',
+												isIgnored && 'opacity-70',
+											)}
+										>
+											{isIgnored && <EyeOff size={16} />}
+											{attachment.fileName}
+										</div>
+									</TabsTrigger>
+								)
+							})}
 							<Button
 								className="absolute right-0"
 								variant="outline"
 								type={'button'}
 								onClick={() => setEditFiles(true)}
 							>
-								Edit Files
+								Aufteilen
 							</Button>
 						</TabsList>
 						{displayAttachment.map((attachment, index) => (
