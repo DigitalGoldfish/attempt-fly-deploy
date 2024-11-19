@@ -49,8 +49,7 @@ model Tag {
   label String
   type  String
 
-  bereich   Bereich? @relation(fields: [bereichId], references: [id])
-  bereichId String?
+  bereich Bereich[]
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -289,7 +288,6 @@ model Document {
   blob          Bytes
   previewImages String?
 
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -312,9 +310,13 @@ model Issues {
 }
 
 model SVTraeger {
-  id       String     @id @default(cuid())
-  name     String
-  email    String
-  fax      String
-  Incoming Incoming[]
+  id        String     @id @default(cuid())
+  number    String     @default("")
+  name      String     @default("")
+  email     String     @default("")
+  fax       String     @default("")
+  postal    String     @default("")
+  preferred String     @default("")
+  note      String     @default("")
+  Incoming  Incoming[]
 }

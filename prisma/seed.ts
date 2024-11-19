@@ -9,6 +9,317 @@ const BereichsIds = {
 	[BereichEnum.Wund]: 'cm2gdeb51000009l79df33l03',
 }
 
+const userData = [
+	{
+		name: 'Andrea Roitner',
+		kuerzel: 'AR',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Andrea Wolfsteiner',
+		kuerzel: 'AWO',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Bianca Leibetseder',
+		kuerzel: 'BL',
+		viewer: false,
+		faxdienst: true,
+		stoma: false,
+		inko: false,
+		wund: true,
+		aussenlager: false,
+		comment: 'Vertretung Faxdienst',
+	},
+	{
+		name: 'Carmen Mayrhofer',
+		kuerzel: 'CM',
+		viewer: false,
+		faxdienst: true,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: 'Vertretung Faxdienst',
+	},
+	{
+		name: 'Cornelia Hagen',
+		kuerzel: 'CH',
+		viewer: false,
+		faxdienst: true,
+		stoma: false,
+		inko: false,
+		wund: true,
+		aussenlager: false,
+		comment: 'Faxdienst',
+	},
+	{
+		name: 'Daniela Brunner',
+		kuerzel: 'DBR',
+		viewer: true,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: false,
+		aussenlager: false,
+		comment: 'Nur Zugriff zum Suchen/Lesen der Verordnungsscheine',
+	},
+	{
+		name: 'Jennifer Perfler',
+		kuerzel: 'JP',
+		viewer: true,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: false,
+		aussenlager: false,
+		comment: 'Nur Zugriff zum Suchen/Lesen der Verordnungsscheine',
+	},
+	{
+		name: 'Melanie Wagner',
+		kuerzel: 'MWA',
+		viewer: true,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: false,
+		aussenlager: false,
+		comment: 'Nur Zugriff zum Suchen/Lesen der Verordnungsscheine',
+	},
+	{
+		name: 'Michaela Hermüller',
+		kuerzel: 'MH',
+		viewer: true,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: false,
+		aussenlager: false,
+		comment: 'Nur Zugriff zum Suchen/Lesen der Verordnungsscheine',
+	},
+	{
+		name: 'Nicole Prikler',
+		kuerzel: 'NPR',
+		viewer: true,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: false,
+		aussenlager: false,
+		comment: 'Nur Zugriff zum Suchen/Lesen der Verordnungsscheine',
+	},
+	{
+		name: 'Sandra Hajdu',
+		kuerzel: 'SAH',
+		viewer: true,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: false,
+		aussenlager: false,
+		comment: 'Nur Zugriff zum Suchen/Lesen der Verordnungsscheine',
+	},
+	{
+		name: 'Tatjana Wacker',
+		kuerzel: 'TW',
+		viewer: true,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: false,
+		aussenlager: false,
+		comment: 'Nur Zugriff zum Suchen/Lesen der Verordnungsscheine',
+	},
+	{
+		name: 'Elvira Kern',
+		kuerzel: 'EK',
+		viewer: false,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: true,
+		aussenlager: true,
+		comment: '',
+	},
+	{
+		name: 'Marlene Andreuzzi',
+		kuerzel: 'MA',
+		viewer: false,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: true,
+		aussenlager: true,
+		comment: '',
+	},
+	{
+		name: 'Silke Stadler',
+		kuerzel: 'SIST',
+		viewer: false,
+		faxdienst: true,
+		stoma: false,
+		inko: false,
+		wund: true,
+		aussenlager: true,
+		comment: '',
+	},
+	{
+		name: 'Elisabeth Giefing',
+		kuerzel: 'ELG',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Iris Ertürk',
+		kuerzel: 'IER',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Jacqueline Unterholzer',
+		kuerzel: 'JU',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Manuela Stefan',
+		kuerzel: 'MAS',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Marigona Bajrami',
+		kuerzel: 'MAB',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Sandra Pappenreiter',
+		kuerzel: 'SP',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Sanja Ljubez',
+		kuerzel: 'SL',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Sara Kasapi',
+		kuerzel: 'SKA',
+		viewer: false,
+		faxdienst: true,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: 'Vertretung Faxdienst',
+	},
+	{
+		name: 'Simone Aschauer',
+		kuerzel: 'SH',
+		viewer: false,
+		faxdienst: false,
+		stoma: true,
+		inko: true,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Klara Zivkovic',
+		kuerzel: 'KLZ',
+		viewer: false,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Nicole Reitberger',
+		kuerzel: 'NR',
+		viewer: false,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+	{
+		name: 'Sabrina Tremetsberger',
+		kuerzel: 'ST',
+		viewer: false,
+		faxdienst: true,
+		stoma: false,
+		inko: false,
+		wund: true,
+		aussenlager: false,
+		comment: 'Vertretung Faxdienst',
+	},
+	{
+		name: 'Stephanie Süß',
+		kuerzel: 'STS',
+		viewer: false,
+		faxdienst: false,
+		stoma: false,
+		inko: false,
+		wund: true,
+		aussenlager: false,
+		comment: '',
+	},
+]
+
 async function seed() {
 	console.log('🌱 Seeding...')
 	console.time(`🌱 Database has been seeded`)
@@ -110,28 +421,218 @@ async function seed() {
 		data: [
 			{
 				id: 'cm2gdeb51000009l79df33101',
-				name: 'SVS-LW',
-				email: 'svslw@example.com',
-				fax: '',
+				number: '100401',
+				name: 'ÖGK OÖ',
+				email: 'verordnungsgruppe@oegk.at',
+				fax: '050766 14105074',
+				postal: '',
+				preferred: 'post',
 			},
 			{
 				id: 'cm2gdeb51000009l79df33102',
-				name: 'SVS-GW',
-				email: 'svsgw@example.com',
-				fax: '',
+				number: '100403',
+				name: 'ÖGK Wien',
+				email: '',
+				fax: '050766 11 3588',
+				postal: '',
+				preferred: 'fax',
 			},
 			{
 				id: 'cm2gdeb51000009l79df33103',
-				name: 'SVS-BVA',
-				email: 'svsbva@example.com',
+				number: '100404',
+				name: 'SVS-GW',
+				email: 'gs@svs.at',
 				fax: '',
+				postal: '',
+				preferred: 'mail',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33104',
+				number: '100405',
+				name: 'SVS-LW',
+				email: 'gs@svs.at',
+				fax: '',
+				postal: '',
+				preferred: 'mail',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33105',
+				number: '100401',
+				name: 'ÖGK OÖ',
+				email: 'verordnungsgruppe@oegk.at',
+				fax: '050766 14105074',
+				postal: '',
+				preferred: 'post',
+			},
+
+			{
+				id: 'cm2gdeb51000009l79df33106',
+				number: '100408',
+				name: 'ÖGK Tirol',
+				fax: '',
+				postal:
+					'Österreichische Gesundheitskasse \n' +
+					'Landesstelle Tirol \n' +
+					'Heilbehelfe/Hilfsmittel \n' +
+					'Klara-Pölt-Weg 2 \n' +
+					'6020 Innsbruck',
+				preferred: 'post',
+			},
+
+			{
+				id: 'cm2gdeb51000009l79df33107',
+				number: '100413',
+				name: 'ÖGK Salzburg',
+				email: 'bewilligung.hbhi@oegk.at',
+				fax: '',
+				postal:
+					'ÖGK Salzburg \n' +
+					'VM II / z H. Frau Enzinger \n' +
+					'Engelbert-Weiß-Weg 10 \n' +
+					'5020 Salzburg ',
+				preferred: 'post',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33108',
+				number: '100419',
+				name: 'ÖGK Kärnten',
+				email: '',
+				fax: '050766 16 2898',
+				postal: '',
+				preferred: 'fax',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33109',
+				number: '100420',
+				name: 'ÖGK Steiermark',
+				email: 'stoma-beratung@oegk.at',
+				fax: '',
+				postal: '',
+				preferred: 'mail',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33110',
+				number: '100421',
+				name: 'ÖGK NÖ',
+				email: 'hb@oegk.at',
+				fax: '',
+				postal: '',
+				preferred: 'mail',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33111',
+				number: '100423',
+				name: 'ÖGK Bgld',
+				email: 'heilbehelf@oegk.at',
+				fax: '',
+				postal: '',
+				preferred: 'mail',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33112',
+				number: '100432',
+				name: 'KFG Wien',
+				email: 'kundendienst@kfawien.at',
+				fax: '',
+				postal: '',
+				preferred: 'mail',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33113',
+				number: '100432',
+				name: 'KFG Graz',
+				email: 'kfa.heilbehelfe@stadt.graz.at',
+				fax: '',
+				postal: '',
+				preferred: 'mail',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33114',
+				number: '100434',
+				name: 'KFG',
+				email: 'office@kfg.ooe.gv.at',
+				fax: '',
+				postal: '',
+				preferred: 'mail',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33115',
+				number: '100445',
+				name: 'KFL',
+				email: 'info@kflooe.at',
+				fax: '',
+				postal: '',
+				preferred: 'mail',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33116',
+				number: '100406',
+				name: 'BVAEB OÖ',
+				email: 'linz.leistung@bvaeb.at',
+				fax: '050405 24902',
+				postal: '',
+				preferred: 'fax',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33117',
+				number: '100406',
+				name: 'BVAEB W/NÖ/B',
+				email: 'wien.leistung@bvaeb.at',
+				fax: '050405 24901',
+				postal: '',
+				preferred: 'fax',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33118',
+				number: '100406',
+				name: 'BVAEB STMK',
+				email: 'graz.leistung@bvaeb.at',
+				fax: '050405 24903',
+				postal: '',
+				preferred: 'fax',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33119',
+				number: '100406',
+				name: 'BVAEB S',
+				email: 'Sbg.leistung@bvaeb.at',
+				fax: '050405 24904',
+				postal: '',
+				preferred: 'fax',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33120',
+				number: '100406',
+				name: 'BVAEB K',
+				email: 'Kft.leistung@bvaeb.at',
+				fax: '050405 26900',
+				postal: '',
+				preferred: 'fax',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33121',
+				number: '100406',
+				name: 'BVAEB T',
+				email: 'Ibk.leistung@bvaeb.at',
+				fax: '050405 28900',
+				postal: '',
+				preferred: 'fax',
+			},
+			{
+				id: 'cm2gdeb51000009l79df33122',
+				number: '100406',
+				name: 'BVAEB V',
+				email: 'Bgz.leistung@bvaeb.at',
+				fax: '050405 29900',
+				postal: '',
+				preferred: 'fax',
 			},
 		],
 	})
 
 	console.timeEnd(`👤 Created SVTraeger...`)
 
-	console.time(`👤 Created tags...`)
+	/* console.time(`👤 Created tags...`)
 	await prisma.tag.deleteMany({})
 
 	for (let i = 1; i <= 6; i++) {
@@ -190,7 +691,7 @@ async function seed() {
 		],
 	})
 
-	console.timeEnd(`👤 Created tags...`)
+	console.timeEnd(`👤 Created tags...`) */
 
 	console.time(`🐨 Created users`)
 
@@ -214,113 +715,11 @@ async function seed() {
 					{ name: 'admin' },
 					{ name: 'faxdienst' },
 					{ name: 'kundendienst' },
+					{ name: 'viewer' },
 				],
 			},
 		},
 	})
-
-	await prisma.user.create({
-		select: { id: true },
-		data: {
-			email: 'faxdienst@example.org',
-			username: 'faxdienst',
-			name: 'Faxdienst',
-			kuerzel: 'FD',
-			image: { create: kodyImages.kodyUser },
-			password: { create: createPassword('faxdienst') },
-			roles: { connect: [{ name: 'faxdienst' }] },
-		},
-	})
-
-	await prisma.user.create({
-		select: { id: true },
-		data: {
-			email: 'stoma@example.org',
-			username: 'stoma',
-			name: 'Stoma',
-			kuerzel: 'SM',
-			password: { create: createPassword('stoma') },
-			roles: { connect: [{ name: 'kundendienst' }] },
-			bereich: { connect: { id: BereichsIds[BereichEnum.Stoma] } },
-			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l00' } },
-		},
-	})
-
-	await prisma.user.create({
-		select: { id: true },
-		data: {
-			email: 'inko@example.org',
-			username: 'inko',
-			name: 'Inko',
-			kuerzel: 'IN',
-			password: { create: createPassword('inko') },
-			roles: { connect: [{ name: 'kundendienst' }] },
-			bereich: { connect: { id: BereichsIds[BereichEnum.Inko] } },
-			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l10' } },
-		},
-	})
-
-	await prisma.user.create({
-		select: { id: true },
-		data: {
-			email: 'wundversorgung@example.org',
-			username: 'wundversorgung',
-			name: 'Wundversorgung',
-			kuerzel: 'WND',
-			password: { create: createPassword('wund') },
-			roles: { connect: [{ name: 'kundendienst' }] },
-			bereich: { connect: { id: BereichsIds[BereichEnum.Wund] } },
-			defaultTags: { connect: { id: 'cm2gdeb51000009l79df43l20' } },
-		},
-	})
-
-	for (let i = 1; i <= 6; i++) {
-		await prisma.user.create({
-			select: { id: true },
-			data: {
-				email: `st${i}@example.org`,
-				username: `st${i}`,
-				name: `Stoma ${i}`,
-				kuerzel: `ST${i}`,
-				password: { create: createPassword(`st${i}`) },
-				roles: { connect: [{ name: 'kundendienst' }] },
-				bereich: { connect: { id: BereichsIds[BereichEnum.Stoma] } },
-				defaultTags: { connect: { id: `cm2gdeb51000009l79df43l0${i}` } },
-			},
-		})
-	}
-
-	for (let i = 1; i <= 6; i++) {
-		await prisma.user.create({
-			select: { id: true },
-			data: {
-				email: `in${i}@example.org`,
-				username: `in${i}`,
-				name: `Inko ${i}`,
-				kuerzel: `IN${i}`,
-				password: { create: createPassword(`in${i}`) },
-				roles: { connect: [{ name: 'kundendienst' }] },
-				bereich: { connect: { id: BereichsIds[BereichEnum.Inko] } },
-				defaultTags: { connect: { id: `cm2gdeb51000009l79df43l1${i}` } },
-			},
-		})
-	}
-
-	for (let i = 1; i <= 8; i++) {
-		await prisma.user.create({
-			select: { id: true },
-			data: {
-				email: `wnd${i}@example.org`,
-				username: `wnd${i}`,
-				name: `Wundversorgung ${i}`,
-				kuerzel: `WND${i}`,
-				password: { create: createPassword(`wnd${i}`) },
-				roles: { connect: [{ name: 'kundendienst' }] },
-				bereich: { connect: { id: BereichsIds[BereichEnum.Wund] } },
-				defaultTags: { connect: { id: `cm2gdeb51000009l79df43l2${i}` } },
-			},
-		})
-	}
 
 	await prisma.user.create({
 		select: { id: true },
@@ -330,7 +729,7 @@ async function seed() {
 			name: 'Manager',
 			kuerzel: 'MA',
 			password: { create: createPassword('manager') },
-			roles: { connect: [{ name: 'manager' }] },
+			roles: { connect: [{ name: 'manager' }, { name: 'viewer' }] },
 		},
 	})
 
@@ -345,6 +744,118 @@ async function seed() {
 			roles: { connect: [{ name: 'viewer' }] },
 		},
 	})
+
+	await prisma.user.create({
+		select: { id: true },
+		data: {
+			email: 'faxdienst@example.org',
+			username: 'faxdienst',
+			name: 'Faxdienst',
+			kuerzel: 'FD',
+			image: { create: kodyImages.kodyUser },
+			password: { create: createPassword('faxdienst') },
+			roles: { connect: [{ name: 'faxdienst' }, { name: 'viewer' }] },
+		},
+	})
+
+	await prisma.user.create({
+		select: { id: true },
+		data: {
+			email: 'kundendienst@example.org',
+			username: 'kundendienst',
+			name: 'Kundendienst',
+			kuerzel: 'KD',
+			password: { create: createPassword('kundendienst') },
+			roles: { connect: [{ name: 'kundendienst' }, { name: 'viewer' }] },
+			bereich: {
+				connect: [
+					{ id: BereichsIds[BereichEnum.Stoma] },
+					{ id: BereichsIds[BereichEnum.Inko] },
+					{ id: BereichsIds[BereichEnum.Wund] },
+				],
+			},
+			defaultTags: {
+				create: {
+					type: 'User',
+					label: 'KD',
+					bereich: {
+						connect: [
+							{ id: BereichsIds[BereichEnum.Stoma] },
+							{ id: BereichsIds[BereichEnum.Inko] },
+							{ id: BereichsIds[BereichEnum.Wund] },
+						],
+					},
+				},
+			},
+		},
+	})
+
+	await prisma.user.create({
+		select: { id: true },
+		data: {
+			email: 'wundversorgung@example.org',
+			username: 'wundversorgung',
+			name: 'wundversorgung',
+			kuerzel: 'WND',
+			password: { create: createPassword('wundversorgung') },
+			roles: { connect: [{ name: 'kundendienst' }, { name: 'viewer' }] },
+			bereich: {
+				connect: [{ id: BereichsIds[BereichEnum.Wund] }],
+			},
+			defaultTags: {
+				create: {
+					type: 'User',
+					label: 'WND',
+					bereich: { connect: [{ id: BereichsIds[BereichEnum.Wund] }] },
+				},
+			},
+		},
+	})
+
+	const userPromises = userData.map((data) => {
+		const roles = [{ name: 'viewer' }]
+		const bereiche = [] as { id: string }[]
+		if (data.faxdienst) {
+			roles.push({ name: 'faxdienst' })
+		}
+		if (data.stoma || data.inko || data.wund) {
+			roles.push({ name: 'kundendienst' })
+		}
+		if (data.stoma) {
+			bereiche.push({ id: BereichsIds[BereichEnum.Stoma] })
+		}
+		if (data.inko) {
+			bereiche.push({ id: BereichsIds[BereichEnum.Inko] })
+		}
+		if (data.wund) {
+			bereiche.push({ id: BereichsIds[BereichEnum.Wund] })
+		}
+		return prisma.user.create({
+			data: {
+				email: `${data.kuerzel}@publicare.com`,
+				username: data.kuerzel,
+				name: data.name,
+				kuerzel: data.kuerzel,
+				password: {
+					create: createPassword(
+						`password_${data.kuerzel.toLocaleLowerCase()}`,
+					),
+				},
+				roles: { connect: roles },
+				bereich: { connect: bereiche },
+				defaultTags: {
+					create: {
+						label: data.kuerzel,
+						bereich: { connect: bereiche },
+						type: 'User',
+					},
+				},
+			},
+		})
+	})
+
+	await Promise.all(userPromises)
+
 	console.timeEnd(`🐨 Created users`)
 
 	console.timeEnd(`🌱 Database has been seeded`)
