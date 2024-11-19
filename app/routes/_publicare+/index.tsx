@@ -21,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 
 	const counts = await prisma.incoming.groupBy({
-		by: ['bereich', 'status'],
+		by: ['status'],
 		_count: {
 			_all: true,
 		},
@@ -29,7 +29,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return json({
 		counts: counts.map((count) => ({
 			count: count._count._all,
-			bereich: count.bereich,
 			status: count.status,
 		})),
 	})
@@ -52,11 +51,17 @@ export default function Dashboard() {
 				>
 					Faxdienst
 				</DashboardTile>
+				<DashboardTile
+					to={'/kundendienst'}
+					color="blue"
+					count={
+						counts.find((count) => count.status === 'Kundendienst')?.count || 0
+					}
+				>
+					Kundendienst
+				</DashboardTile>
 				<DashboardTile to={'/status'} color="green">
 					Status
-				</DashboardTile>
-				<DashboardTile to={'/liste'} color="teal">
-					Liste
 				</DashboardTile>
 				<div className="col-span-2 row-span-2 flex h-full flex-col gap-6 rounded-2xl border border-pcblue-600 p-4">
 					<h2 className="bold text-h4">Schnellsuche</h2>
@@ -84,41 +89,8 @@ export default function Dashboard() {
 						Suchen
 					</Button>
 				</div>
-				<DashboardTile
-					to={'/stoma'}
-					color="blue"
-					count={
-						counts.find(
-							(count) =>
-								count.status === 'Kundendienst' && count.bereich === 'Stoma',
-						)?.count || 0
-					}
-				>
-					Stoma
-				</DashboardTile>
-				<DashboardTile
-					to={'/inko'}
-					color="blue"
-					count={
-						counts.find(
-							(count) =>
-								count.status === 'Kundendienst' && count.bereich === 'Inko',
-						)?.count || 0
-					}
-				>
-					Inko
-				</DashboardTile>
-				<DashboardTile
-					to={'/wundversorgung'}
-					color="blue"
-					count={
-						counts.find(
-							(count) =>
-								count.status === 'Kundendienst' && count.bereich === 'Wund',
-						)?.count || 0
-					}
-				>
-					Wundvers.
+				<DashboardTile to={'/liste'} color="teal">
+					Liste
 				</DashboardTile>
 				<DashboardTile to={'/zuordnung'} color="teal">
 					Zuordnung
