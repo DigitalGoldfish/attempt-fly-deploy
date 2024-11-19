@@ -17,34 +17,48 @@ import { Icon } from '../ui/icon.tsx'
 import { useFetcher } from '@remix-run/react'
 import { Loader, Save } from 'lucide-react'
 
+type Doc = {
+	id: string
+	contentType: string
+	fileName: string
+	size: number
+	previewImages: string | null
+	height: number | null
+	width: number | null
+}
+
 type PreviewData = {
 	id: string
 	mail?:
 		| (Mail & {
-				attachments: {
-					id: string
-					contentType: string
-					fileName: string
-					size: number
-					previewImages: string | null
-					height: number | null
-					width: number | null
-				}[]
+				attachments: Doc[]
 		  })
 		| null
 		| undefined
-	documents?:
-		| {
-				id: string
-				contentType: string
-				fileName: string
-				size: number
-				previewImages: string | null
-				height: number | null
-				width: number | null
-		  }[]
-		| null
-		| undefined
+	documents?: Doc[] | null | undefined
+}
+
+const sortFunction = (a: Doc, b: Doc) => {
+	if (a.contentType.includes('pdf') && b.contentType.includes('pdf')) {
+		return 0
+	}
+	if (a.contentType.includes('pdf') && !b.contentType.includes('pdf')) {
+		return -1
+	}
+	if (!a.contentType.includes('pdf') && b.contentType.includes('pdf')) {
+		return 1
+	}
+	const isAIgnored = (a.width && a.width < 250) || (a.height && a.height < 250)
+	const isBIgnored = (b.width && b.width < 250) || (b.height && b.height < 250)
+
+	if (isAIgnored && !isBIgnored) {
+		return 1
+	}
+	if (isBIgnored && !isAIgnored) {
+		return -1
+	}
+
+	return 0
 }
 
 export function PreviewBlock({ data }: { data: PreviewData }) {
@@ -135,7 +149,12 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 	}
 
 	const selectedAttachment = attachments[displayedFile]
-	const displayAttachment = docs && docs.length > 0 ? docs : attachments
+	const displayAttachment =
+		docs && docs.length > 0
+			? docs.sort(sortFunction)
+			: attachments.sort(sortFunction)
+
+	console.log('displayAttachment', displayAttachment)
 	if (selectedAttachment) {
 		return (
 			<>

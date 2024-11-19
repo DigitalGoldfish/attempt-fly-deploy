@@ -212,7 +212,6 @@ export function KundendienstForm({
 	}, [taskFetcher.data, load])
 
 	useEffect(() => {
-		console.log('fetcher response', fetcher.data)
 		if (fetcher.data && data) {
 			if (fetcher.data.status === 'success') {
 				navigate('/liste')
@@ -395,7 +394,6 @@ export function KundendienstBlock({
 		label: bereich.label,
 	}))
 
-	console.log('bereich', bereich)
 	const assignableTo = tags
 		.filter(
 			(tag) =>
