@@ -1,3 +1,5 @@
+import fs from 'fs/promises'
+import path from 'path'
 import {
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
@@ -8,7 +10,6 @@ import { nextIncoming } from '#app/db/incoming.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { pdfToImages } from '#app/utils/pdf-preview.server.ts'
-
 export const meta: MetaFunction = () => [
 	{ title: 'Publicare - Bestellung Details' },
 ]
@@ -112,6 +113,23 @@ async function handleDatabaseOperations(
 	if (!existingIncoming) {
 		throw new Error('Incoming record not found')
 	}
+	const existingPreviews: string[] = existingIncoming.documents.flatMap(
+		(doc) => {
+			if (typeof doc.previewImages === 'string') {
+				try {
+					const parsed = JSON.parse(doc.previewImages)
+					return Array.isArray(parsed) ? (parsed as string[]) : []
+				} catch {
+					return []
+				}
+			}
+			return Array.isArray(doc.previewImages)
+				? (doc.previewImages as string[])
+				: []
+		},
+	)
+
+	await deleteExistingImages(existingPreviews)
 
 	if (files[0]) {
 		await prisma.incoming.update({
@@ -138,5 +156,25 @@ async function handleDatabaseOperations(
 				},
 			},
 		})
+	}
+}
+export async function deleteExistingImages(imagePaths: string[]) {
+	for (let imagePath of imagePaths) {
+		imagePath = imagePath
+			.replace(/^\[\"|\"?\]$/g, '')
+			.split('/')
+			.pop() as string
+		const fullPath = path.join(
+			process.env.FILESYSTEM_PATH,
+			process.env.PREVIEW_IMAGE_FOLDER,
+			imagePath,
+		)
+
+		try {
+			await fs.unlink(fullPath)
+			console.log(`Deleted: ${fullPath}`)
+		} catch (err) {
+			console.error(`Failed to delete ${fullPath}:`, err)
+		}
 	}
 }

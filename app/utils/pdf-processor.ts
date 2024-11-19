@@ -6,7 +6,7 @@ import {
 	type PDFImage,
 } from 'pdf-lib'
 import { type EditorDocument } from '#app/components/document-editor/types.ts'
-import { Document } from '#app/components/form-upload/render-preview.tsx'
+import { type Document } from '#app/components/form-upload/render-preview.tsx'
 
 const fetchArrayBuffer = async (url: string): Promise<ArrayBuffer> => {
 	const response = await fetch(url)
