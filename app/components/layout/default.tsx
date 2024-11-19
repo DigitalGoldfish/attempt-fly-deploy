@@ -42,7 +42,7 @@ export function DefaultLayout({
 					</div>
 				</div>
 				<main
-					className="font-poppins container mx-auto my-8 h-full place-items-start"
+					className="font-poppins container relative mx-auto my-8 h-full place-items-start"
 					style={{
 						minHeight: 'calc(100vh - 120px - 4rem)',
 						maxWidth: wide ? 1800 : undefined,

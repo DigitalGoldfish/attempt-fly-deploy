@@ -10,9 +10,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	//	status: 'Kundendienst',
 	// 	bereich: 'Wund',
 	// }),
+	const incoming = await nextIncoming({
+		status: 'Faxdienst',
+	})
+	if (!incoming) {
+		return {
+			status: 'nodata',
+		}
+	}
 	return {
-		incoming: await nextIncoming({
-			status: 'Faxdienst',
-		}),
+		status: 'success',
+		incoming: incoming,
 	}
 }

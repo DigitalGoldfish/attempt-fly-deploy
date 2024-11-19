@@ -194,24 +194,36 @@ export function KundendienstForm({
 	const taskFetcher = useFetcher<typeof nextTaskLoader>()
 
 	const incoming = data ? data : taskFetcher?.data?.incoming
+	const { load } = taskFetcher
 
 	useEffect(() => {
+		if (taskFetcher.data?.status === 'nodata') {
+			console.log('scheduling another load in 30 seconds')
+			setTimeout(() => {
+				load('/api/nextTask/kundendienst')
+			}, 30 * 1000)
+		}
+	}, [taskFetcher.data, load])
+
+	useEffect(() => {
+		console.log('fetcher response', fetcher.data)
 		if (fetcher.data && data) {
 			if (fetcher.data.status === 'success') {
 				navigate('/liste')
 			}
 		} else if (fetcher.data) {
 			if (fetcher.data.status === 'success') {
-				taskFetcher.load('/api/nextTask/kundendienst')
+				load('/api/nextTask/kundendienst')
 			}
 		}
-	}, [data, fetcher.data, navigate, taskFetcher])
+	}, [data, fetcher.data, navigate, load])
 
 	useEffect(() => {
+		console.log('taskFetcher call - should only be called once')
 		if (!data && !taskFetcher.data) {
 			taskFetcher.load('/api/nextTask/kundendienst')
 		}
-	}, [data, taskFetcher])
+	}, [])
 
 	const methods = useRemixForm<IncomingFormData>({
 		mode: 'onTouched',
@@ -269,10 +281,18 @@ export function KundendienstForm({
 	}, [reset, incoming])
 
 	if (taskFetcher.state === 'loading') {
-		return <div>Loading</div>
+		return (
+			<div className="absolute bottom-0 left-0 right-0 top-0 grid items-center text-center text-body-2xl">
+				<span className="">Lädt ...</span>
+			</div>
+		)
 	}
 	if (!incoming) {
-		return <div>No work to do</div>
+		return (
+			<div className="absolute bottom-0 left-0 right-0 top-0 grid items-center text-center text-body-2xl">
+				<span className="">Keine unbearbeiteten Nachrichten</span>
+			</div>
+		)
 	}
 
 	return (

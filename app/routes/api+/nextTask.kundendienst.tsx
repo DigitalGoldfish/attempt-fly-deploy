@@ -6,13 +6,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const { id } = params
 	const userId = await requireUserId(request)
 
-	// incoming: await nextIncoming({
-	//	status: 'Kundendienst',
-	// 	bereich: 'Wund',
-	// }),
+	const incoming = await nextIncoming({
+		status: 'Kundendienst',
+	})
+
+	if (!incoming) {
+		return {
+			status: 'nodata',
+		}
+	}
 	return {
-		incoming: await nextIncoming({
-			status: 'Kundendienst',
-		}),
+		status: 'success',
+		incoming: incoming,
 	}
 }

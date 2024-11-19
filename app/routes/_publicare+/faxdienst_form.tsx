@@ -252,18 +252,28 @@ export function FaxdienstForm({
 
 	const navigate = useNavigate()
 
+	const { data: taskData, load } = taskFetcher
+
 	useEffect(() => {
-		console.log('fetcher data changed', fetcher.data)
+		if (taskData?.status === 'nodata') {
+			console.log('scheduling another load in 30 seconds')
+			setTimeout(() => {
+				load('/api/nextTask/kundendienst')
+			}, 30 * 1000)
+		}
+	}, [taskData, load])
+
+	useEffect(() => {
 		if (fetcher.data && data) {
 			if (fetcher.data.status === 'success') {
 				navigate('/liste')
 			}
 		} else if (fetcher.data) {
 			if (fetcher.data.status === 'success') {
-				taskFetcher.load('/api/nextTask/faxdienst')
+				load('/api/nextTask/faxdienst')
 			}
 		}
-	}, [data, fetcher.data, navigate, taskFetcher])
+	}, [data, fetcher.data, navigate])
 
 	useEffect(() => {
 		console.log('check for data')
@@ -314,10 +324,18 @@ export function FaxdienstForm({
 	}, [reset, incoming, getAttachmentIds])
 
 	if (taskFetcher.state === 'loading') {
-		return <div>Loading</div>
+		return (
+			<div className="absolute bottom-0 left-0 right-0 top-0 grid items-center text-center text-body-2xl">
+				<span className="">Lädt ...</span>
+			</div>
+		)
 	}
 	if (!incoming) {
-		return <div>No work to do</div>
+		return (
+			<div className="absolute bottom-0 left-0 right-0 top-0 grid items-center text-center text-body-2xl">
+				<span className="">Keine unbearbeiteten Nachrichten</span>
+			</div>
+		)
 	}
 
 	return (
