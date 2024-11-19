@@ -29,6 +29,12 @@ import { ReportIssue } from './report-issue'
 import { Stamp } from './stamp'
 import { useActionData, useFetcher } from '@remix-run/react'
 import { useNavigate } from 'react-router'
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from '#app/components/ui/collapsible.tsx'
+import { ChevronsUpDown } from 'lucide-react'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -389,6 +395,7 @@ export function KundendienstBlock({
 		label: bereich.label,
 	}))
 
+	console.log('bereich', bereich)
 	const assignableTo = tags
 		.filter(
 			(tag) =>
@@ -438,12 +445,36 @@ export function KundendienstBlock({
 
 			{assignableTo.length > 0 && (
 				<div className={'grid w-full grid-cols-5'}>
-					<span>Tags:</span>
-					<SelectButtons
-						fieldName="tags"
-						options={assignableTo}
-						multiple={true}
-					/>
+					{bereich === 'Wund' ? (
+						<>
+							<span>Mitarbeiter:</span>
+							<Collapsible className="col-span-4">
+								<CollapsibleTrigger>
+									<Button type="button" variant="ghost" className="flex gap-4">
+										An Mitarbeiter zuweisen
+										<ChevronsUpDown className="h-4 w-4" />
+										<span className="sr-only">Toggle</span>
+									</Button>
+								</CollapsibleTrigger>
+								<CollapsibleContent className="pt-4">
+									<SelectButtons
+										fieldName="tags"
+										options={assignableTo}
+										multiple={true}
+									/>
+								</CollapsibleContent>
+							</Collapsible>
+						</>
+					) : (
+						<>
+							<span>Tags:</span>
+							<SelectButtons
+								fieldName="tags"
+								options={assignableTo}
+								multiple={true}
+							/>
+						</>
+					)}
 				</div>
 			)}
 

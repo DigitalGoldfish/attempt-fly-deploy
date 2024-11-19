@@ -453,7 +453,7 @@ export function FaxdienstBlock({
 			</div>
 			{assignableTo.length > 0 && bereich !== 'Wund' && (
 				<div className={'my-4 grid w-full grid-cols-5'}>
-					<span>Tags:</span>
+					<span>Mitarbeiter:</span>
 					<SelectButtons
 						fieldName="tags"
 						options={assignableTo}
