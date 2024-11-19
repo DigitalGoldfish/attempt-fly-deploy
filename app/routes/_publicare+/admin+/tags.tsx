@@ -17,7 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	})
 	return tags.map((tag) => ({
 		...tag,
-		bereich: tag.bereich?.name || '',
+		bereich: tag.bereich.map((bereich) => bereich.name),
 	}))
 }
 

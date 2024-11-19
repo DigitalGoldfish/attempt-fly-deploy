@@ -24,7 +24,7 @@ import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
-import { loader as nextTaskLoader } from '../api+/nextTask.tsx'
+import { loader as nextTaskLoader } from '../api+/nextTask.kundendienst.tsx'
 import { ReportIssue } from './report-issue'
 import { Stamp } from './stamp'
 import { useActionData, useFetcher } from '@remix-run/react'
@@ -120,7 +120,6 @@ export async function action({ request }: ActionFunctionArgs) {
 		return json({ status: 'error', errors, defaultValues })
 	}
 
-	console.log('look for id', data.id)
 	const incoming = await prisma.incoming.findUniqueOrThrow({
 		where: { id: data.id },
 	})
@@ -186,7 +185,7 @@ export function KundendienstForm({
 	bereiche,
 }: {
 	data?: IncomingFormType | null
-	tags: (Tag & { bereich: Bereich | null })[]
+	tags: (Tag & { bereich: Bereich[] | null })[]
 	bereiche: Bereich[]
 }) {
 	const actionData = useActionData<typeof action>()
@@ -197,26 +196,23 @@ export function KundendienstForm({
 	const incoming = data ? data : taskFetcher?.data?.incoming
 
 	useEffect(() => {
-		console.log('fetcher data changed', fetcher.data)
 		if (fetcher.data && data) {
 			if (fetcher.data.status === 'success') {
 				navigate('/liste')
 			}
 		} else if (fetcher.data) {
 			if (fetcher.data.status === 'success') {
-				taskFetcher.load('/api/nextTask')
+				taskFetcher.load('/api/nextTask/kundendienst')
 			}
 		}
-	}, [fetcher.data])
+	}, [data, fetcher.data, navigate, taskFetcher])
 
 	useEffect(() => {
-		console.log('check for data')
 		if (!data && !taskFetcher.data) {
-			console.log('load first task')
-			taskFetcher.load('/api/nextTask')
+			taskFetcher.load('/api/nextTask/kundendienst')
 		}
 	}, [data, taskFetcher])
-	console.log('actionData', actionData)
+
 	const methods = useRemixForm<IncomingFormData>({
 		mode: 'onTouched',
 		fetcher,
@@ -238,7 +234,6 @@ export function KundendienstForm({
 
 	useEffect(() => {
 		if (incoming) {
-			console.log('data', incoming)
 			const attributes = []
 			if (incoming.kvsent) {
 				attributes.push('kvsent')
@@ -354,7 +349,7 @@ export function KundendienstBlock({
 	bereiche,
 }: {
 	data: IncomingFormType
-	tags: (Tag & { bereich: Bereich | null })[]
+	tags: (Tag & { bereich: Bereich[] | null })[]
 	bereiche: Bereich[]
 }) {
 	const {
@@ -375,7 +370,11 @@ export function KundendienstBlock({
 	}))
 
 	const assignableTo = tags
-		.filter((tag) => tag.bereich && tag.bereich.name === bereich)
+		.filter(
+			(tag) =>
+				tag.bereich &&
+				tag.bereich.find((singleBereich) => singleBereich.name === bereich),
+		)
 		.map((tag) => ({ value: tag.id, label: tag.label }))
 
 	return (

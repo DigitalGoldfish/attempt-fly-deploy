@@ -12,7 +12,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	// }),
 	return {
 		incoming: await nextIncoming({
-			id: id,
+			status: 'Kundendienst',
 		}),
 	}
 }

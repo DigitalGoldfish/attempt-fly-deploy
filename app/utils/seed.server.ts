@@ -795,11 +795,7 @@ async function getBereichAndTag(): Promise<[Bereich, Tag | null]> {
 	const bereich = bereiche[randomBereichIndex]
 	invariant(bereich, 'Bereich needs to be defined')
 
-	const tags = await prisma.tag.findMany({
-		where: {
-			bereichId: bereich.id,
-		},
-	})
+	const tags = await prisma.tag.findMany({})
 	if (tags.length === 0) {
 		return [bereich, null]
 	}

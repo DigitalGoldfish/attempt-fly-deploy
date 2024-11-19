@@ -23,6 +23,9 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { ReportIssue } from './report-issue'
 import { Stamp } from './stamp'
+import { useFetcher } from '@remix-run/react'
+import { loader as nextTaskLoader } from '#app/routes/api+/nextTask.kundendienst.tsx'
+import { useNavigate } from 'react-router'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -86,16 +89,26 @@ const ExistingCustomerSchema = z.object({
 
 const DeletedFormSchema = z.object({
 	id: z.string(),
-	forwarded: z.literal(false),
-	deleted: z.literal(true),
+	forwarded: z.boolean(),
+	type: z.string().optional(),
+	deleted: z.boolean(),
+	bereich: z.string().min(1, 'Bereich muss angegeben werden'),
 	deletionReason: z.string().optional(),
 	comment: z.string().optional(),
+	documentIds: z.array(z.string()),
+	tags: z.array(z.string()).optional(),
 })
 
 const ForwardedFormSchema = z.object({
 	id: z.string(),
-	forwarded: z.literal(true),
+	forwarded: z.boolean(),
+	bereich: z.string().min(1, 'Bereich muss angegeben werden'),
+	deleted: z.boolean(),
 	comment: z.string().optional(),
+	documentIds: z.array(z.string()),
+	deletionReason: z.string(),
+	type: z.string().optional(),
+	tags: z.array(z.string()).optional(),
 })
 
 export const FaxdienstFormSchema = FaxdienstAttributeSchema.and(
@@ -121,7 +134,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	)
 
 	if (errors) {
-		return json({ errors, defaultValues })
+		return json({ status: 'error', errors, defaultValues })
 	}
 
 	const incoming = await prisma.incoming.findUniqueOrThrow({
@@ -159,7 +172,9 @@ export async function action({ request }: ActionFunctionArgs) {
 			data: {
 				type: data?.type,
 				bereich: data?.bereich,
+				// @ts-ignore
 				neuanlage: data?.neukunde === 'JA',
+				// @ts-ignore
 				kundennr: data?.kundennr,
 				documents: {
 					connect: data.documentIds?.map((docId) => ({ id: docId })),
@@ -182,18 +197,44 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 }
 
+function getAttachmentIds(data: IncomingFormType) {
+	if (!data) return
+	const { mail, documents } = data
+	if (documents?.length === 0) {
+		return mail?.attachments
+			.filter(
+				(attachment) =>
+					(attachment.height && attachment.height > 250) ||
+					attachment.fileName.endsWith('.pdf'),
+			)
+			.map((attachment) => attachment.id)
+	} else {
+		return documents
+			?.filter(
+				(attachment) =>
+					(attachment.height && attachment.height > 250) ||
+					attachment.fileName.endsWith('.pdf'),
+			)
+			.map((attachment) => attachment.id)
+	}
+}
+
 export function FaxdienstForm({
 	data,
 	tags,
 	bereiche,
 }: {
-	data: IncomingFormType | null
-	tags: (Tag & { bereich: Bereich | null })[]
+	data?: IncomingFormType | null
+	tags: (Tag & { bereich: Bereich[] | null })[]
 	bereiche: Bereich[]
 }) {
+	const fetcher = useFetcher<typeof action>()
+	const taskFetcher = useFetcher<typeof nextTaskLoader>()
+
 	const methods = useRemixForm<IncomingFormData>({
 		mode: 'onTouched',
 		resolver,
+		fetcher,
 		defaultValues: {
 			id: '',
 			type: 'Bestellung',
@@ -209,6 +250,30 @@ export function FaxdienstForm({
 		},
 	})
 
+	const navigate = useNavigate()
+
+	useEffect(() => {
+		console.log('fetcher data changed', fetcher.data)
+		if (fetcher.data && data) {
+			if (fetcher.data.status === 'success') {
+				navigate('/liste')
+			}
+		} else if (fetcher.data) {
+			if (fetcher.data.status === 'success') {
+				taskFetcher.load('/api/nextTask/faxdienst')
+			}
+		}
+	}, [data, fetcher.data, navigate, taskFetcher])
+
+	useEffect(() => {
+		console.log('check for data')
+		if (!data && !taskFetcher.data) {
+			console.log('load first task')
+			taskFetcher.load('/api/nextTask/faxdienst')
+		}
+	}, [data, taskFetcher])
+
+	const incoming = data ? data : taskFetcher?.data?.incoming
 	const { reset, setValue } = methods
 
 	const [isDeleted, setIsDeleted] = useState(false)
@@ -225,47 +290,33 @@ export function FaxdienstForm({
 		setValue('comment', '')
 	}
 
-	function getAttachmentIds() {
-		if (!data) return
-		const { mail, documents } = data
-		if (documents?.length === 0) {
-			return mail?.attachments
-				.filter(
-					(attachment) =>
-						(attachment.height && attachment.height > 250) ||
-						attachment.fileName.endsWith('.pdf'),
-				)
-				.map((attachment) => attachment.id)
-		} else {
-			return documents
-				?.filter(
-					(attachment) =>
-						(attachment.height && attachment.height > 250) ||
-						attachment.fileName.endsWith('.pdf'),
-				)
-				.map((attachment) => attachment.id)
-		}
-	}
-
 	useEffect(() => {
-		if (data) {
+		if (incoming) {
 			reset({
-				id: data.id,
-				type: data.type === 'Unknown' ? 'Bestellung' : data.type,
-				bereich: data.bereich || '',
-				kundennr: data.kundennr || '',
-				neukunde: !data.kundennr ? (data.neuanlage ? 'JA' : 'NEIN') : undefined,
-				tags: data.tags ? data.tags.map((tag) => tag.id) : [],
-				deleted: data.status === 'Geloescht',
+				id: incoming.id,
+				type: incoming.type === 'Unknown' ? 'Bestellung' : incoming.type,
+				bereich: incoming.bereich || '',
+				kundennr: incoming.kundennr || '',
+				neukunde: !incoming.kundennr
+					? incoming.neuanlage
+						? 'JA'
+						: 'NEIN'
+					: undefined,
+				tags: incoming.tags ? incoming.tags.map((tag) => tag.id) : [],
+				deleted: incoming.status === 'Geloescht',
 				deletionReason: '',
 				comment: '',
-				documentIds: getAttachmentIds(),
+				forwarded: false,
+				documentIds: getAttachmentIds(incoming),
 			})
-			setIsDeleted(data.status === 'Geloescht')
+			setIsDeleted(incoming.status === 'Geloescht')
 		}
-	}, [reset, data])
+	}, [reset, incoming, getAttachmentIds])
 
-	if (!data) {
+	if (taskFetcher.state === 'loading') {
+		return <div>Loading</div>
+	}
+	if (!incoming) {
 		return <div>No work to do</div>
 	}
 
@@ -287,14 +338,14 @@ export function FaxdienstForm({
 						className="flex-1 overflow-y-scroll"
 						style={{ height: 'calc(100vh - 120px - 4rem)' }}
 					>
-						<PreviewBlock data={data} />
+						<PreviewBlock data={incoming} />
 					</div>
 					<div
 						className="flex flex-1 flex-col"
 						style={{ height: 'calc(100vh - 120px - 4rem)' }}
 					>
 						<div className="h-full flex-grow overflow-y-scroll pr-4">
-							<MessageBlock data={data} />
+							<MessageBlock data={incoming} />
 							{isDeleted ? (
 								<DeletedBlock undelete={undeleteEntry} />
 							) : (
@@ -307,15 +358,8 @@ export function FaxdienstForm({
 							<Button variant={'pcblue'} type={'submit'}>
 								Speichern
 							</Button>
-							{data.status === 'Kundendienst' && (
-								<div className="flex justify-end">
-									<Button variant="secondary" size="sm" type="button">
-										Zurücklegen
-									</Button>
-								</div>
-							)}
-							{!isDeleted && <Stamp id={data.id} />}
-							<ReportIssue id={data.id} />
+							{!isDeleted && <Stamp id={incoming.id} />}
+							<ReportIssue id={incoming.id} />
 							<div className="flex-1"></div>
 							{!isDeleted && (
 								<Button
@@ -338,7 +382,7 @@ export function FaxdienstBlock({
 	tags,
 	bereiche,
 }: {
-	tags: (Tag & { bereich: Bereich | null })[]
+	tags: (Tag & { bereich: Bereich[] | null })[]
 	bereiche: Bereich[]
 }) {
 	const bereich = useWatch({ name: 'bereich' })
@@ -348,7 +392,11 @@ export function FaxdienstBlock({
 	} = useFormContext()
 
 	const assignableTo = tags
-		.filter((tag) => tag.bereich && tag.bereich.name === bereich)
+		.filter(
+			(tag) =>
+				tag.bereich &&
+				tag.bereich.find((singleBereich) => singleBereich.name === bereich),
+		)
 		.map((tag) => ({ value: tag.id, label: tag.label }))
 
 	const bereichOptions = bereiche.map((bereich) => ({
@@ -360,9 +408,9 @@ export function FaxdienstBlock({
 		<div>
 			{Object.values(errors).length > 0 && (
 				<ul className="mb-4 bg-red-500 p-4 text-white">
-					{Object.values(errors).map((error) => (
+					{Object.entries(errors).map(([field, error]) => (
 						<li key={error?.message?.toString()}>
-							{error?.message?.toString()}
+							{field}: {error?.message?.toString()}
 						</li>
 					))}
 				</ul>

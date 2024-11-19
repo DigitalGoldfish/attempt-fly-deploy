@@ -15,7 +15,7 @@ export type TagsTableModel = {
 	id: string
 	label: string
 	type: string
-	bereich: string
+	bereich: string[]
 	createdAt: Date
 	updatedAt: Date
 }
@@ -42,11 +42,12 @@ const columns = [
 	}),
 	columnHelper.accessor('bereich', {
 		header: 'Bereich',
-		cell: (info) => (
-			<div className="flex max-w-[250px] flex-wrap gap-1">
-				<Badge>{info.getValue()}</Badge>
-			</div>
-		),
+		cell: (info) =>
+			info.getValue().map((bereich) => (
+				<div key="bereich" className="flex max-w-[250px] flex-wrap gap-1">
+					<Badge>{bereich}</Badge>
+				</div>
+			)),
 	}),
 	columnHelper.accessor('createdAt', {
 		header: 'Erstellt',

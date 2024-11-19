@@ -16,7 +16,7 @@ const TagFormSchema = z.object({
 	id: z.string().optional(),
 	label: z.string(),
 	type: z.string(),
-	bereich: z.string().optional(),
+	bereich: z.array(z.string()),
 })
 type TagFormData = z.infer<typeof TagFormSchema>
 
@@ -47,7 +47,7 @@ const UserFormSchemaServer = TagFormSchema /* .superRefine(
 const userFormDefaultValues = {
 	label: '',
 	type: '',
-	bereich: '',
+	bereich: [],
 }
 const resolver = zodResolver(TagFormSchema)
 
@@ -70,8 +70,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 		where: {
 			id: id || '',
 		},
-		update: { ...rest, bereich: { connect: { id: bereich } } },
-		create: { ...rest, bereich: { connect: { id: bereich } } },
+		update: {
+			...rest,
+			bereich: { set: bereich.map((bereich) => ({ id: bereich })) },
+		},
+		create: {
+			...rest,
+			bereich: { connect: bereich.map((bereich) => ({ id: bereich })) },
+		},
 	})
 	return redirectWithToast('/admin/tags', {
 		type: 'success',

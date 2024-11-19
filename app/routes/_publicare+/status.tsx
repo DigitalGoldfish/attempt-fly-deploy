@@ -1,4 +1,3 @@
-import { Bereich, Tag } from '@prisma/client'
 import {
 	json,
 	type LoaderFunctionArgs,
@@ -25,13 +24,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)
 
 	const rawCounts = (await prisma.$queryRaw`
-		select count(*) as count, it.B from Incoming i
+		select count(*) as count, i.bereich as bereich, it.B from Incoming i
 		inner join _IncomingToTag it on (i.id = it.A)
 		where i.status = 'Kundendienst'
-		group by it.B`) as { B: string; count: number }[]
+		group by i.bereich, it.B`) as { B: string; bereich: string; count: number }[]
 
-	const xy = rawCounts.map((a) => ({ tagId: a.B, count: Number(a.count) }))
+	const xy = rawCounts.map((a) => ({
+		tagId: a.B,
+		bereich: a.bereich,
+		count: Number(a.count),
+	}))
 
+	const bereiche = await prisma.bereich.findMany({})
 	const counts = await prisma.incoming.groupBy({
 		by: ['bereich', 'status'],
 		_count: {
@@ -50,9 +54,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 	tags.forEach((tag) => {
 		const count = xy.find((a) => a.tagId === tag.id)
+		const bereich = bereiche.find((bereich) => bereich.name === count?.bereich)
 		tagCounts.push({
 			tag: tag,
-			bereich: tag.bereich,
+			bereich: bereich || null,
 			count: count ? count.count : 0,
 		})
 	})
