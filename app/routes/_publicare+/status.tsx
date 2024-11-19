@@ -1,5 +1,9 @@
 import { Bereich, Tag } from '@prisma/client'
-import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
+import {
+	json,
+	type LoaderFunctionArgs,
+	type MetaFunction,
+} from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { Visualisation } from '#app/components/blocks/visualisation.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
@@ -27,8 +31,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		group by it.B`) as { B: string; count: number }[]
 
 	const xy = rawCounts.map((a) => ({ tagId: a.B, count: Number(a.count) }))
-
-	console.log('raw query sql', xy)
 
 	const counts = await prisma.incoming.groupBy({
 		by: ['bereich', 'status'],

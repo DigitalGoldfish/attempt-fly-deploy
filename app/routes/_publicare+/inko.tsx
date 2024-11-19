@@ -6,7 +6,6 @@ import { Counter } from '#app/components/layout/counter.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { IncomingStatus } from '#app/const/IncomingStatus.ts'
-import { nextIncoming } from '#app/db/incoming.tsx'
 import { KundendienstForm } from '#app/routes/_publicare+/kundendienst_form.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -45,15 +44,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		}),
 		tags: await prisma.tag.findMany({ include: { bereich: true } }),
 		bereiche: await prisma.bereich.findMany({}),
-		incoming: await nextIncoming({
-			status: 'Kundendienst',
-			bereich: 'Inko',
-		}),
 	}
 }
 
 export default function Stoma() {
-	const { incoming, tags, bereiche, highpriority, onhold, inbox } =
+	const { tags, bereiche, highpriority, onhold, inbox } =
 		useLoaderData<typeof loader>()
 
 	return (
@@ -88,7 +83,7 @@ export default function Stoma() {
 				</Button>
 			}
 		>
-			<KundendienstForm data={incoming} tags={tags} bereiche={bereiche} />
+			<KundendienstForm tags={tags} bereiche={bereiche} />
 			<Outlet />
 		</DefaultLayout>
 	)

@@ -24,8 +24,11 @@ import { SelectButtons } from '#app/components/ui/select-buttons.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 
+import { loader as nextTaskLoader } from '../api+/nextTask.tsx'
 import { ReportIssue } from './report-issue'
 import { Stamp } from './stamp'
+import { useActionData, useFetcher } from '@remix-run/react'
+import { useNavigate } from 'react-router'
 
 export type IncomingFormType = Incoming & {
 	mail?:
@@ -64,12 +67,12 @@ const KundendienstAttributeSchema = z.object({
 	bereich: z.string().min(1, 'Bereich muss angegeben werden'),
 	tags: z.array(z.string()).optional(),
 
-	kvuploaded: z.boolean(),
+	kvuploaded: z.boolean().optional(),
 	svtraeger: z.string().optional(),
 
 	attributes: z.array(z.string()),
 	wiedervorlage: z.string().optional(),
-	comment: z.string(),
+	comment: z.string().optional(),
 	neukunde: z.union([z.literal('JA'), z.literal('NEIN')]),
 	kundennr: z.string(),
 	bestellnr: z.string().optional(),
@@ -113,12 +116,11 @@ export async function action({ request }: ActionFunctionArgs) {
 		zodResolver(KundendienstAttributeSchemaSS),
 	)
 
-	console.log('data', data)
-	console.log('errors', errors)
 	if (!data || errors) {
-		return json({ errors, defaultValues })
+		return json({ status: 'error', errors, defaultValues })
 	}
 
+	console.log('look for id', data.id)
 	const incoming = await prisma.incoming.findUniqueOrThrow({
 		where: { id: data.id },
 	})
@@ -133,15 +135,15 @@ export async function action({ request }: ActionFunctionArgs) {
 	const inquiry = attributes.includes('inquiry')
 
 	let status = 'Erledigt'
-	if (kvsent && !kvreceived) {
-		status = 'KVbenoetigt'
-	} else if (!kvreceived) {
-		status = 'KVbestaetigt'
-	} else if (ohneverordnung) {
-		status = 'Nachfrage'
-	} else if (produktanlage) {
-		status = 'FehlendesProdukt'
-	}
+	// if (kvsent && !kvreceived) {
+	// 	status = 'KVbenoetigt'
+	//} else if (kvsent && kvreceived && incoming.kvsent && incoming.kvreceived) {
+	// status = 'KVbestaetigt'
+	// } else if (ohneverordnung) {
+	//	status = 'Nachfrage'
+	//} else if (produktanlage) {
+	//	status = 'FehlendesProdukt'
+	//}
 
 	await prisma.incoming.update({
 		where: {
@@ -164,30 +166,60 @@ export async function action({ request }: ActionFunctionArgs) {
 			produktanlage: produktanlage,
 			kvsent: kvsent,
 			kvreceived: kvreceived,
-			kvuploaded: data.kvuploaded,
+			kvuploaded: data.kvuploaded || false,
 			wiedervorlage: Number.isNaN(data.wiedervorlage)
 				? undefined
 				: subHours(new Date(), data.wiedervorlage),
 			comment: data.comment,
-
 			status: status,
 		},
 	})
 
-	return null
+	return json({
+		status: 'success',
+	})
 }
 
 export function KundendienstForm({
-	data,
+	data = null,
 	tags,
 	bereiche,
 }: {
-	data: IncomingFormType | null
+	data?: IncomingFormType | null
 	tags: (Tag & { bereich: Bereich | null })[]
 	bereiche: Bereich[]
 }) {
+	const actionData = useActionData<typeof action>()
+	const fetcher = useFetcher<typeof action>()
+	const navigate = useNavigate()
+	const taskFetcher = useFetcher<typeof nextTaskLoader>()
+
+	const incoming = data ? data : taskFetcher?.data?.incoming
+
+	useEffect(() => {
+		console.log('fetcher data changed', fetcher.data)
+		if (fetcher.data && data) {
+			if (fetcher.data.status === 'success') {
+				navigate('/liste')
+			}
+		} else if (fetcher.data) {
+			if (fetcher.data.status === 'success') {
+				taskFetcher.load('/api/nextTask')
+			}
+		}
+	}, [fetcher.data])
+
+	useEffect(() => {
+		console.log('check for data')
+		if (!data && !taskFetcher.data) {
+			console.log('load first task')
+			taskFetcher.load('/api/nextTask')
+		}
+	}, [data, taskFetcher])
+	console.log('actionData', actionData)
 	const methods = useRemixForm<IncomingFormData>({
 		mode: 'onTouched',
+		fetcher,
 		resolver,
 		defaultValues: {
 			id: '',
@@ -205,43 +237,46 @@ export function KundendienstForm({
 	const [isDeleted, setIsDeleted] = useState(false)
 
 	useEffect(() => {
-		if (data) {
-			console.log('data', data)
+		if (incoming) {
+			console.log('data', incoming)
 			const attributes = []
-			if (data.kvsent) {
+			if (incoming.kvsent) {
 				attributes.push('kvsent')
 			}
-			if (data.kvreceived) {
+			if (incoming.kvreceived) {
 				attributes.push('kvreceived')
 			}
-			if (data.ohneverordnung) {
+			if (incoming.ohneverordnung) {
 				attributes.push('ohneverordnung')
 			}
-			if (data.produktanlage) {
+			if (incoming.produktanlage) {
 				attributes.push('produktanlage')
 			}
-			if (data.inquiry) {
+			if (incoming.inquiry) {
 				attributes.push('inquiry')
 			}
 
 			reset({
-				id: data.id,
-				type: data.type === 'Unknown' ? 'Bestellung' : data.type,
-				bereich: data.bereich || '',
-				tags: data.tags ? data.tags.map((tag) => tag.id) : [],
-				kundennr: data.kundennr || undefined,
-				bestellnr: data.bestellnr || undefined,
-				neukunde: data.neuanlage ? 'JA' : 'NEIN',
-				kvuploaded: data.kvuploaded,
-				svtraeger: data.svTraegerId || undefined,
+				id: incoming.id,
+				type: incoming.type === 'Unknown' ? 'Bestellung' : incoming.type,
+				bereich: incoming.bereich || '',
+				tags: incoming.tags ? incoming.tags.map((tag) => tag.id) : [],
+				kundennr: incoming.kundennr || undefined,
+				bestellnr: incoming.bestellnr || undefined,
+				neukunde: incoming.neuanlage ? 'JA' : 'NEIN',
+				kvuploaded: incoming.kvuploaded,
+				svtraeger: incoming.svTraegerId || undefined,
 				attributes: attributes,
-				comment: data.comment || '',
+				comment: incoming.comment || '',
 			})
 			setIsDeleted(false)
 		}
-	}, [reset, data])
+	}, [reset, incoming])
 
-	if (!data) {
+	if (taskFetcher.state === 'loading') {
+		return <div>Loading</div>
+	}
+	if (!incoming) {
 		return <div>No work to do</div>
 	}
 
@@ -253,7 +288,7 @@ export function KundendienstForm({
 				id="sample_form"
 				layout="horizontal"
 				className="w-full"
-				action="/_publicare+/FaxdienstForm"
+				action="/kundendienst_form"
 			>
 				<div
 					className="flex gap-8"
@@ -263,20 +298,20 @@ export function KundendienstForm({
 						className="flex-1 overflow-y-scroll"
 						style={{ height: 'calc(100vh - 120px - 4rem)' }}
 					>
-						<PreviewBlock data={data} />
+						<PreviewBlock data={incoming} />
 					</div>
 					<div
 						className="flex flex-1 flex-col"
 						style={{ height: 'calc(100vh - 120px - 4rem)' }}
 					>
 						<div className="h-full flex-grow overflow-y-scroll pr-4">
-							<MessageBlock data={data} />
+							<MessageBlock data={incoming} />
 							{isDeleted ? (
 								<DeletedBlock setIsDeleted={setIsDeleted} />
 							) : (
 								<>
 									<KundendienstBlock
-										data={data}
+										data={incoming}
 										tags={tags}
 										bereiche={bereiche}
 									/>
@@ -287,15 +322,15 @@ export function KundendienstForm({
 							<Button variant={'pcblue'} type={'submit'}>
 								Speichern
 							</Button>
-							{data.status === 'Kundendienst' && (
+							{incoming.status === 'Kundendienst' && (
 								<div className="flex justify-end">
 									<Button variant="secondary" size="sm" type="button">
 										Zurücklegen
 									</Button>
 								</div>
 							)}
-							{!isDeleted && <Stamp id={data.id} />}
-							<ReportIssue id={data.id} />
+							{!isDeleted && <Stamp id={incoming.id} />}
+							<ReportIssue id={incoming.id} />
 							<div className="flex-1"></div>
 							{!isDeleted && (
 								<Button
@@ -343,14 +378,13 @@ export function KundendienstBlock({
 		.filter((tag) => tag.bereich && tag.bereich.name === bereich)
 		.map((tag) => ({ value: tag.id, label: tag.label }))
 
-	console.log('values', errors)
 	return (
 		<div className="mb-8 flex flex-col gap-4">
 			{Object.values(errors).length > 0 && (
 				<ul className="mb-4 bg-red-500 p-4 text-white">
-					{Object.values(errors).map((error) => (
+					{Object.entries(errors).map(([field, error]) => (
 						<li key={error?.message?.toString()}>
-							{error?.message?.toString()}
+							{field}: {error?.message?.toString()}
 						</li>
 					))}
 				</ul>
@@ -435,7 +469,6 @@ export function KundendienstBlock({
 							variant="destructive"
 							type="button"
 							onClick={() => {
-								console.log('senden')
 								setValue('wiedervorlage', '72')
 								setValue('attributes', [...attributes, 'kvsent'])
 							}}

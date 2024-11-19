@@ -110,7 +110,6 @@ export function ReportIssue({ id }: { id: string }) {
 	const isSubmitting = navigation.state === 'submitting'
 	const { reset } = methods
 	useEffect(() => {
-		console.log('reexecute success')
 		if (fetcher.data?.success) {
 			setIsOpen(false)
 			reset()

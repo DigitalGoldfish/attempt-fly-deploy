@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Stoma() {
-	const { incoming, tags, bereiche, highpriority, onhold, inbox } =
+	const { tags, bereiche, highpriority, onhold, inbox } =
 		useLoaderData<typeof loader>()
 
 	return (
@@ -88,7 +88,7 @@ export default function Stoma() {
 				</Button>
 			}
 		>
-			<KundendienstForm data={incoming} tags={tags} bereiche={bereiche} />
+			<KundendienstForm tags={tags} bereiche={bereiche} />
 			<Outlet />
 		</DefaultLayout>
 	)

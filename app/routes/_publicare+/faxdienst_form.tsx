@@ -121,7 +121,6 @@ export async function action({ request }: ActionFunctionArgs) {
 	)
 
 	if (errors) {
-		console.log('errors', errors)
 		return json({ errors, defaultValues })
 	}
 

@@ -6,7 +6,6 @@ import { Counter } from '#app/components/layout/counter.tsx'
 import { DefaultLayout } from '#app/components/layout/default.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { IncomingStatus } from '#app/const/IncomingStatus.ts'
-import { nextIncoming } from '#app/db/incoming.tsx'
 import { KundendienstForm } from '#app/routes/_publicare+/kundendienst_form.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -18,10 +17,6 @@ export const meta: MetaFunction = () => [
 export async function loader({ request }: LoaderFunctionArgs) {
 	await requireUserId(request)
 	return {
-		incoming: await nextIncoming({
-			status: 'Kundendienst',
-			bereich: 'Wund',
-		}),
 		highpriority: await prisma.incoming.count({
 			where: {
 				status: 'Kundendienst',
@@ -54,8 +49,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Wundversorgung() {
-	const { incoming, bereiche, tags, onhold, inbox, highpriority } =
-		useLoaderData<typeof loader>()
+	const { bereiche, tags, onhold, inbox } = useLoaderData<typeof loader>()
 	return (
 		<DefaultLayout
 			wide
@@ -83,7 +77,7 @@ export default function Wundversorgung() {
 				</Button>
 			}
 		>
-			<KundendienstForm data={incoming} tags={tags} bereiche={bereiche} />
+			<KundendienstForm tags={tags} bereiche={bereiche} />
 			<Outlet />
 		</DefaultLayout>
 	)

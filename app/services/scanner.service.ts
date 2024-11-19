@@ -1,8 +1,8 @@
 import type ScanbotSDK from 'scanbot-web-sdk'
-import  { type IDocumentScannerHandle } from 'scanbot-web-sdk/@types/interfaces/i-document-scanner-handle'
+import { type IDocumentScannerHandle } from 'scanbot-web-sdk/@types/interfaces/i-document-scanner-handle'
 import { type DocumentScannerConfiguration } from 'scanbot-web-sdk/@types/model/configuration/document-scanner-configuration'
 import { type DocumentDetectionResult } from 'scanbot-web-sdk/@types/model/document/document-detection-result'
-import  {
+import {
 	type PageDirection,
 	type PageFit,
 	type PageSize,
@@ -21,7 +21,22 @@ export default class ScanbotSDKService {
 	public static instance: ScanbotSDKService = new ScanbotSDKService()
 
 	sdk?: ScanbotSDK
-	LICENSE_KEY = ''
+	LICENSE_KEY =
+		'WxfF3BRlAErfqa85X3/jOz6EHzD5Rx' +
+		'KilakxS5iBJbKgYr5FP1guUT/ogqOi' +
+		'KSLxDxPoHsSrKzOgqgaKCEoQCiVnjB' +
+		'sK5MFSCtNPm9TAycpIyznU2UcMYNqK' +
+		'QCZM0cdcx0bxZYIjfsl8yJkn1TAfRD' +
+		'CEyLDrXOAYCxd2AZnLdP0bQju0OwUq' +
+		'F25+xoebnpZ3BIxjuRUROebxpiv8Zw' +
+		'Iqv936cyynJQMJ6BLWso+DWWgy+38y' +
+		'3eUzBGoQwLszsnPbiHCX4zKVovVxOG' +
+		'OfQcLai3L08LvTh446n9FMQQ/jEkxr' +
+		'Tr8qe4WniFGiffuoP61kn6d2P0i12t' +
+		'tpxyjwvcMgkA==\nU2NhbmJvdFNESw' +
+		'psb2NhbGhvc3R8cHVibGljYXJlLnBy' +
+		'b3RvdHlwZS5tYW5nb21lZGlhLmF0Cj' +
+		'E3MzI1NzkxOTkKODM4ODYwNwo4\n'
 	public onDocumentCaptured: ((document: ScanbotDocument) => void) | null = null
 
 	public async initialize() {
