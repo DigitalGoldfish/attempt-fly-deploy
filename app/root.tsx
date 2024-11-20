@@ -247,9 +247,13 @@ function AppWithProviders() {
 export default withSentry(AppWithProviders)
 
 export function UserDropdown() {
-	const user = useUser()
+	const user = useOptionalUser()
 	const submit = useSubmit()
 	const formRef = useRef<HTMLFormElement>(null)
+
+	if (!user) {
+		return null
+	}
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>

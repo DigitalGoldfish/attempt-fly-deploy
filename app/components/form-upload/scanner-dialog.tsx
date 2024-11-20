@@ -16,17 +16,14 @@ export default function DocumentScannerDialog({
 }) {
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="max-w-screen-lg">
-				<DialogHeader>
-					<DialogTitle>Document Scanner</DialogTitle>
-					<Button
-						onClick={onClose}
-						className="absolute right-2 top-2"
-						variant={'default'}
-					>
-						<X size={20} className="p-0" />
-					</Button>
-				</DialogHeader>
+			<DialogContent className="h-full max-h-full w-full max-w-screen-lg overflow-hidden p-0">
+				<Button
+					onClick={onClose}
+					className="absolute right-2 top-2 z-50"
+					variant={'default'}
+				>
+					<X size={20} className="p-0" />
+				</Button>
 				<div id="document-scanner" className="min-h-[80vh] w-full" />
 			</DialogContent>
 		</Dialog>

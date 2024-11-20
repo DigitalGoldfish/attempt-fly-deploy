@@ -64,12 +64,19 @@ export async function action({ request }: ActionFunctionArgs) {
 			})
 
 			return json(
-				{ message: 'Dokument erfolgreich hochgeladen' },
+				{
+					status: 'success',
+					message: 'Dokument erfolgreich hochgeladen',
+				},
 				{ status: 200 },
 			)
 		} catch (error) {
 			return json(
-				{ message: 'Failed to save document to database', error },
+				{
+					status: 'error',
+					message: 'Failed to save document to database',
+					error,
+				},
 				{ status: 500 },
 			)
 		}
@@ -81,6 +88,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export interface FetcherResponse {
 	message: string
+	status: string
 }
 
 export default function FileUploadPage() {
@@ -89,17 +97,17 @@ export default function FileUploadPage() {
 
 	return (
 		<DefaultLayout>
-			<div className="col-span-2 row-span-2 flex h-full w-full flex-col gap-6 rounded-2xl p-4">
+			<div className="col-span-2 row-span-2 flex h-full w-full flex-col gap-6 rounded-2xl">
 				<div className="w-full space-y-6">
 					<header>
 						<h2 className="text-h4 font-bold">Bestellung</h2>
 					</header>
 
-					<div className="flex flex-col gap-8 md:grid md:grid-cols-2">
-						<div className="order-2 md:order-1">
+					<div className="flex flex-col gap-16 md:grid md:grid-cols-2 md:gap-8">
+						<div className="order-1">
 							<UploadForm />
 						</div>
-						<div className="order-1 md:order-2">
+						<div className="order-2">
 							<TextBlock />
 						</div>
 					</div>
@@ -131,7 +139,7 @@ function TextBlock() {
 				Verwendung der Scanner-App erfolgt diese Qualitätsüberprüfung
 				automatisch, daher verwenden Sie wenn möglich diese.
 			</p>
-			<p>
+			<p className="mb-8">
 				Falls sie Verordnungen für mehrere Patienten hochladen bitte senden sie
 				das Formular getrennt für jeden Patienten hoch.
 			</p>
@@ -153,6 +161,8 @@ function UploadForm() {
 	const [error, setError] = useState<string | null>(null)
 	const [showScanner, setShowScanner] = useState(false)
 	const [viewItem, setViewItem] = useState<Document | undefined>()
+
+	console.log('isLoading', isLoading)
 
 	const fetcher = useFetcher<FetcherResponse>()
 	const handleRemoveDocument = (id: string | undefined) => {
@@ -211,12 +221,13 @@ function UploadForm() {
 	}
 	useEffect(() => {
 		if (fetcher.state === 'idle' && fetcher.data) {
-			const { message } = fetcher.data
+			const { status, message } = fetcher.data
 
-			if (message.includes('successfully')) {
+			if (status === 'success') {
 				toast['success'](message)
 				setDocuments([])
 				setComment('')
+				console.log('set is löoading to false')
 				setIsLoading(false)
 			} else {
 				toast['error'](message)
@@ -240,6 +251,7 @@ function UploadForm() {
 				])
 			}
 		} catch (error) {
+			console.error(error)
 			setError(`Scanner failed to initialize ${error}`)
 		} finally {
 			setShowScanner(false)
@@ -291,27 +303,42 @@ function UploadForm() {
 		return (
 			<div className="flex flex-col gap-4">
 				<ul className={'flex flex-col gap-2'}>
-					{documents.map((document) => (
-						<div className="flex w-full items-center gap-4">
+					{documents.map((document, index) => (
+						<div
+							key={document.filename}
+							className="flex w-full items-center gap-4"
+						>
 							<Button
 								onClick={() => setViewItem(document)}
-								key={document.filename}
 								className="w-full rounded bg-gray-300 p-2 text-black hover:text-slate-100"
 							>
-								Document {document.filename}
+								Dokument 1
 							</Button>
-							<Button onClick={() => handleRemoveDocument(document.id)}>
+							<Button
+								onClick={() => handleRemoveDocument(document.id)}
+								variant={'ghost'}
+								size="icon"
+								className={'mxx-4'}
+							>
 								<Trash size={25} />
 							</Button>
 						</div>
 					))}
 				</ul>
 				<div className="flex justify-center">
-					<Button variant={'link'} onClick={handleScanner}>
+					<Button
+						variant={'ghost'}
+						onClick={handleScanner}
+						className="flex w-full gap-2"
+					>
 						<Plus />
 						Weiteres Bild aufnehmen
 					</Button>
-					<Button onClick={handleViewDocuments} variant={'link'}>
+					<Button
+						onClick={handleViewDocuments}
+						variant={'link'}
+						className="hidden"
+					>
 						<Eye />
 						Dokument ansehen
 					</Button>
@@ -358,7 +385,7 @@ function UploadForm() {
 	}
 	return (
 		<div className="flex flex-col gap-4">
-			<div className="aspect-square max-h-72">
+			<div className="aspect-video max-h-72">
 				<Button
 					type="button"
 					onClick={handleScanner}
