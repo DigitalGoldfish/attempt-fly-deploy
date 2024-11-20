@@ -212,7 +212,6 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 	}
 	return null
 }
-
 export function FilePreview({
 	attachment,
 }: {
@@ -228,6 +227,8 @@ export function FilePreview({
 	>
 }) {
 	const [rotation, setRotation] = useState(0)
+	const [isCropped, setIsCropped] = useState(false)
+	const [timestamp, setTimestamp] = useState(Date.now())
 	const fetcher = useFetcher()
 
 	const handleRotate = (degrees: number) => {
@@ -249,14 +250,16 @@ export function FilePreview({
 		)
 	}
 
+	const handleCropComplete = () => {
+		setIsCropped(true)
+		setTimestamp(Date.now())
+	}
+
 	const isIgnored = (attachment?.height ?? 0) < 250
 	const isPdf = attachment.contentType.includes('pdf')
 	const isSubmitting = fetcher.state !== 'idle'
 
-	const getResourceUrl = () => {
-		const baseUrl = `/resources/mail-attachment/${attachment.id}`
-		return rotation !== 0 ? `${baseUrl}?rotation=${rotation}` : baseUrl
-	}
+	const imageUrl = `/resources/mail-attachment/${attachment.id}?rotation=${rotation}${isCropped ? `&t=${timestamp}` : ''}`
 
 	return (
 		<div
@@ -264,11 +267,7 @@ export function FilePreview({
 			style={{ maxHeight: 'calc(100vh - 300px)' }}
 		>
 			{isPdf ? (
-				<iframe
-					className="h-full w-full"
-					src={getResourceUrl()}
-					title="PDF Viewer"
-				/>
+				<iframe className="h-full w-full" src={imageUrl} title="PDF Viewer" />
 			) : (
 				<div className="relative inline-block h-full w-full">
 					<div className="flex h-full w-full items-center justify-center">
@@ -276,7 +275,7 @@ export function FilePreview({
 							className={`max-h-full max-w-full object-contain transition-opacity duration-200 ${
 								isIgnored ? 'opacity-40' : ''
 							} ${isSubmitting ? 'opacity-50' : ''}`}
-							src={getResourceUrl()}
+							src={imageUrl}
 							alt="Attachment"
 						/>
 						{isIgnored && (
@@ -289,9 +288,16 @@ export function FilePreview({
 			)}
 
 			<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 space-x-4 rounded p-2 shadow-lg duration-200">
-				<ImageCropper id={attachment.id} fileName={attachment.fileName} />
-				<div className="mx-2 h-9 w-px bg-gray-400" />
-
+				{!isPdf && (
+					<>
+						<ImageCropper
+							id={attachment.id}
+							fileName={attachment.fileName}
+							onCropComplete={handleCropComplete}
+						/>
+						<div className="mx-2 h-9 w-px bg-gray-400" />
+					</>
+				)}
 				<Button
 					type="button"
 					className="h-auto bg-transparent p-0 text-black"

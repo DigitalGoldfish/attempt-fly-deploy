@@ -74,16 +74,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	if (!document) throw new Error('Document not found')
 
-	if (rotation === 0) {
-		return new Response(document.blob, {
-			headers: {
-				'Content-Type': document.contentType,
-				'Content-Length': Buffer.byteLength(document.blob).toString(),
-				'Content-Disposition': `inline; filename="${params.id}"`,
-			},
-		})
-	}
-
 	const { blob, contentType } = await rotateDocument(
 		document.blob,
 		document.contentType,

@@ -39,14 +39,15 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function ImageCropper({
 	id,
 	fileName,
+	onCropComplete,
 }: {
 	id: string
 	fileName: string
+	onCropComplete: () => void
 }) {
 	const fetcher = useFetcher<FetcherResponse>()
 	const [onOpenCrop, setOnOpenCrop] = useState(false)
 	const [loading, setLoading] = useState(false)
-	const navigate = useNavigate()
 	async function handleSaveCrop() {
 		try {
 			const res = await ScanbotSDKService.instance.applyCrop()
@@ -81,7 +82,8 @@ export default function ImageCropper({
 
 			if (message.includes('successfully')) {
 				toast['success'](message)
-				navigate('.')
+				setOnOpenCrop(false)
+				onCropComplete()
 			} else {
 				toast['error'](message)
 			}
