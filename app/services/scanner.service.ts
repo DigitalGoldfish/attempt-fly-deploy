@@ -30,7 +30,14 @@ export class ScanbotDocument {
 }
 
 export default class ScanbotSDKService {
-	public static instance: ScanbotSDKService = new ScanbotSDKService()
+	public static _instance: ScanbotSDKService
+
+	public static get instance(): ScanbotSDKService {
+		if (!this._instance) {
+			this._instance = new ScanbotSDKService()
+		}
+		return this._instance
+	}
 
 	sdk?: ScanbotSDK
 	LICENSE_KEY =

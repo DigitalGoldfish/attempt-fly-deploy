@@ -312,7 +312,7 @@ function UploadForm() {
 								onClick={() => setViewItem(document)}
 								className="w-full rounded bg-gray-300 p-2 text-black hover:text-slate-100"
 							>
-								Dokument 1
+								Dokument ${index}
 							</Button>
 							<Button
 								onClick={() => handleRemoveDocument(document.id)}
