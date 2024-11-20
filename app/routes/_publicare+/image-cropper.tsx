@@ -1,7 +1,7 @@
 import ScanbotSDKService from '#app/services/scanner.service.ts'
 import { ActionFunctionArgs } from '@remix-run/node'
 import { Button } from '../../components/ui/button'
-import { json, useFetcher } from '@remix-run/react'
+import { json, useFetcher, useNavigate, useNavigation } from '@remix-run/react'
 import {
 	Dialog,
 	DialogContent,
@@ -18,13 +18,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	try {
 		const file = formData.get('image') as File
+		const id = formData.get('id') as string
 		const arrayBuffer = await file.arrayBuffer()
 		const buffer = Buffer.from(arrayBuffer)
 		await prisma.document.update({
-			where: { id: 'cm3nviokv00c81058lnnyg560' },
+			where: { id },
 			data: {
 				blob: buffer,
 				contentType: file.type,
+				fileName: file.name,
 			},
 		})
 
@@ -34,11 +36,17 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 }
 
-export default function ImageCropper({ imgUrl }: { imgUrl: string }) {
+export default function ImageCropper({
+	id,
+	fileName,
+}: {
+	id: string
+	fileName: string
+}) {
 	const fetcher = useFetcher<FetcherResponse>()
 	const [onOpenCrop, setOnOpenCrop] = useState(false)
 	const [loading, setLoading] = useState(false)
-
+	const navigate = useNavigate()
 	async function handleSaveCrop() {
 		try {
 			const res = await ScanbotSDKService.instance.applyCrop()
@@ -48,8 +56,8 @@ export default function ImageCropper({ imgUrl }: { imgUrl: string }) {
 					type: 'image/jpg',
 				})
 				const formData = new FormData()
-				formData.append('image', file, 'cropped-image.jpg')
-
+				formData.append('image', file, fileName)
+				formData.set('id', id)
 				fetcher.submit(formData, {
 					method: 'POST',
 					action: '/image-cropper',
@@ -64,7 +72,7 @@ export default function ImageCropper({ imgUrl }: { imgUrl: string }) {
 	async function handleImageCrop() {
 		setOnOpenCrop(true)
 		setLoading(true)
-		await ScanbotSDKService.instance.openCroppingView('cropping-view', imgUrl)
+		await ScanbotSDKService.instance.openCroppingView('cropping-view', id)
 		setLoading(false)
 	}
 	useEffect(() => {
@@ -73,7 +81,7 @@ export default function ImageCropper({ imgUrl }: { imgUrl: string }) {
 
 			if (message.includes('successfully')) {
 				toast['success'](message)
-				setOnOpenCrop(false)
+				navigate('.')
 			} else {
 				toast['error'](message)
 			}
@@ -82,11 +90,14 @@ export default function ImageCropper({ imgUrl }: { imgUrl: string }) {
 
 	return (
 		<Dialog open={onOpenCrop}>
-			<DialogTrigger
-				onClick={handleImageCrop}
-				className="flex items-center justify-center"
-			>
-				<CropIcon size={30} />
+			<DialogTrigger>
+				<Button
+					type="button"
+					onClick={handleImageCrop}
+					className="h-auto bg-transparent p-0 text-black"
+				>
+					<CropIcon size={35} />
+				</Button>
 			</DialogTrigger>
 			<DialogContent className="max-w-screen-2xl">
 				<div

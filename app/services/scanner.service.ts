@@ -72,7 +72,6 @@ export default class ScanbotSDKService {
 	}
 
 	async generatePdf(): Promise<ArrayBuffer | undefined> {
-		await this.initialize()
 		const options: PdfGenerationOptions = {
 			standardPaperSize: 'A4',
 			pageDirection: 'PORTRAIT',
@@ -95,7 +94,6 @@ export default class ScanbotSDKService {
 
 	async createDocumentScanner(containerId: string): Promise<Document | null> {
 		await this.initialize()
-
 		return new Promise(async (resolve, reject) => {
 			const config: DocumentScannerConfiguration = {
 				containerId: containerId,
@@ -169,7 +167,6 @@ export default class ScanbotSDKService {
 	}
 	async detectDocument(imageBuffer: ArrayBuffer) {
 		try {
-			await this.initialize()
 			return await this.sdk!.detectDocument(imageBuffer)
 		} catch (error) {
 			throw new Error(
@@ -177,22 +174,15 @@ export default class ScanbotSDKService {
 			)
 		}
 	}
-	async openCroppingView(containerId: string, imageSrc: string) {
+	async openCroppingView(containerId: string, id: string) {
 		try {
-			console.log('Fetching image...')
-			await this.initialize()
-			const response = await fetch(imageSrc)
+			const response = await fetch(`/resources/mail-attachment/${id}`)
 			if (!response.ok) {
 				throw new Error(`Failed to fetch the image: ${response.statusText}`)
 			}
 			const arrayBuffer = await response.arrayBuffer()
 
 			const imageBuffer = new Uint8Array(arrayBuffer)
-			console.log('Image fetched and converted to Uint8Array')
-
-			console.log('Initializing SDK...')
-
-			console.log('SDK initialized')
 
 			const configuration: CroppingViewConfiguration = {
 				containerId: containerId,

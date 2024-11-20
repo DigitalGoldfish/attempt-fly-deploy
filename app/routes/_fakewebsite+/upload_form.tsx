@@ -79,7 +79,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 }
 
-interface FetcherResponse {
+export interface FetcherResponse {
 	message: string
 }
 
@@ -262,7 +262,7 @@ function UploadForm() {
 				if (!isPdf) {
 					ScanbotSDKService.instance.saveDocument({
 						id: crypto.randomUUID(),
-						image: buffer,
+						imageBuffer: buffer,
 					})
 				}
 

@@ -192,10 +192,7 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 						</TabsList>
 						{displayAttachment.map((attachment, index) => (
 							<TabsContent value={`file${index + 1}`} key={attachment.id}>
-								<FilePreview
-									attachment={attachment}
-									isOnlyAttachment={displayAttachment.length === 1}
-								/>
+								<FilePreview attachment={attachment} />
 							</TabsContent>
 						))}
 					</Tabs>
@@ -218,9 +215,7 @@ export function PreviewBlock({ data }: { data: PreviewData }) {
 
 export function FilePreview({
 	attachment,
-	isOnlyAttachment,
 }: {
-	isOnlyAttachment: boolean
 	attachment: Omit<
 		Document,
 		| 'blob'
@@ -265,7 +260,7 @@ export function FilePreview({
 
 	return (
 		<div
-			className="group relative aspect-[2/3] w-full"
+			className="relative aspect-[2/3] w-full"
 			style={{ maxHeight: 'calc(100vh - 300px)' }}
 		>
 			{isPdf ? (
@@ -289,63 +284,55 @@ export function FilePreview({
 								Ignored
 							</div>
 						)}
-						<div className="absolute right-4 top-4 z-50 bg-white/80 opacity-0 group-hover:opacity-100">
-							<ImageCropper
-								imgUrl={`/resources/mail-attachment/${attachment.id}`}
-							/>
-						</div>
 					</div>
 				</div>
 			)}
-			{isOnlyAttachment && (
-				<>
-					<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 space-x-2 rounded bg-white/80 p-2 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
-						<Button
-							type="button"
-							className="h-auto bg-transparent text-black"
-							onClick={() => handleRotate(-90)}
-							disabled={isSubmitting}
-						>
-							<Icon name="rotate-left" size="xl" />
-						</Button>
-						<Button
-							type="button"
-							className="h-auto bg-transparent text-black"
-							onClick={() => handleRotate(180)}
-							disabled={isSubmitting}
-						>
-							<Icon name="rotate-upside-down" size="xl" />
-						</Button>
-						<Button
-							type="button"
-							className="h-auto bg-transparent text-black"
-							onClick={() => handleRotate(90)}
-							disabled={isSubmitting}
-						>
-							<Icon name="rotate-right" size="xl" />
-						</Button>
-						{rotation !== 0 && (
-							<>
-								<div className="mx-2 h-6 w-px bg-gray-300" />
-								<Button
-									type="button"
-									className="h-auto bg-transparent text-black"
-									onClick={handleSaveRotation}
-									disabled={isSubmitting}
-								>
-									<Save size={30} />
-								</Button>
-							</>
-						)}
+
+			<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 space-x-4 rounded p-2 shadow-lg duration-200">
+				<ImageCropper id={attachment.id} fileName={attachment.fileName} />
+				<div className="mx-2 h-9 w-px bg-gray-400" />
+
+				<Button
+					type="button"
+					className="h-auto bg-transparent p-0 text-black"
+					onClick={() => handleRotate(-90)}
+					disabled={isSubmitting}
+				>
+					<Icon name="rotate-left" size="xl" />
+				</Button>
+				<Button
+					type="button"
+					className="h-auto bg-transparent p-0 text-black"
+					onClick={() => handleRotate(180)}
+					disabled={isSubmitting}
+				>
+					<Icon name="rotate-upside-down" size="xl" />
+				</Button>
+				<Button
+					type="button"
+					className="h-auto bg-transparent p-0 text-black"
+					onClick={() => handleRotate(90)}
+					disabled={isSubmitting}
+				>
+					<Icon name="rotate-right" size="xl" />
+				</Button>
+
+				<div className="mx-2 h-9 w-px bg-gray-400" />
+				<Button
+					type="button"
+					className={`h-auto bg-transparent p-0 text-black ${rotation === 0 && 'cursor-not-allowed'}`}
+					onClick={handleSaveRotation}
+					disabled={isSubmitting && rotation === 0}
+				>
+					<Save size={30} />
+				</Button>
+			</div>
+			{isSubmitting && (
+				<div className="absolute inset-0 flex items-center justify-center bg-black/10">
+					<div className="rounded-lg bg-white p-4 shadow-lg">
+						<Loader className="animate-spin" size={30} />
 					</div>
-					{isSubmitting && (
-						<div className="absolute inset-0 flex items-center justify-center bg-black/10">
-							<div className="rounded-lg bg-white p-4 shadow-lg">
-								<Loader className="animate-spin" size={30} />
-							</div>
-						</div>
-					)}
-				</>
+				</div>
 			)}
 		</div>
 	)

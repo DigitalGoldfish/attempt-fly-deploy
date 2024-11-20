@@ -5,7 +5,7 @@ import {
 } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { cva } from 'class-variance-authority'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Visualisation } from '#app/components/blocks/visualisation.tsx'
 import { DashboardTile } from '#app/components/dashboard-tile.js'
@@ -14,6 +14,7 @@ import { Button } from '#app/components/ui/button.tsx'
 import { Input } from '#app/components/ui/input.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import ScanbotSDKService from '#app/services/scanner.service.ts'
 
 export const meta: MetaFunction = () => [{ title: 'Publicare - Dashboard' }]
 
@@ -39,6 +40,13 @@ export default function Dashboard() {
 	const [kundennr, setKundennr] = useState('')
 	const [bestellnr, setBestellnr] = useState('')
 	const navigate = useNavigate()
+	useEffect(() => {
+		async function initializeSDK() {
+			await ScanbotSDKService.instance.initialize()
+		}
+		initializeSDK()
+	}, [])
+
 	return (
 		<DefaultLayout>
 			<div className="grid grid-cols-5 gap-4">
