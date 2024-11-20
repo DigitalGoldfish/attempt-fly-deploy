@@ -92,7 +92,7 @@ export default function ImageCropper({
 
 	return (
 		<Dialog open={onOpenCrop}>
-			<DialogTrigger>
+			<DialogTrigger asChild>
 				<Button
 					type="button"
 					onClick={handleImageCrop}
